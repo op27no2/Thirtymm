@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
+import op27no2.fitness.thirtymm.Database.Repository;
 import op27no2.fitness.thirtymm.R;
 
 /**
@@ -20,10 +21,10 @@ import op27no2.fitness.thirtymm.R;
  */
 
 public class MyRepAdapter extends RecyclerView.Adapter<MyRepAdapter.ViewHolder> {
-    private ArrayList<WorkoutLift.Lift> mDataset;
+    private LiftingWorkout mLiftingWorkout;
     private int selected;
     private int parentPosition;
-
+    private Repository mRepository;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -38,9 +39,10 @@ public class MyRepAdapter extends RecyclerView.Adapter<MyRepAdapter.ViewHolder> 
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public MyRepAdapter(ArrayList<WorkoutLift.Lift> myDataset, int position) {
-        mDataset = myDataset;
+    public MyRepAdapter(LiftingWorkout lift, int position, Repository repository) {
+        mLiftingWorkout = lift;
         parentPosition = position;
+        mRepository = repository;
     }
 
     // Create new views (invoked by the layout manager)
@@ -66,20 +68,25 @@ public class MyRepAdapter extends RecyclerView.Adapter<MyRepAdapter.ViewHolder> 
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
         final TextView mText = holder.mView.findViewById(R.id.circle_number);
-        final TextView mWeight = holder.mView.findViewById(R.id.weight);
-        mWeight.setVisibility(View.GONE);
+        final TextView mWeightText = holder.mView.findViewById(R.id.weight);
+        if(mLiftingWorkout.getMyLifts().get(parentPosition).getReps().get(position) == 0) {
+            mWeightText.setVisibility(View.GONE);
+        }else{
+            mWeightText.setVisibility(View.VISIBLE);
+        }
 
-        final SharedPreferences prefs = holder.mView.getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
-        final SharedPreferences.Editor edt = holder.mView.getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
+        mText.setText(Integer.toString(mLiftingWorkout.getMyLifts().get(parentPosition).getReps().get(position)));
+        mWeightText.setText(Integer.toString(mLiftingWorkout.getMyLifts().get(parentPosition).getRepWeights().get(position)));
 
         mText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                    int num = Integer.parseInt(mText.getText().toString());
-                    num++;
-                    mText.setText(Integer.toString(num));
-                    mWeight.setVisibility(View.VISIBLE);
-                    mWeight.setText(Integer.toString(prefs.getInt("weightRow"+parentPosition,100)));
+                mLiftingWorkout.getMyLifts().get(parentPosition).plusRep(position);
+           //     mText.setText(Integer.toString(mLift.getReps().get(position)));
+           //     mWeightText.setVisibility(View.VISIBLE);
+                mLiftingWorkout.getMyLifts().get(parentPosition).setRepWeight(position, mLiftingWorkout.getMyLifts().get(parentPosition).getWeight());
+                mRepository.updateWorkout(mLiftingWorkout);
+                notifyDataSetChanged();
             }
         });
 
@@ -87,7 +94,8 @@ public class MyRepAdapter extends RecyclerView.Adapter<MyRepAdapter.ViewHolder> 
             @Override
             public boolean onLongClick(View view) {
                 System.out.println("lift long click");
-                mDataset.remove(mDataset.size()-1);
+                mLiftingWorkout.getMyLifts().get(parentPosition).removeSet(position);
+                mRepository.updateWorkout(mLiftingWorkout);
                 notifyDataSetChanged();
                 return false;
             }
@@ -125,9 +133,11 @@ public class MyRepAdapter extends RecyclerView.Adapter<MyRepAdapter.ViewHolder> 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return mDataset.size();
+        return mLiftingWorkout.getMyLifts().get(parentPosition).getReps().size();
     }
 }
+
+
 
 
 

@@ -23,6 +23,9 @@ public interface LiftWorkoutDAO {
     @Insert
     void insertAll(LiftingWorkout... lws);
 
+    @Update
+    void updateWorkouts(LiftingWorkout... lws);
+
     @Delete
     void delete(LiftingWorkout lw);
 

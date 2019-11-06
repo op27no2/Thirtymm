@@ -2,14 +2,8 @@ package op27no2.fitness.thirtymm.ui.lifting;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
@@ -18,29 +12,46 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import op27no2.fitness.thirtymm.Database.AppDatabase;
+import op27no2.fitness.thirtymm.Database.Repository;
+import op27no2.fitness.thirtymm.MyApplication;
 import op27no2.fitness.thirtymm.R;
-import op27no2.fitness.thirtymm.RecyclerItemClickListener;
 
 public class LiftFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
-    private MyLiftAdapter mLiftAdapter;
+    private MyLiftWorkoutAdapter mLiftAdapter;
     private LiftingWorkout mLiftingWorkout;
+    private Repository mRepository;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_lift, container, false);
+        mRepository = new Repository(getActivity());
+
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => " + c);
+        SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, ''yy");
+        String formattedDate = df.format(c);
+
 
         //Get today's workout => finishUI
         //get today's workout, if it doesn't exist create it
         Executor myExecutor = Executors.newSingleThreadExecutor();
         myExecutor.execute(() -> {
-            mLiftingWorkout = AppDatabase.getAppDatabase(getActivity()).lwDAO().findByDate("today motherfucker");
+            mLiftingWorkout = AppDatabase.getAppDatabase(getActivity()).lwDAO().findByDate(formattedDate);
+            if(mLiftingWorkout == null){
+                mLiftingWorkout = new LiftingWorkout();
+                mLiftingWorkout.setWorkoutDate(formattedDate);
+                mRepository.insertWorkout(mLiftingWorkout);
+            }
             finishUI(view);
         });
 
@@ -61,7 +72,7 @@ public class LiftFragment extends Fragment {
         mRecyclerView.setLayoutManager(mLayoutManager);
 
         //set lift data to recyclerview
-        mLiftAdapter = new MyLiftAdapter(mLiftDataset[0]);
+        mLiftAdapter = new MyLiftWorkoutAdapter(mLiftDataset[0]);
         mRecyclerView.setAdapter(mLiftAdapter);
         mRecyclerView.setNestedScrollingEnabled(false);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -111,9 +122,10 @@ public class LiftFragment extends Fragment {
         mRecyclerView.setLayoutManager(mLayoutManager);
 
         //set lift data to recyclerview
-        mLiftAdapter = new MyLiftAdapter(mLiftDataset[0]);
+        mLiftAdapter = new MyLiftWorkoutAdapter(mLiftingWorkout, mRepository);
         mRecyclerView.setAdapter(mLiftAdapter);
         mRecyclerView.setNestedScrollingEnabled(false);
+
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
         //recyclerview on touch events
@@ -137,8 +149,12 @@ public class LiftFragment extends Fragment {
         addCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mWorkout.addLift("Dead Lift");
-                mLiftDataset[0] = mWorkout.getLifts();
+                Lift mLift = new Lift("Bench Press", 225);
+                mLift.addSet();
+                mLift.addSet();
+                mLift.addSet();
+                mLiftingWorkout.addLift(mLift);
+                mRepository.updateWorkout(mLiftingWorkout);
                 mLiftAdapter.notifyDataSetChanged();
             }
         });

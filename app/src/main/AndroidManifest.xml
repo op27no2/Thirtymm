@@ -4,6 +4,7 @@
 
     <!-- TODO ...CHANGE BACKUP TO TRUE -->
     <application
+        android:name="op27no2.fitness.thirtymm.MyApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"

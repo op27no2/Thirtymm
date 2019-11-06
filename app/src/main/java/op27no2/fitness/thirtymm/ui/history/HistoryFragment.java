@@ -33,11 +33,11 @@ public class HistoryFragment extends Fragment {
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                populateWithTestData(AppDatabase.getAppDatabase(getActivity()));
+              /*  populateWithTestData(AppDatabase.getAppDatabase(getActivity()));
                 LiftingWorkout mWorkout = AppDatabase.getAppDatabase(getActivity()).lwDAO().findByDate("today motherfucker");
                 ArrayList<Lift> mLifts = mWorkout.getMyLifts();
                 System.out.println("my workout date: "+ mWorkout.getWorkoutDate());
-                System.out.println("my workout lift 1 name: "+ mLifts.size());
+                System.out.println("my workout lift 1 name: "+ mLifts.size());*/
             }
         });
 

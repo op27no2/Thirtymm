@@ -21,7 +21,12 @@ public class Lift {
     public String getName(){
         return mName;
     }
-
+    public int getWeight(){
+        return mWeight;
+    }
+    public void setWeight(int weight){
+        mWeight = weight;
+    }
     public void setReps(ArrayList<Integer> mRepArray){
         mReps = mRepArray;
     }
@@ -32,8 +37,12 @@ public class Lift {
     public void setmWeights(ArrayList<Integer> mWeightArray){
         mWeights = mWeightArray;
     }
-    public ArrayList<Integer> getWeights(){
+    public ArrayList<Integer> getRepWeights(){
         return mWeights;
+    }
+
+    public void setRepWeight(int index, int weight){
+        mWeights.set(index, weight);
     }
 
     public void plusRep(int index){
@@ -47,13 +56,13 @@ public class Lift {
         mReps.set(index, hold);
     }
 
-    public void addRep(){
+    public void addSet(){
         mReps.add(0);
         mWeights.add(mWeight);
     }
-    public void removeRep(){
-        mReps.remove(mReps.size()-1);
-        mWeights.remove(mWeights.size()-1);
+    public void removeSet(int position){
+        mReps.remove(position);
+        mWeights.remove(position);
     }
 
 
