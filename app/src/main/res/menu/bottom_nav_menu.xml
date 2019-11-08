@@ -7,14 +7,25 @@
         android:title="@string/title_home" />
 
     <item
+        android:id="@+id/navigation_run"
+        android:icon="@drawable/ic_directions_run"
+        android:title="@string/title_run" />
+    <item
         android:id="@+id/navigation_dashboard"
-        android:icon="@drawable/ic_dashboard_black_24dp"
+        android:icon="@drawable/ic_restaurant"
         android:title="@string/title_dashboard" />
 
     <item
-        android:id="@+id/navigation_notifications"
-        android:icon="@drawable/ic_notifications_black_24dp"
-        android:title="@string/title_notifications" />
+        android:id="@+id/navigation_sleep"
+        android:icon="@drawable/ic_airline_seat_individual_suite"
+        android:title="@string/title_sleep" />
+    <item
+        android:id="@+id/navigation_volume"
+        android:icon="@drawable/ic_show_chart"
+        android:title="@string/title_volume" />
+
+
+
 
 
 </menu>

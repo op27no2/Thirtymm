@@ -20,11 +20,15 @@ import op27no2.fitness.thirtymm.R;
  * Created by CristMac on 11/3/17.
  */
 
-public class MyRepAdapter extends RecyclerView.Adapter<MyRepAdapter.ViewHolder> {
+public class MyRepAdapter extends RecyclerView.Adapter<MyRepAdapter.ViewHolder>{
     private LiftingWorkout mLiftingWorkout;
     private int selected;
     private int parentPosition;
     private Repository mRepository;
+
+
+
+
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and

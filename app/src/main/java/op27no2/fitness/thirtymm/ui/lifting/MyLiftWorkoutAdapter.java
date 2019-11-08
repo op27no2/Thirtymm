@@ -18,21 +18,30 @@ import com.google.android.flexbox.AlignItems;
 import com.google.android.flexbox.FlexDirection;
 import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.flexbox.JustifyContent;
+import com.rilixtech.materialfancybutton.MaterialFancyButton;
 
 import java.util.ArrayList;
 
 import op27no2.fitness.thirtymm.Database.Repository;
+import op27no2.fitness.thirtymm.MyApplication;
 import op27no2.fitness.thirtymm.R;
 
 /**
  * Created by CristMac on 11/3/17.
  */
 
-public class MyLiftWorkoutAdapter extends RecyclerView.Adapter<MyLiftWorkoutAdapter.ViewHolder> {
+public class MyLiftWorkoutAdapter extends RecyclerView.Adapter<MyLiftWorkoutAdapter.ViewHolder>  implements DialogInterface {
     private LiftingWorkout mLiftingWorkout;
     private Repository mRepository;
     private int selected;
+    private DialogLifts dialog;
+    DialogInterface mInterface;
 
+    @Override
+    public void onDialogDismiss() {
+        dialog.dismiss();
+        notifyDataSetChanged();
+    }
 
 
     // Provide a reference to the views for each data item
@@ -61,7 +70,7 @@ public class MyLiftWorkoutAdapter extends RecyclerView.Adapter<MyLiftWorkoutAdap
         View v = (View) LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.cards_view, parent, false);
         // set the view's size, margins, paddings and layout parameters
-
+        mInterface = this;
 
         ViewHolder vh = new ViewHolder(v);
         return vh;
@@ -73,8 +82,8 @@ public class MyLiftWorkoutAdapter extends RecyclerView.Adapter<MyLiftWorkoutAdap
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
 
-        TextView mText = holder.mView.findViewById(R.id.text_lift);
-        mText.setPaintFlags(mText.getPaintFlags() |   Paint.UNDERLINE_TEXT_FLAG);
+       // TextView mText = holder.mView.findViewById(R.id.text_lift);
+        MaterialFancyButton mText = holder.mView.findViewById(R.id.text_lift);
         mText.setText(mLiftingWorkout.getMyLifts().get(position).getName());
         final TextView mWeightText = holder.mView.findViewById(R.id.weight_text);
         final int[] weight = {Integer.parseInt(mWeightText.getText().toString())};
@@ -119,6 +128,14 @@ public class MyLiftWorkoutAdapter extends RecyclerView.Adapter<MyLiftWorkoutAdap
                 })
         );*/
 
+        mText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                System.out.println("lift  click");
+                dialog = new DialogLifts(view.getContext(), mRepository, mLiftingWorkout, position, mInterface);
+                dialog.show();
+            }
+        });
 
         ImageView addCircle = holder.mView.findViewById(R.id.circle_add);
         addCircle.setOnClickListener(new View.OnClickListener() {

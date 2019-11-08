@@ -17,7 +17,7 @@
             android:layout_marginLeft="16dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Nutrition"
+            android:text="Run"
             android:textSize="20sp"
             android:textColor="#FFFFFF"
             android:layout_alignParentLeft="true"

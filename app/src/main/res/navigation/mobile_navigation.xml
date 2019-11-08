@@ -22,4 +22,22 @@
         android:name="op27no2.fitness.thirtymm.ui.history.HistoryFragment"
         android:label="@string/title_notifications"
         tools:layout="@layout/fragment_history" />
+
+    <fragment
+        android:id="@+id/navigation_run"
+        android:name="op27no2.fitness.thirtymm.ui.run.RunFragment"
+        android:label="@string/title_run"
+        tools:layout="@layout/fragment_run" />
+
+    <fragment
+        android:id="@+id/navigation_sleep"
+        android:name="op27no2.fitness.thirtymm.ui.sleep.SleepFragment"
+        android:label="@string/title_sleep"
+        tools:layout="@layout/fragment_sleep" />
+
+    <fragment
+        android:id="@+id/navigation_volume"
+        android:name="op27no2.fitness.thirtymm.ui.volume.VolumeFragment"
+        android:label="@string/title_volume"
+        tools:layout="@layout/fragment_volume" />
 </navigation>
