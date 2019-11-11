@@ -94,7 +94,7 @@ public class MyRepAdapter extends RecyclerView.Adapter<MyRepAdapter.ViewHolder>{
             }
         });
 
-        holder.mView.setOnLongClickListener(new View.OnLongClickListener() {
+        mText.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
                 System.out.println("lift long click");

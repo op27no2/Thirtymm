@@ -8,8 +8,9 @@ import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
 import op27no2.fitness.thirtymm.ui.lifting.LiftingWorkout;
+import op27no2.fitness.thirtymm.ui.nutrition.NutritionDay;
 
-@Database(entities = {LiftingWorkout.class}, version = 1)
+@Database(entities = {LiftingWorkout.class, NutritionDay.class}, version = 1)
 @TypeConverters({Converters.class})
 
 public abstract class AppDatabase extends RoomDatabase {
@@ -17,6 +18,7 @@ public abstract class AppDatabase extends RoomDatabase {
     private static AppDatabase INSTANCE;
 
     public abstract LiftWorkoutDAO lwDAO();
+    public abstract NutritionDAO ntDAO();
 
     public static AppDatabase getAppDatabase(Context context) {
         if (INSTANCE == null) {

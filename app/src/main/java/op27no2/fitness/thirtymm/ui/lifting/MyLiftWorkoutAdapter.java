@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.cardview.widget.CardView;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.RecyclerView;
@@ -173,6 +174,18 @@ public class MyLiftWorkoutAdapter extends RecyclerView.Adapter<MyLiftWorkoutAdap
             }
         });
 
+
+        CardView mCard = holder.mView.findViewById(R.id.card_view);
+        mCard.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                System.out.println("lift long click");
+                mLiftingWorkout.removeLift(position);
+                mRepository.updateWorkout(mLiftingWorkout);
+                notifyDataSetChanged();
+                return false;
+            }
+        });
 
       /*  MaterialFancyButton mFB = holder.mView.findViewById(R.id.segment);
 

@@ -10,14 +10,17 @@ import java.util.concurrent.Executors;
 
 import op27no2.fitness.thirtymm.MyApplication;
 import op27no2.fitness.thirtymm.ui.lifting.LiftingWorkout;
+import op27no2.fitness.thirtymm.ui.nutrition.NutritionDay;
 
 public class Repository {
     private LiftWorkoutDAO mDataDao;
+    private NutritionDAO mNutritionDao;
     private LiftingWorkout liftWorkout;
 
     public Repository(Context context) {
         AppDatabase dataRoombase = AppDatabase.getAppDatabase(context);
         this.mDataDao = dataRoombase.lwDAO();
+        this.mNutritionDao = dataRoombase.ntDAO();
     }
 
     LiftingWorkout getTodaysWorkout(String date) {
@@ -38,13 +41,27 @@ public class Repository {
         });
     }
 
+    public void insertNutrition(NutritionDay mDay) {
+        Executor myExecutor = Executors.newSingleThreadExecutor();
+        myExecutor.execute(() -> {
+            mNutritionDao.insertAll(mDay);
+        });
+    }
+
+
+
     public void updateWorkout(LiftingWorkout liftWorkout) {
         Executor myExecutor = Executors.newSingleThreadExecutor();
         myExecutor.execute(() -> {
             mDataDao.updateWorkouts(liftWorkout);
         });
     }
-
+    public void updateNutrition(NutritionDay mDay) {
+        Executor myExecutor = Executors.newSingleThreadExecutor();
+        myExecutor.execute(() -> {
+            mNutritionDao.updateDays(mDay);
+        });
+    }
 
 /*    public void deleteItemById(Long idItem) {
         new deleteByIdAsyncTask(mDataDao).execute(idItem);

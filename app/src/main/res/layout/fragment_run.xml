@@ -23,15 +23,46 @@
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             />
-
-
-
     </RelativeLayout>
-    <RelativeLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    <FrameLayout
+        android:layout_below="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="100dp">
-    </RelativeLayout>
+        android:layout_height="match_parent">
+
+    <com.mapbox.mapboxsdk.maps.MapView
+        android:layout_below="@+id/toolbar"
+        android:id="@+id/mapView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/locate"
+            android:padding="10dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_margin="10dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:elevation="5dp"
+            android:layout_gravity="center"
+            android:background="@drawable/circle_white"
+            android:gravity="center"
+            android:clickable="true"
+            android:src="@drawable/ic_gps_fixed"
+            />
+
+        </RelativeLayout>
+
+
+
+
+    </FrameLayout>
+
+
 
 </RelativeLayout>

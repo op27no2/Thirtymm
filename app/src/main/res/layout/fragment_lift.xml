@@ -26,6 +26,18 @@
         android:layout_centerVertical="true"
         />
 
+
+    <ImageView
+        android:id="@+id/arrow_left"
+        android:padding="20dp"
+        android:layout_toLeftOf="@+id/toolbar_date"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:src="@drawable/ic_myarrow_left"/>
+
+
     <TextView
         android:id="@+id/toolbar_date"
         android:layout_width="wrap_content"
@@ -36,6 +48,17 @@
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         />
+    <ImageView
+        android:id="@+id/arrow_right"
+        android:padding="20dp"
+        android:layout_toRightOf="@+id/toolbar_date"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:src="@drawable/ic_myarrow_right"/>
+
+
 
 </RelativeLayout>
 
@@ -71,8 +94,9 @@
         card_view:cardUseCompatPadding="true">
 
         <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:src="@drawable/ic_add"/>
 
 

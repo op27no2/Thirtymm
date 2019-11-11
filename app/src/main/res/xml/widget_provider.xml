@@ -1,0 +1,12 @@
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="160dp"
+    android:minHeight="40dp"
+    android:updatePeriodMillis="60000"
+    android:previewImage="@drawable/ic_home_black_24dp"
+    android:initialLayout="@layout/appwidget"
+    android:widgetCategory="home_screen">
+
+</appwidget-provider>
+
+
+<!--    android:configure="com.example.android.MyAppWidgetConfigure"-->
