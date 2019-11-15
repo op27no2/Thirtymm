@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fancy="http://schemas.android.com/apk/res-auto"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:animateLayoutChanges="false"
@@ -42,24 +43,77 @@
 
         <ImageView
             android:id="@+id/locate"
-            android:padding="10dp"
+            android:padding="15dp"
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
             android:layout_margin="10dp"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:elevation="5dp"
             android:layout_gravity="center"
-            android:background="@drawable/circle_white"
+            android:background="@drawable/circle_white_plain"
             android:gravity="center"
             android:clickable="true"
             android:src="@drawable/ic_gps_fixed"
             />
 
+            <com.rilixtech.materialfancybutton.MaterialFancyButton
+                android:id="@+id/start_run"
+                android:layout_alignParentBottom="true"
+                android:layout_width="100dp"
+                android:layout_height="50dp"
+                android:layout_margin="10dp"
+                android:paddingBottom="5dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="5dp"
+                android:elevation="5dp"
+                fancy:mfb_borderColor="@color/black"
+                fancy:mfb_borderWidth="1dp"
+                fancy:mfb_defaultColor="@color/white"
+                fancy:mfb_focusColor="@color/colorPrimaryDark"
+                fancy:mfb_iconFont="fontawesome.ttf"
+                fancy:mfb_iconPosition="left"
+                fancy:mfb_radius="1dp"
+                fancy:mfb_textSize="18sp"
+                fancy:mfb_text="Start"
+                fancy:mfb_textColor="@color/black" />
+
+            <com.rilixtech.materialfancybutton.MaterialFancyButton
+                android:id="@+id/stop_run"
+                android:layout_alignParentBottom="true"
+                android:layout_toRightOf="@+id/start_run"
+                android:layout_width="100dp"
+                android:layout_height="50dp"
+                android:layout_margin="10dp"
+                android:paddingBottom="5dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="5dp"
+                android:elevation="5dp"
+                fancy:mfb_borderColor="@color/black"
+                fancy:mfb_borderWidth="1dp"
+                fancy:mfb_defaultColor="@color/white"
+                fancy:mfb_focusColor="@color/colorPrimaryDark"
+                fancy:mfb_iconFont="fontawesome.ttf"
+                fancy:mfb_iconPosition="left"
+                fancy:mfb_radius="1dp"
+                fancy:mfb_textSize="18sp"
+                fancy:mfb_text="Stop"
+                fancy:mfb_textColor="@color/black" />
+
+            <TextView
+                android:id="@+id/counttime"
+                android:layout_centerHorizontal="true"
+                android:layout_width="wrap_content"
+                android:gravity="center"
+                android:text="0:00"
+                android:textSize="70sp"
+                android:background="@android:color/transparent"
+                android:textColor="@color/colorPrimary"
+                android:layout_height="wrap_content" />
+
         </RelativeLayout>
-
-
-
 
     </FrameLayout>
 

@@ -5,22 +5,26 @@ import android.app.Application;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import java.util.ArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import op27no2.fitness.thirtymm.MyApplication;
+import op27no2.fitness.thirtymm.ui.lifting.LiftMap;
 import op27no2.fitness.thirtymm.ui.lifting.LiftingWorkout;
 import op27no2.fitness.thirtymm.ui.nutrition.NutritionDay;
 
 public class Repository {
     private LiftWorkoutDAO mDataDao;
     private NutritionDAO mNutritionDao;
+    private LiftMapDAO mLiftMapDao;
     private LiftingWorkout liftWorkout;
 
     public Repository(Context context) {
         AppDatabase dataRoombase = AppDatabase.getAppDatabase(context);
         this.mDataDao = dataRoombase.lwDAO();
         this.mNutritionDao = dataRoombase.ntDAO();
+        this.mLiftMapDao = dataRoombase.lmDAO();
     }
 
     LiftingWorkout getTodaysWorkout(String date) {
@@ -41,6 +45,14 @@ public class Repository {
         });
     }
 
+    public void insertLiftMap(LiftMap liftMap) {
+        Executor myExecutor = Executors.newSingleThreadExecutor();
+        myExecutor.execute(() -> {
+            mLiftMapDao.insertAll(liftMap);
+        });
+    }
+
+
     public void insertNutrition(NutritionDay mDay) {
         Executor myExecutor = Executors.newSingleThreadExecutor();
         myExecutor.execute(() -> {
@@ -49,7 +61,12 @@ public class Repository {
     }
 
 
-
+    public void updateLiftMap(LiftMap liftMap) {
+        Executor myExecutor = Executors.newSingleThreadExecutor();
+        myExecutor.execute(() -> {
+            mLiftMapDao.updateMaps(liftMap);
+        });
+    }
     public void updateWorkout(LiftingWorkout liftWorkout) {
         Executor myExecutor = Executors.newSingleThreadExecutor();
         myExecutor.execute(() -> {
@@ -62,6 +79,9 @@ public class Repository {
             mNutritionDao.updateDays(mDay);
         });
     }
+
+
+
 
 /*    public void deleteItemById(Long idItem) {
         new deleteByIdAsyncTask(mDataDao).execute(idItem);

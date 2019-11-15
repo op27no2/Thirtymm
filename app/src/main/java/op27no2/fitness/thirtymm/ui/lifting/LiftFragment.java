@@ -112,7 +112,7 @@ public class LiftFragment extends Fragment{
 
         getDayData();
 
-        new AsyncTask<Void, Void, Void>() {
+/*        new AsyncTask<Void, Void, Void>() {
             //Get today's workout => finishUI
             //get today's workout, if it doesn't exist create it
 
@@ -131,7 +131,7 @@ public class LiftFragment extends Fragment{
                 // Post Code
                 finishUI();
             }
-        }.execute();
+        }.execute();*/
 
 
      //recyclerview on touch events

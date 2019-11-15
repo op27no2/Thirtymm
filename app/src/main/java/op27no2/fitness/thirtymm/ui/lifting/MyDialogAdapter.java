@@ -23,7 +23,7 @@ import op27no2.fitness.thirtymm.R;
 public class MyDialogAdapter extends RecyclerView.Adapter<MyDialogAdapter.ViewHolder>  {
     private int selected;
     private Repository mRepository;
-    private ArrayList<String> mData;
+    private ArrayList<LiftMap> mData;
     private LiftingWorkout mLiftingWorkout;
     private int parentPosition;
     private DialogInterface mListener;
@@ -40,7 +40,7 @@ public class MyDialogAdapter extends RecyclerView.Adapter<MyDialogAdapter.ViewHo
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public MyDialogAdapter(ArrayList<String> lifts, Repository repository, LiftingWorkout lw, int p, DialogInterface ml) {
+    public MyDialogAdapter(ArrayList<LiftMap> lifts, Repository repository, LiftingWorkout lw, int p, DialogInterface ml) {
         mData = lifts;
         mRepository = repository;
         mLiftingWorkout = lw;
@@ -71,12 +71,12 @@ public class MyDialogAdapter extends RecyclerView.Adapter<MyDialogAdapter.ViewHo
 
 
         TextView mText = holder.mView.findViewById(R.id.row_text);
-        mText.setText(mData.get(position));
+        mText.setText(mData.get(position).getName());
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mLiftingWorkout.getMyLifts().get(parentPosition).setName(mData.get(position));
+                mLiftingWorkout.getMyLifts().get(parentPosition).setName(mData.get(position).getName());
                 mRepository.updateWorkout(mLiftingWorkout);
                 mListener.onDialogDismiss();
             }
