@@ -31,6 +31,8 @@ import op27no2.fitness.thirtymm.R;
  * Created by CristMac on 11/3/17.
  */
 
+//TOP LEVEL ADAPTER FOR LIFT TAB THE HOLDS THE LIFT CARDS
+
 public class MyLiftWorkoutAdapter extends RecyclerView.Adapter<MyLiftWorkoutAdapter.ViewHolder>  implements DialogInterface {
     private LiftingWorkout mLiftingWorkout;
     private Repository mRepository;

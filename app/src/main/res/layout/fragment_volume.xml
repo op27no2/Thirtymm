@@ -25,11 +25,17 @@
             />
 
 
-
     </RelativeLayout>
-
-
-
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_below="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_weight="0.5"
+        android:layout_height="match_parent">
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/my_recycler_view"
             android:layout_below="@+id/toolbar"
@@ -38,6 +44,79 @@
             android:layout_marginBottom="5dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
+
+
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_weight="0.5"
+        android:layout_height="match_parent">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.5"
+        android:orientation="horizontal"
+        android:padding="1dp"
+        android:background="#000000"
+        android:animateLayoutChanges="true"
+        >
+
+        <ImageView
+            android:id="@+id/my_frame1"
+            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
+            android:animateLayoutChanges="true"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+        <ImageView
+            android:id="@+id/my_overlay1"
+            android:elevation="7dp"
+            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
+            android:animateLayoutChanges="true"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            />
+    </FrameLayout>
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.5"
+            android:orientation="horizontal"
+            android:paddingBottom="1dp"
+            android:paddingLeft="1dp"
+            android:paddingRight="1dp"
+            android:background="#000000"
+            android:animateLayoutChanges="true"
+            >
+
+            <ImageView
+                android:id="@+id/my_frame2"
+                android:scaleType="centerCrop"
+                android:adjustViewBounds="true"
+                android:animateLayoutChanges="true"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                />
+            <ImageView
+                android:id="@+id/my_overlay2"
+                android:elevation="7dp"
+                android:scaleType="centerCrop"
+                android:adjustViewBounds="true"
+                android:animateLayoutChanges="true"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                />
+        </FrameLayout>
+
+    </LinearLayout>
+
+
+    </LinearLayout>
+
 
 
 

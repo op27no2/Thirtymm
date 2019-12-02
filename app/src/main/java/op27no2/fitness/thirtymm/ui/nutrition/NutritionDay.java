@@ -17,7 +17,7 @@ public class NutritionDay {
     private Integer cals;
 
     @ColumnInfo(name = "protein")
-    private Integer protein;
+    private Integer protein = 0;
 
     @ColumnInfo(name = "carbs")
     private Integer carbs;

@@ -50,4 +50,16 @@ public class Converters {
         return json;
     }
 
+    @TypeConverter
+    public static ArrayList<Double> fromString4(String value) {
+        Type listType = new TypeToken<ArrayList<Double>>() {}.getType();
+        return new Gson().fromJson(value, listType);
+    }
+
+    @TypeConverter
+    public static String fromArrayList4(ArrayList<Double> list) {
+        Gson gson = new Gson();
+        String json = gson.toJson(list);
+        return json;
+    }
 }

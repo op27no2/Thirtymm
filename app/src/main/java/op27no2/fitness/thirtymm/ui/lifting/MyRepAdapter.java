@@ -20,6 +20,8 @@ import op27no2.fitness.thirtymm.R;
  * Created by CristMac on 11/3/17.
  */
 
+//HORIZONTAL ADAPTER FOR THE REP CIRCLES on LIFT TAB
+
 public class MyRepAdapter extends RecyclerView.Adapter<MyRepAdapter.ViewHolder>{
     private LiftingWorkout mLiftingWorkout;
     private int selected;

@@ -56,6 +56,35 @@
             android:clickable="true"
             android:src="@drawable/ic_gps_fixed"
             />
+            <ImageView
+                android:id="@+id/edit_map"
+                android:padding="15dp"
+                android:layout_above="@+id/locate"
+                android:layout_alignParentRight="true"
+                android:layout_margin="10dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:elevation="5dp"
+                android:layout_gravity="center"
+                android:background="@drawable/circle_white_plain"
+                android:gravity="center"
+                android:clickable="true"
+                android:src="@android:drawable/ic_menu_edit"
+                />
+
+            <ImageView
+                android:id="@+id/view_angle"
+                android:padding="15dp"
+                android:layout_above="@+id/edit_map"
+                android:layout_alignParentRight="true"
+                android:layout_margin="10dp"
+                android:layout_width="20dp"
+                android:layout_height="300dp"
+                android:background="#FFFFFF"
+                android:elevation="5dp"
+                android:clickable="true"
+                android:src="@android:drawable/ic_menu_rotate"
+                />
 
             <com.rilixtech.materialfancybutton.MaterialFancyButton
                 android:id="@+id/start_run"
@@ -112,6 +141,19 @@
                 android:background="@android:color/transparent"
                 android:textColor="@color/colorPrimary"
                 android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/distance"
+                android:layout_below="@+id/counttime"
+                android:layout_centerHorizontal="true"
+                android:layout_width="wrap_content"
+                android:gravity="center"
+                android:text=""
+                android:textSize="30sp"
+                android:background="@android:color/transparent"
+                android:textColor="@color/colorPrimary"
+                android:layout_height="wrap_content" />
+
 
         </RelativeLayout>
 

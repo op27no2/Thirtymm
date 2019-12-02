@@ -43,6 +43,9 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 
             views.setOnClickPendingIntent(R.id.button_plus, buildButtonPendingIntent(context, appWidgetId, "PLUS_BUTTON"));
             views.setOnClickPendingIntent(R.id.button_minus, buildButtonPendingIntent(context, appWidgetId, "MINUS_BUTTON"));
+            views.setOnClickPendingIntent(R.id.button_plus_small, buildButtonPendingIntent(context, appWidgetId, "PLUS_BUTTON_SMALL"));
+            views.setOnClickPendingIntent(R.id.button_minus_small, buildButtonPendingIntent(context, appWidgetId, "MINUS_BUTTON_SMALL"));
+            views.setOnClickPendingIntent(R.id.text1, buildButtonPendingIntent(context, appWidgetId, "HOME_BUTTON"));
             mRepository = new Repository(context);
 
             Long time = Calendar.getInstance().getTimeInMillis();
@@ -90,6 +93,16 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
     @SuppressLint("StaticFieldLeak")
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
+
+        //TODO test this code
+    if (intent.getAction().equals("HOME_BUTTON")) {
+        Intent i = new Intent(context, MainActivity.class);
+        i.putExtra("frgToLoad", "Nutrition");
+        context.startActivity(i);
+
+    }else{
+
+
         prefs = context.getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = context.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
 
@@ -108,8 +121,10 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
             Long time = Calendar.getInstance().getTimeInMillis();
             SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, ''yy");
             String date = df.format(time);
+        System.out.println("widget date: "+date);
 
-            new AsyncTask<Void, Void, Void>() {
+
+        new AsyncTask<Void, Void, Void>() {
                 protected void onPreExecute() {
                     // Pre Code
                 }
@@ -125,21 +140,34 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                     return null;
                 }
                 protected void onPostExecute(Void unused) {
-                    cals = mDay.getCals();
-                    if (intent.getAction().equals("PLUS_BUTTON")) {
-                        cals = cals + 100;
+                    if(mDay != null) {
+                        cals = mDay.getCals();
+                        if(cals == null){
+                            mDay.setCals(prefs.getInt("BaseCals", 2000));
+                            cals = prefs.getInt("BaseCals", 2000);
+                        }
+                        if (intent.getAction().equals("PLUS_BUTTON")) {
+                            cals = cals + 100;
+                        }
+                        if (intent.getAction().equals("MINUS_BUTTON")) {
+                            cals = cals - 100;
+                        }
+                        if (intent.getAction().equals("PLUS_BUTTON_SMALL")) {
+                            cals = cals + 10;
+                        }
+                        if (intent.getAction().equals("MINUS_BUTTON_SMALL")) {
+                            cals = cals - 10;
+                        }
+
+                        mDay.setCals(cals);
+                        mRepository.updateNutrition(mDay);
+                        finishUI(remoteViews, mgr, watchWidget);
                     }
-                    if (intent.getAction().equals("MINUS_BUTTON")) {
-                        cals = cals - 100;
-                    }
-                    mDay.setCals(cals);
-                    mRepository.updateNutrition(mDay);
-                    finishUI(remoteViews, mgr, watchWidget);
                 }
             }.execute();
 
 
-
+        }
     }
 
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,

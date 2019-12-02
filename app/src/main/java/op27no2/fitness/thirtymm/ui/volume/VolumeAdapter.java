@@ -1,5 +1,6 @@
 package op27no2.fitness.thirtymm.ui.volume;
 
+import android.app.Dialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,13 +9,10 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 import op27no2.fitness.thirtymm.Database.Repository;
 import op27no2.fitness.thirtymm.R;
-import op27no2.fitness.thirtymm.ui.lifting.DialogInterface;
-import op27no2.fitness.thirtymm.ui.lifting.LiftingWorkout;
 
 /**
  * Created by CristMac on 11/3/17.
@@ -22,6 +20,8 @@ import op27no2.fitness.thirtymm.ui.lifting.LiftingWorkout;
 
 public class VolumeAdapter extends RecyclerView.Adapter<VolumeAdapter.ViewHolder>  {
     private ArrayList<Map.Entry<String, Integer>> mData;
+    private DialogVolumeMapnterface passThisInterface;
+    private Repository mRepository;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -36,9 +36,10 @@ public class VolumeAdapter extends RecyclerView.Adapter<VolumeAdapter.ViewHolder
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public VolumeAdapter(ArrayList<Map.Entry<String, Integer>> volume) {
+    public VolumeAdapter(ArrayList<Map.Entry<String, Integer>> volume, Repository repository, DialogVolumeMapnterface pass) {
         mData = volume;
-
+        passThisInterface = pass;
+        mRepository = repository;
     }
 
     // Create new views (invoked by the layout manager)
@@ -68,13 +69,14 @@ public class VolumeAdapter extends RecyclerView.Adapter<VolumeAdapter.ViewHolder
 
         mText1.setText(mData.get(position).getKey());
         mText2.setText(Integer.toString(mData.get(position).getValue()));
+        holder.mView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Dialog dialog = new DialogVolumeMap(view.getContext(), mRepository, mData.get(position).getKey(), passThisInterface);
+                dialog.show();
 
-       /* if(position == selected){
-            mFB.setBackgroundColor(ResourcesCompat.getColor(res, R.color.colorAccent, null));
-        }else{
-            mFB.setBackgroundColor(ResourcesCompat.getColor(res, R.color.colorPrimary, null));
-        }*/
-
+            }
+        });
 
     }
 

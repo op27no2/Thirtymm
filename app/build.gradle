@@ -74,6 +74,12 @@ dependencies {
 
     //Mapbox
     implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:8.4.0'
+    implementation 'com.google.android.gms:play-services-maps:17.0.0'
+    implementation 'com.google.android.gms:play-services-location:17.0.0'
+    implementation 'com.mapbox.mapboxsdk:mapbox-android-navigation:0.42.3'
+
+
+    
 
 
 

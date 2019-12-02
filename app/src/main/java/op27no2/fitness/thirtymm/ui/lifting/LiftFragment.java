@@ -62,7 +62,6 @@ public class LiftFragment extends Fragment{
 
 
         dateText = view.findViewById(R.id.toolbar_date);
-
         ImageView arrowLeft = (ImageView) view.findViewById(R.id.arrow_left);
         ImageView arrowRight = (ImageView) view.findViewById(R.id.arrow_right);
         arrowLeft.setAlpha(0.8f);
@@ -85,6 +84,7 @@ public class LiftFragment extends Fragment{
                 getDayData();
             }
         });
+
 
         addCard = view.findViewById(R.id.card_view);
         addCard.setOnClickListener(new View.OnClickListener() {

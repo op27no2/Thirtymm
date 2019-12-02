@@ -5,8 +5,13 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import op27no2.fitness.thirtymm.MyApplication;
+import op27no2.fitness.thirtymm.R;
 
 @Entity(tableName = "liftmaps")
 public class LiftMap {
@@ -25,8 +30,14 @@ public class LiftMap {
     private ArrayList<String> muscles = new ArrayList<String>();
 
     @ColumnInfo(name = "weights")
-    private ArrayList<Integer> ratios = new ArrayList<Integer>();
+    private ArrayList<Double> ratios = new ArrayList<Double>();
 
+    public LiftMap(){
+      /*  muscles = new ArrayList<String>(Arrays.asList((MyApplication.getAppContext().getResources().getStringArray(R.array.female_front))));
+        for(int i=0; i<muscles.size(); i++){
+            ratios.add(0.0);
+        }*/
+    }
 
     public int getUid() {
         return uid;
@@ -52,11 +63,11 @@ public class LiftMap {
         return muscles;
     }
 
-    public void setRatios(ArrayList<Integer> mRatios){
+    public void setRatios(ArrayList<Double> mRatios){
         ratios = mRatios;
     }
 
-    public ArrayList<Integer> getRatios(){
+    public ArrayList<Double> getRatios(){
         return ratios;
     }
 

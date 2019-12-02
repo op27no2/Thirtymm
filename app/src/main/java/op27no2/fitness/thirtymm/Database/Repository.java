@@ -52,6 +52,13 @@ public class Repository {
         });
     }
 
+    public void deleteLiftMap(LiftMap liftMap) {
+        Executor myExecutor = Executors.newSingleThreadExecutor();
+        myExecutor.execute(() -> {
+            mLiftMapDao.delete(liftMap);
+        });
+    }
+
 
     public void insertNutrition(NutritionDay mDay) {
         Executor myExecutor = Executors.newSingleThreadExecutor();

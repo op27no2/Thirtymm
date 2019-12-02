@@ -3,37 +3,116 @@
 <RelativeLayout
     xmlns:fancy="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="5dp"
     >
+    <TextView
+        android:id="@+id/top"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:text="Net Calories"
+        android:textColor="#FFFFFF"
+        android:background="@color/colorPrimary"/>
+
+    <LinearLayout
+        android:layout_below="@+id/top"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@color/lightgrey">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:background="@color/lightgrey">
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:id="@+id/button_minus"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:background="@color/lightgrey">
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_remove"
+            ></ImageView>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:id="@+id/button_plus"
+            android:layout_height="match_parent"
+            android:gravity="right"
+            android:orientation="horizontal"
+            android:background="@color/lightgrey">
+        <ImageView
+            android:padding="2dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_add"
+            ></ImageView>
+        </LinearLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:orientation="horizontal"
         android:background="@color/lightgrey">
+        <LinearLayout
+            android:layout_width="0dp"
+            android:gravity="left|bottom"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:background="@color/lightgrey">
+        <ImageView
+            android:id="@+id/button_minus_small"
+            android:padding="5dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentBottom="true"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_remove"
+            ></ImageView>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:gravity="right|bottom"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:background="@color/lightgrey">
+        <ImageView
+            android:id="@+id/button_plus_small"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:padding="7dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_add"
+            ></ImageView>
+        </LinearLayout>
     </LinearLayout>
-
-    <Button
-        android:id="@+id/button_plus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        ></Button>
-
-    <Button
-        android:id="@+id/button_minus"
-        android:layout_toRightOf="@+id/button_plus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        ></Button>
+    </LinearLayout>
 
     <TextView
         android:id="@+id/text1"
-        android:layout_below="@+id/button_plus"
+        android:layout_centerInParent="true"
+        android:gravity="center"
         android:text="2000"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        app:autoSizeTextType="uniform"
+        app:autoSizeMinTextSize="40sp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
 
         />
 

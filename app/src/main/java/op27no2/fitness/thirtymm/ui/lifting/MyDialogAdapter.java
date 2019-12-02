@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.cardview.widget.CardView;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import op27no2.fitness.thirtymm.Database.Repository;
 import op27no2.fitness.thirtymm.R;
 
+//LIFT TAB ADAPTER for DIALOG FOR SEARCHING / ADDING LIFTS TO A WORKOUT
 /**
  * Created by CristMac on 11/3/17.
  */
@@ -23,7 +25,7 @@ import op27no2.fitness.thirtymm.R;
 public class MyDialogAdapter extends RecyclerView.Adapter<MyDialogAdapter.ViewHolder>  {
     private int selected;
     private Repository mRepository;
-    private ArrayList<LiftMap> mData;
+    private ArrayList<LiftMap> liftMapArrayList;
     private LiftingWorkout mLiftingWorkout;
     private int parentPosition;
     private DialogInterface mListener;
@@ -41,7 +43,7 @@ public class MyDialogAdapter extends RecyclerView.Adapter<MyDialogAdapter.ViewHo
 
     // Provide a suitable constructor (depends on the kind of dataset)
     public MyDialogAdapter(ArrayList<LiftMap> lifts, Repository repository, LiftingWorkout lw, int p, DialogInterface ml) {
-        mData = lifts;
+        liftMapArrayList = lifts;
         mRepository = repository;
         mLiftingWorkout = lw;
         parentPosition = p;
@@ -71,18 +73,29 @@ public class MyDialogAdapter extends RecyclerView.Adapter<MyDialogAdapter.ViewHo
 
 
         TextView mText = holder.mView.findViewById(R.id.row_text);
-        mText.setText(mData.get(position).getName());
+        mText.setText(liftMapArrayList.get(position).getName());
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mLiftingWorkout.getMyLifts().get(parentPosition).setName(mData.get(position).getName());
+                mLiftingWorkout.getMyLifts().get(parentPosition).setName(liftMapArrayList.get(holder.getAdapterPosition()).getName());
                 mRepository.updateWorkout(mLiftingWorkout);
                 mListener.onDialogDismiss();
             }
         });
 
 
+        holder.mView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                System.out.println("lift dialog long click");
+                LiftMap row = liftMapArrayList.get(holder.getAdapterPosition());
+                mRepository.deleteLiftMap(row);
+                liftMapArrayList.remove(holder.getAdapterPosition());
+                notifyDataSetChanged();
+                return false;
+            }
+        });
 
        /* if(position == selected){
             mFB.setBackgroundColor(ResourcesCompat.getColor(res, R.color.colorAccent, null));
@@ -105,7 +118,7 @@ public class MyDialogAdapter extends RecyclerView.Adapter<MyDialogAdapter.ViewHo
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return mData.size();
+        return liftMapArrayList.size();
     }
 }
 

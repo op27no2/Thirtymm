@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import op27no2.fitness.thirtymm.Database.AppDatabase;
@@ -38,6 +39,8 @@ public class DialogLifts extends Dialog  {
         private DialogInterface mInterface;
         private Context mContext;
         private ArrayList<LiftMap> mList = new ArrayList<LiftMap>();
+        private ArrayList<String> allMuscles = new ArrayList<String>();
+        private ArrayList<Double> allRatios = new ArrayList<Double>();
 
 
 
@@ -58,7 +61,10 @@ public class DialogLifts extends Dialog  {
             super.onCreate(savedInstanceState);
             requestWindowFeature(Window.FEATURE_NO_TITLE);
             setContentView(R.layout.dialog_lift);
-
+            allMuscles = new ArrayList(Arrays.asList((mContext.getResources().getStringArray(R.array.full_muscle_list))));
+            for(int i=0; i<allMuscles.size(); i++){
+                allRatios.add(0.0);
+            }
 
             new AsyncTask<Void, Void, Void>() {
                 //Get today's workout => finishUI
@@ -71,8 +77,14 @@ public class DialogLifts extends Dialog  {
                     mList = new ArrayList<LiftMap>(AppDatabase.getAppDatabase(mContext).lmDAO().getAll());
                     if(mList == null || mList.size()==0){
                         LiftMap mLiftMap = new LiftMap("Bench Press");
+                        mLiftMap.setMuscles(allMuscles);
+                        mLiftMap.setRatios(allRatios);
                         LiftMap mLiftMap2 = new LiftMap("Squat");
+                        mLiftMap2.setMuscles(allMuscles);
+                        mLiftMap2.setRatios(allRatios);
                         LiftMap mLiftMap3 = new LiftMap("Pull Ups");
+                        mLiftMap3.setMuscles(allMuscles);
+                        mLiftMap3.setRatios(allRatios);
                         mList.add(mLiftMap);
                         mList.add(mLiftMap2);
                         mList.add(mLiftMap3);
@@ -95,6 +107,8 @@ public class DialogLifts extends Dialog  {
                 @Override
                 public void onClick(View view) {
                     LiftMap mMap = new LiftMap(mEdit.getText().toString());
+                    mMap.setMuscles(allMuscles);
+                    mMap.setRatios(allRatios);
                     mList.add(mMap);
                     mRepository.insertLiftMap(mMap);
                     mEdit.setText("");
@@ -120,7 +134,7 @@ public class DialogLifts extends Dialog  {
             //set lift data to recyclerview
             mAdapter = new MyDialogAdapter(mList, mRepository, mLiftingWorkout, position,mInterface);
             mRecyclerView.setAdapter(mAdapter);
-            
+
 
         }
 

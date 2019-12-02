@@ -14,22 +14,44 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.mapbox.geojson.Point;
+
+import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.location.LocationComponent;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+
+import java.util.ArrayList;
+import java.util.Locale;
+import java.util.concurrent.Executor;
 
 import op27no2.fitness.thirtymm.R;
 
-public class TimerService extends Service {
+public class TimerService extends Service  {
 
     // Constants
     private static final int ID_SERVICE = 101;
     private TimerInterface myCallback;
     private IBinder serviceBinder = new GPSBinder();
     private long startTime;
+    private ArrayList<Point> routeCoordinates = new ArrayList<Point>();
+    private FusedLocationProviderClient mFusedLocationClient;
+    private LocationRequest locationRequest;
+    private LocationCallback locationCallback;
+    private double lat;
+    private double lon;
 
     public void registerCallBack(TimerInterface myCallback){
         this.myCallback= myCallback;
@@ -48,6 +70,31 @@ public class TimerService extends Service {
         super.onStartCommand(intent, flags, startId);
         System.out.println("service onStartCommand");
         startTime =  System.currentTimeMillis();
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        locationRequest = LocationRequest.create();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(200);
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return;
+                }else{
+                    System.out.println("location result null");
+                }
+                for (Location location : locationResult.getLocations()) {
+                    if (location != null) {
+                        lat = location.getLatitude();
+                        lon = location.getLongitude();
+                    }else{
+                        System.out.println("location null");
+                    }
+                }
+            }
+        };
+        mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null);
+
+
         handler.postDelayed(runnable, 1000);
 
         return START_STICKY;
@@ -78,7 +125,6 @@ public class TimerService extends Service {
                 .setPriority(0)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .build();
-
         startForeground(ID_SERVICE, notification);
 
 
@@ -101,14 +147,16 @@ public class TimerService extends Service {
     private Runnable runnable = new Runnable() {
         @Override
         public void run() {
+
             updateTime();
             handler.postDelayed(this, 100);
         }
     };
     public void updateTime(){
-
+        System.out.println("lat: "+ lat + "lon" + lon);
+        routeCoordinates.add(Point.fromLngLat(lon,lat));
         long elapsedTime = System.currentTimeMillis() - startTime;
-        myCallback.getData(elapsedTime);
+        myCallback.getData(elapsedTime, routeCoordinates);
 
 
     }
@@ -116,8 +164,14 @@ public class TimerService extends Service {
     @Override
     public void onDestroy() {
        handler.removeCallbacks((runnable));
+        if (mFusedLocationClient != null) {
+            mFusedLocationClient.removeLocationUpdates(locationCallback);
+        }
+
 
     }
+
+
 
 
 }

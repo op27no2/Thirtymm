@@ -6,4 +6,311 @@
     <string name="title_run">Run</string>
     <string name="title_sleep">Sleep</string>
     <string name="title_volume">Volume</string>
+
+
+    <string-array name = "images_male_bb_front">
+        <item>@drawable/front_square_800_arms</item>
+        <item>@drawable/front_square_800_legs</item>
+        <item>@drawable/front_square_800_upperbody</item>
+        <item>@drawable/front_square_800_uppertraps</item>
+        <item>@drawable/front_square_800_upperpecs</item>
+        <item>@drawable/front_square_800_lowerpecs</item>
+        <item>@drawable/front_square_800_abs</item>
+        <item>@drawable/front_square_800_serratus</item>
+        <item>@drawable/front_square_800_lats</item>
+        <item>@drawable/front_square_800_obliques</item>
+        <item>@drawable/front_square_800_meddelt</item>
+        <item>@drawable/front_square_800_frontdelt</item>
+        <item>@drawable/front_square_800_longbiceps</item>
+        <item>@drawable/front_square_800_shortbiceps</item>
+        <item>@drawable/front_square_800_brachialis</item>
+        <item>@drawable/front_square_800_lateraltricep</item>
+        <item>@drawable/front_square_800_brachioradialis</item>
+        <item>@drawable/front_square_800_extensors</item>
+        <item>@drawable/front_square_800_flexors</item>
+        <item>@drawable/front_square_800_vastuslateralis</item>
+        <item>@drawable/front_square_800_vastusmedialis</item>
+        <item>@drawable/front_square_800_rectusfemoris</item>
+        <item>@drawable/front_square_800_sartorius</item>
+        <item>@drawable/front_square_800_adductors</item>
+        <item>@drawable/front_square_800_tensorfascialatae</item>
+        <item>@drawable/front_square_800_gastrocnemius</item>
+        <item>@drawable/front_square_800_soleus</item>
+        <item>@drawable/front_square_800_tibialisanterior</item>
+
+    </string-array>
+
+    <string-array name = "images_male_bb_back">
+        <item>@drawable/back_square_800_arms</item>
+        <item>@drawable/back_square_800_legs</item>
+        <item>@drawable/back_square_800_upperbody</item>
+        <item>@drawable/back_square_800_trapsupper</item>
+        <item>@drawable/back_square_800_trapsmiddle</item>
+        <item>@drawable/back_square_800_trapslower</item>
+        <item>@drawable/back_square_800_infraspinatus</item>
+        <item>@drawable/back_square_800_teresmajor</item>
+        <item>@drawable/back_square_800_teresminor</item>
+        <item>@drawable/back_square_800_lats</item>
+        <item>@drawable/back_square_800_obliques</item>
+        <item>@drawable/back_square_800_erectorspinae</item>
+        <item>@drawable/back_square_800_deltmiddle</item>
+        <item>@drawable/back_square_800_deltrear</item>
+        <item>@drawable/back_square_800_triceplong</item>
+        <item>@drawable/back_square_800_tricepmedial</item>
+        <item>@drawable/back_square_800_tricepslateral</item>
+        <item>@drawable/back_square_800_bicepshort</item>
+        <item>@drawable/back_square_800_brachioradialis</item>
+        <item>@drawable/back_square_800_extensors</item>
+        <item>@drawable/back_square_800_flexors</item>
+        <item>@drawable/back_square_800_glutes</item>
+        <item>@drawable/back_square_800_adductors</item>
+        <item>@drawable/back_square_800_semitendinosus</item>
+        <item>@drawable/back_square_800_bicepfemoris</item>
+        <item>@drawable/back_square_800_vastuslateralis</item>
+        <item>@drawable/back_square_800_gastrocnemiuslateralis</item>
+        <item>@drawable/back_square_800_gastrocnemiusmedialis</item>
+        <item>@drawable/back_square_800_soleus</item>
+
+
+    </string-array>
+
+    <string-array name = "images_female_front">
+        <item>@drawable/female_front_800_arms</item>
+        <item>@drawable/female_front_800_legs</item>
+        <item>@drawable/female_front_800_upperbody</item>
+        <item>@drawable/female_front_800_traps</item>
+        <item>@drawable/female_front_800_upperpecs</item>
+        <item>@drawable/female_front_800_lowerpecs</item>
+        <item>@drawable/female_front_800_abs</item>
+        <item>@drawable/female_front_800_serratus</item>
+        <item>@drawable/female_front_800_lats</item>
+        <item>@drawable/female_front_800_obliques</item>
+        <item>@drawable/female_front_800_meddelt</item>
+        <item>@drawable/female_front_800_frontdelt</item>
+        <item>@drawable/female_front_800_longbiceps</item>
+        <item>@drawable/female_front_800_shortbiceps</item>
+        <item>@drawable/female_front_800_brachialis</item>
+        <item>@drawable/female_front_800_tricepslateral</item>
+        <item>@drawable/female_front_800_brachioradialis</item>
+        <item>@drawable/female_front_800_extensors</item>
+        <item>@drawable/female_front_800_flexors</item>
+        <item>@drawable/female_front_800_vastuslateralis</item>
+        <item>@drawable/female_front_800_vastusmedialis</item>
+        <item>@drawable/female_front_800_rectusfemoris</item>
+        <item>@drawable/female_front_800_sartorius</item>
+        <item>@drawable/female_front_800_adductors</item>
+        <item>@drawable/female_front_800_tensorfascialatae</item>
+        <item>@drawable/female_front_800_gastrocnemius</item>
+        <item>@drawable/female_front_800_soleus</item>
+        <item>@drawable/female_front_800_tibialisanterior</item>
+    </string-array>
+
+    <string-array name = "images_female_back">
+        <item>@drawable/female_back_800_arms</item>
+        <item>@drawable/female_back_800_legs</item>
+        <item>@drawable/female_back_800_upperbody</item>
+        <item>@drawable/female_back_800_trapsupper</item>
+        <item>@drawable/female_back_800_trapsmid</item>
+        <item>@drawable/female_back_800_trapslower</item>
+        <item>@drawable/female_back_800_infraspinatus</item>
+        <item>@drawable/female_back_800_teresmajor</item>
+        <item>@drawable/female_back_800_lats</item>
+        <item>@drawable/female_back_800_obliques</item>
+        <item>@drawable/female_back_800_erectorspinae</item>
+        <item>@drawable/female_back_800_deltmid</item>
+        <item>@drawable/female_back_800_deltrear</item>
+        <item>@drawable/female_back_800_triceplong</item>
+        <item>@drawable/female_back_800_tricepmedial</item>
+        <item>@drawable/female_back_800_triceplateral</item>
+        <item>@drawable/female_back_800_bicepshort</item>
+        <item>@drawable/female_back_800_brachioradialis</item>
+        <item>@drawable/female_back_800_extensors</item>
+        <item>@drawable/female_back_800_flexors</item>
+        <item>@drawable/female_back_800_glutes</item>
+        <item>@drawable/female_back_800_adductors</item>
+        <item>@drawable/female_back_800_semitendinosus</item>
+        <item>@drawable/female_back_800_bicepsfemoris</item>
+        <item>@drawable/female_back_800_vastuslateralis</item>
+        <item>@drawable/female_back_800_gastrolateral</item>
+        <item>@drawable/female_back_800_gastromedial</item>
+        <item>@drawable/female_back_800_soleus</item>
+    </string-array>
+
+    <string-array name = "male_bb_front">
+        <item>Arms</item>
+        <item>Legs</item>
+        <item>Upper Body</item>
+        <item>Traps</item>
+        <item>Upper Pectorals</item>
+        <item>Lower Pectorals</item>
+        <item>Abdominals</item>
+        <item>Serratus</item>
+        <item>Lats</item>
+        <item>Obliques</item>
+        <item>Middle Deltoids</item>
+        <item>Front Deltoids</item>
+        <item>Biceps - Long Head</item>
+        <item>Biceps - Short Head</item>
+        <item>Brachialis</item>
+        <item>Triceps - Lateral Head</item>
+        <item>Brachioradialis</item>
+        <item>Extensors</item>
+        <item>Flexors</item>
+        <item>Vastus Lateralis</item>
+        <item>Vastus Medialis</item>
+        <item>Rectus Femoris</item>
+        <item>Sartorius</item>
+        <item>Adductors</item>
+        <item>Tensor Fasciae Latae</item>
+        <item>Gastrocnemius</item>
+        <item>Soleus</item>
+        <item>Tibialis Anterior</item>
+    </string-array>
+
+    <string-array name = "male_bb_back">
+        <item>Arms</item>
+        <item>Legs</item>
+        <item>Upper Body</item>
+        <item>Upper Traps</item>
+        <item>Middle Traps</item>
+        <item>Lower Traps</item>
+        <item>Infraspinatus</item>
+        <item>Teres Major</item>
+        <item>Teres Minor</item>
+        <item>Lats</item>
+        <item>Obliques</item>
+        <item>Erector Spinae</item>
+        <item>Middle Deltoids</item>
+        <item>Rear Deltoids</item>
+        <item>Triceps - Long Head</item>
+        <item>Triceps - Medial Head</item>
+        <item>Triceps - Lateral Head</item>
+        <item>Biceps - Short Head</item>
+        <item>Brachioradialis</item>
+        <item>Extensors</item>
+        <item>Flexors</item>
+        <item>Glutes</item>
+        <item>Adductors</item>
+        <item>Semitendinosus</item>
+        <item>Biceps Femoris</item>
+        <item>Vastus Lateralis</item>
+        <item>Gastrocnemius Lateralis</item>
+        <item>Gastrocnemius Medialis</item>
+        <item>Soleus</item>
+
+    </string-array>
+
+    <string-array name = "female_front">
+        <item>Arms</item>
+        <item>Legs</item>
+        <item>Upper Body</item>
+        <item>Traps</item>
+        <item>Upper Pectorals</item>
+        <item>Lower Pectorals</item>
+        <item>Abdominals</item>
+        <item>Serratus</item>
+        <item>Lats</item>
+        <item>Obliques</item>
+        <item>Middle Deltoids</item>
+        <item>Front Deltoids</item>
+        <item>Biceps - Long Head</item>
+        <item>Biceps - Short Head</item>
+        <item>Brachialis</item>
+        <item>Triceps - Lateral Head</item>
+        <item>Brachioradialis</item>
+        <item>Extensors</item>
+        <item>Flexors</item>
+        <item>Vastus Lateralis</item>
+        <item>Vastus Medialis</item>
+        <item>Rectus Femoris</item>
+        <item>Sartorius</item>
+        <item>Adductors</item>
+        <item>Tensor Fasciae Latae</item>
+        <item>Gastrocnemius</item>
+        <item>Soleus</item>
+        <item>Tibialis Anterior</item>
+    </string-array>
+
+    <string-array name = "female_back">
+        <item>Arms</item>
+        <item>Legs</item>
+        <item>Upper Body</item>
+        <item>Upper Traps</item>
+        <item>Middle Traps</item>
+        <item>Lower Traps</item>
+        <item>Infraspinatus</item>
+        <item>Teres Major</item>
+        <item>Lats</item>
+        <item>Obliques</item>
+        <item>Erector Spinae</item>
+        <item>Middle Deltoids</item>
+        <item>Rear Deltoids</item>
+        <item>Triceps - Long Head</item>
+        <item>Triceps - Medial Head</item>
+        <item>Triceps - Lateral Head</item>
+        <item>Biceps - Short Head</item>
+        <item>Brachioradialis</item>
+        <item>Extensors</item>
+        <item>Flexors</item>
+        <item>Glutes</item>
+        <item>Adductors</item>
+        <item>Semitendinosus</item>
+        <item>Biceps Femoris</item>
+        <item>Vastus Lateralis</item>
+        <item>Gastrocnemius Lateralis</item>
+        <item>Gastrocnemius Medialis</item>
+        <item>Soleus</item>
+
+    </string-array>
+
+
+    <string-array name = "full_muscle_list">
+        <item>Arms</item>
+        <item>Upper Body</item>
+        <item>Traps</item>
+        <item>Upper Traps</item>
+        <item>Middle Traps</item>
+        <item>Lower Traps</item>
+        <item>Upper Pectorals</item>
+        <item>Lower Pectorals</item>
+        <item>Abdominals</item>
+        <item>Serratus</item>
+        <item>Lats</item>
+        <item>Obliques</item>
+        <item>Front Deltoids</item>
+        <item>Middle Deltoids</item>
+        <item>Rear Deltoids</item>
+        <item>Biceps - Long Head</item>
+        <item>Biceps - Short Head</item>
+        <item>Triceps - Long Head</item>
+        <item>Triceps - Medial Head</item>
+        <item>Triceps - Lateral Head</item>
+        <item>Brachialis</item>
+        <item>Brachioradialis</item>
+        <item>Infraspinatus</item>
+        <item>Teres Major</item>
+        <item>Teres Minor</item>
+        <item>Erector Spinae</item>
+        <item>Legs</item>
+        <item>Vastus Lateralis</item>
+        <item>Vastus Medialis</item>
+        <item>Rectus Femoris</item>
+        <item>Sartorius</item>
+        <item>Tensor Fasciae Latae</item>
+        <item>Gastrocnemius</item>
+        <item>Soleus</item>
+        <item>Tibialis Anterior</item>
+        <item>Extensors</item>
+        <item>Flexors</item>
+        <item>Glutes</item>
+        <item>Adductors</item>
+        <item>Semitendinosus</item>
+        <item>Gastrocnemius Lateralis</item>
+        <item>Gastrocnemius Medialis</item>
+        <item>Biceps Femoris</item>
+
+    </string-array>
+
+
+
 </resources>
