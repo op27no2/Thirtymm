@@ -140,7 +140,7 @@
         <item>Arms</item>
         <item>Legs</item>
         <item>Upper Body</item>
-        <item>Traps</item>
+        <item>Upper Traps</item>
         <item>Upper Pectorals</item>
         <item>Lower Pectorals</item>
         <item>Abdominals</item>
@@ -162,7 +162,7 @@
         <item>Sartorius</item>
         <item>Adductors</item>
         <item>Tensor Fasciae Latae</item>
-        <item>Gastrocnemius</item>
+        <item>Gastrocnemius Medialis</item>
         <item>Soleus</item>
         <item>Tibialis Anterior</item>
     </string-array>
@@ -297,7 +297,6 @@
         <item>Rectus Femoris</item>
         <item>Sartorius</item>
         <item>Tensor Fasciae Latae</item>
-        <item>Gastrocnemius</item>
         <item>Soleus</item>
         <item>Tibialis Anterior</item>
         <item>Extensors</item>
@@ -305,9 +304,9 @@
         <item>Glutes</item>
         <item>Adductors</item>
         <item>Semitendinosus</item>
+        <item>Biceps Femoris</item>
         <item>Gastrocnemius Lateralis</item>
         <item>Gastrocnemius Medialis</item>
-        <item>Biceps Femoris</item>
 
     </string-array>
 

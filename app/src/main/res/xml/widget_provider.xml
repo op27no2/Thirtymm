@@ -2,6 +2,7 @@
     android:minWidth="110dp"
     android:minHeight="40dp"
     android:updatePeriodMillis="60000"
+    android:resizeMode="horizontal|vertical"
     android:previewImage="@drawable/ic_home_black_24dp"
     android:initialLayout="@layout/appwidget"
     android:widgetCategory="home_screen">

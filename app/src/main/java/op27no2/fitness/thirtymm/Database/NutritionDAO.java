@@ -30,4 +30,9 @@ public interface NutritionDAO {
     @Delete
     void delete(NutritionDay lw);
 
+    @Query("DELETE FROM nutrition_days")
+    void nukeTable();
+
+
+
 }

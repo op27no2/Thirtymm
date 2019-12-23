@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:fancy="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:tag="cards main container">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_view"
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="2dp"
+        android:layout_marginRight="2dp"
+        card_view:cardBackgroundColor="#FFFFFF"
+        card_view:contentPadding="10dp"
+        card_view:cardCornerRadius="5dp"
+        card_view:cardElevation="2dp"
+        card_view:cardMaxElevation="2dp"
+        card_view:cardUseCompatPadding="true"
+        android:clickable="true"
+        android:foreground="?android:attr/selectableItemBackground"
+        >
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            >
+
+            <com.prolificinteractive.materialcalendarview.MaterialCalendarView
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/calendar_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:mcv_showOtherDates="all"
+                app:mcv_selectionColor="@color/colorPrimary"
+                />
+
+  <!--          <LinearLayout
+                android:layout_below="@+id/calendar_view"
+                android:layout_centerHorizontal="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+            <com.rilixtech.materialfancybutton.MaterialFancyButton
+                android:id="@+id/volume_dialog_dismiss"
+                android:layout_width="100dp"
+                android:layout_height="50dp"
+                android:layout_margin="10dp"
+                android:paddingBottom="5dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="5dp"
+                android:elevation="5dp"
+                fancy:mfb_borderColor="@color/black"
+                fancy:mfb_borderWidth="1dp"
+                fancy:mfb_defaultColor="@color/white"
+                fancy:mfb_focusColor="@color/colorPrimaryDark"
+                fancy:mfb_iconFont="fontawesome.ttf"
+                fancy:mfb_iconPosition="left"
+                fancy:mfb_radius="1dp"
+                fancy:mfb_textSize="18sp"
+                fancy:mfb_text="Dismiss"
+                fancy:mfb_textColor="@color/black" />
+
+            <com.rilixtech.materialfancybutton.MaterialFancyButton
+                android:id="@+id/volume_dialog_save"
+                android:layout_toRightOf="@+id/start_run"
+                android:layout_width="100dp"
+                android:layout_height="50dp"
+                android:layout_margin="10dp"
+                android:paddingBottom="5dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="5dp"
+                android:elevation="5dp"
+                fancy:mfb_borderColor="@color/black"
+                fancy:mfb_borderWidth="1dp"
+                fancy:mfb_defaultColor="@color/white"
+                fancy:mfb_focusColor="@color/colorPrimaryDark"
+                fancy:mfb_iconFont="fontawesome.ttf"
+                fancy:mfb_iconPosition="left"
+                fancy:mfb_radius="1dp"
+                fancy:mfb_textSize="18sp"
+                fancy:mfb_text="Save"
+                fancy:mfb_textColor="@color/black" />
+            </LinearLayout>
+
+
+-->
+        </RelativeLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</RelativeLayout>

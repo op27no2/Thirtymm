@@ -67,6 +67,14 @@ public class Repository {
         });
     }
 
+    public void deleteAllNutrition() {
+        Executor myExecutor = Executors.newSingleThreadExecutor();
+        myExecutor.execute(() -> {
+            mNutritionDao.nukeTable();
+        });
+    }
+
+
 
     public void updateLiftMap(LiftMap liftMap) {
         Executor myExecutor = Executors.newSingleThreadExecutor();

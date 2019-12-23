@@ -294,7 +294,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                 coordinateObject.add("coordinates", result);
 
                 JsonObject heightObject = new JsonObject();
-                heightObject.addProperty("e", Math.abs(200*Math.sin(.05*i)));
+                heightObject.addProperty("e", Math.abs(2000*Math.sin(.05*i)));
 
                 JsonObject outerObject = new JsonObject();
                 outerObject.addProperty("type", "Feature");
@@ -731,24 +731,24 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private ArrayList<Double[]> getBox(Point mPoint) {
         ArrayList<Double[]> mArray = new ArrayList<Double[]>();
         Double[] mBox = new Double[2];
-        mBox[0] = mPoint.longitude() + .00001;
-        mBox[1] = mPoint.latitude() + .00001;
+        mBox[0] = mPoint.longitude() + .0001;
+        mBox[1] = mPoint.latitude() + .0001;
         mArray.add(mBox);
         Double[] mBox2 = new Double[2];
-        mBox2[0] = mPoint.longitude() + .00001;
-        mBox2[1] = mPoint.latitude() - .00001;
+        mBox2[0] = mPoint.longitude() + .0001;
+        mBox2[1] = mPoint.latitude() - .0001;
         mArray.add(mBox2);
         Double[] mBox3 = new Double[2];
-        mBox3[0] = mPoint.longitude() - .00001;
-        mBox3[1] = mPoint.latitude() - .00001;
+        mBox3[0] = mPoint.longitude() - .0001;
+        mBox3[1] = mPoint.latitude() - .0001;
         mArray.add(mBox3);
         Double[] mBox4 = new Double[2];
-        mBox4[0] = mPoint.longitude() - .00001;
-        mBox4[1] = mPoint.latitude() + .00001;
+        mBox4[0] = mPoint.longitude() - .0001;
+        mBox4[1] = mPoint.latitude() + .0001;
         mArray.add(mBox4);
         Double[] mBox5 = new Double[2];
-        mBox5[0] = mPoint.longitude() + .00001;
-        mBox5[1] = mPoint.latitude() + .00001;
+        mBox5[0] = mPoint.longitude() + .0001;
+        mBox5[1] = mPoint.latitude() + .0001;
         mArray.add(mBox5);
 
         return mArray;

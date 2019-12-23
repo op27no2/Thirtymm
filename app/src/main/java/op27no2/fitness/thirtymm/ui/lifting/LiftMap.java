@@ -32,12 +32,12 @@ public class LiftMap {
     @ColumnInfo(name = "weights")
     private ArrayList<Double> ratios = new ArrayList<Double>();
 
-    public LiftMap(){
-      /*  muscles = new ArrayList<String>(Arrays.asList((MyApplication.getAppContext().getResources().getStringArray(R.array.female_front))));
+ /*   public LiftMap(){
+      *//*  muscles = new ArrayList<String>(Arrays.asList((MyApplication.getAppContext().getResources().getStringArray(R.array.female_front))));
         for(int i=0; i<muscles.size(); i++){
             ratios.add(0.0);
-        }*/
-    }
+        }*//*
+    }*/
 
     public int getUid() {
         return uid;

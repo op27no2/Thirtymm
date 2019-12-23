@@ -1,7 +1,6 @@
 package op27no2.fitness.thirtymm.ui.lifting;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -19,7 +18,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import op27no2.fitness.thirtymm.Database.AppDatabase;
 import op27no2.fitness.thirtymm.Database.Repository;
@@ -36,7 +34,7 @@ public class DialogLifts extends Dialog  {
         private Repository mRepository;
         private LiftingWorkout mLiftingWorkout;
         private int position;
-        private DialogInterface mInterface;
+        private MyDialogInterface mInterface;
         private Context mContext;
         private ArrayList<LiftMap> mList = new ArrayList<LiftMap>();
         private ArrayList<String> allMuscles = new ArrayList<String>();
@@ -44,7 +42,7 @@ public class DialogLifts extends Dialog  {
 
 
 
-    public DialogLifts(@NonNull Context context, Repository repositoy, LiftingWorkout lw, int p, DialogInterface dialogInterface) {
+    public DialogLifts(@NonNull Context context, Repository repositoy, LiftingWorkout lw, int p, MyDialogInterface dialogInterface) {
         super(context);
         c = context;
         mRepository = repositoy;

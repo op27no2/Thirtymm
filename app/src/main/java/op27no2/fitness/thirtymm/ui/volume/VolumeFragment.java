@@ -80,17 +80,22 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
         overLay1 = view.findViewById(R.id.my_overlay1);
         overLay2 = view.findViewById(R.id.my_overlay2);
 
-        // Create ArrayList of ArrayLists for Images and Names
+        // Creates ArrayList of ArrayLists for Images and Names
         topImageList.add(getResources().obtainTypedArray(R.array.images_male_bb_front));
         topImageList.add(getResources().obtainTypedArray(R.array.images_male_bb_back));
         topImageList.add(getResources().obtainTypedArray(R.array.images_female_front));
         topImageList.add(getResources().obtainTypedArray(R.array.images_female_back));
 
+        //creates List of string names for each muscles in each image
+        //Dialog uses muscle list to store muscles, drawing code searches muscle list for name, and matches position to the image list.
+        //positions in image list must match muscle lists.
+        //names stored must match muscle lists for each image drawn.
         topMuscleList.add(new ArrayList<String>(Arrays.asList((getResources().getStringArray(R.array.male_bb_front)))));
         topMuscleList.add(new ArrayList<String>(Arrays.asList((getResources().getStringArray(R.array.male_bb_back)))));
         topMuscleList.add(new ArrayList<String>(Arrays.asList((getResources().getStringArray(R.array.female_front)))));
         topMuscleList.add(new ArrayList<String>(Arrays.asList((getResources().getStringArray(R.array.female_back)))));
 
+        //not currently used?
         allMuscles = new ArrayList(Arrays.asList((getResources().getStringArray(R.array.full_muscle_list))));
 
         diagramSetup(0);
@@ -188,6 +193,9 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
         for(int i=0; i<darray.length; i++) {
             if(muscleVolumes.get(topMuscleList.get(0).get(i))!= null) {
                 double vol = muscleVolumes.get(topMuscleList.get(0).get(i)) * 5;
+                if (vol > 100) {
+                    vol = 100;
+                }
 
                 if (vol >= 75) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -215,7 +223,9 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
         for(int i=0; i<darray2.length; i++) {
             if(muscleVolumes.get(topMuscleList.get(1).get(i))!= null) {
                 double vol = muscleVolumes.get(topMuscleList.get(1).get(i)) * 5;
-
+                if (vol > 100) {
+                    vol = 100;
+                }
                 if (vol >= 75) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         darray2[i].setColorFilter(new BlendModeColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), BlendMode.SRC_ATOP));

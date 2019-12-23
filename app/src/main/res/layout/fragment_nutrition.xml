@@ -58,38 +58,88 @@
 
 
     </RelativeLayout>
+    <LinearLayout
+        android:id="@+id/graph"
+        android:layout_below="@+id/toolbar"
+        android:layout_margin="5dp"
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="200dip"
+        android:background="@drawable/background_border">
+        <LinearLayout
+            android:layout_below="@+id/toolbar"
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="200dip"
+            android:id="@+id/graph1" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/bottom_graph"
+        android:layout_below="@+id/graph"
+        android:layout_margin="5dp"
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="200dip"
+        android:background="@drawable/background_border">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="200dp"
+            android:id="@+id/graph2" />
+    </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/buttons"
+        android:gravity="center"
+        android:layout_below="@+id/bottom_graph"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/button_minus"
+            android:padding="10dp"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:src="@drawable/ic_remove"/>
+        <ImageView
+            android:id="@+id/button_minus_small"
+            android:padding="15dp"
+            android:layout_below="@+id/button_minus"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:src="@drawable/ic_remove"/>
+        <ImageView
+            android:id="@+id/button_plus_small"
+            android:padding="15dp"
+            android:layout_toRightOf="@+id/button_minus"
+            android:layout_below="@+id/button_plus"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:src="@drawable/ic_add"/>
+        <ImageView
+            android:id="@+id/button_plus"
+            android:padding="10dp"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:src="@drawable/ic_add"/>
+
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/my_recycler_view"
-        android:layout_below="@+id/toolbar"
+        android:layout_below="@+id/buttons"
         android:layout_toLeftOf="@+id/right_content"
         android:fastScrollEnabled="false"
         android:layout_marginBottom="5dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
-
-
-    <ImageView
-        android:id="@+id/button_plus"
-        android:padding="20dp"
-        android:layout_toRightOf="@+id/button_minus"
-        android:layout_below="@+id/my_recycler_view"
-        android:layout_centerVertical="true"
-        android:layout_gravity="center"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:src="@drawable/ic_add"/>
-
-    <ImageView
-        android:id="@+id/button_minus"
-        android:padding="20dp"
-        android:layout_below="@+id/my_recycler_view"
-        android:layout_centerVertical="true"
-        android:layout_gravity="center"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:src="@drawable/ic_arrow_down"/>
 
 
 

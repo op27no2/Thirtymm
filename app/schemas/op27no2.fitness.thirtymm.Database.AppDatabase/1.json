@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "9a680c3261c12beee3a0c8658a9ece7f",
+    "identityHash": "90f44d7e7608c16469c71b04585542b5",
     "entities": [
       {
         "tableName": "lifting_workouts",
@@ -38,7 +38,7 @@
       },
       {
         "tableName": "nutrition_days",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `date` TEXT, `cals` INTEGER, `protein` INTEGER, `carbs` INTEGER, `fat` INTEGER)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `date` TEXT, `cals` INTEGER, `protein` INTEGER, `carbs` INTEGER, `fat` INTEGER, `categories` TEXT, `values` TEXT)",
         "fields": [
           {
             "fieldPath": "uid",
@@ -75,6 +75,18 @@
             "columnName": "fat",
             "affinity": "INTEGER",
             "notNull": false
+          },
+          {
+            "fieldPath": "mNames",
+            "columnName": "categories",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "mValues",
+            "columnName": "values",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -109,7 +121,7 @@
             "notNull": false
           },
           {
-            "fieldPath": "weights",
+            "fieldPath": "ratios",
             "columnName": "weights",
             "affinity": "TEXT",
             "notNull": false
@@ -127,7 +139,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"9a680c3261c12beee3a0c8658a9ece7f\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"90f44d7e7608c16469c71b04585542b5\")"
     ]
   }
 }

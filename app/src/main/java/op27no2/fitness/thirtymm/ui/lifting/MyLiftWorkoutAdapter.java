@@ -1,9 +1,6 @@
 package op27no2.fitness.thirtymm.ui.lifting;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,10 +18,7 @@ import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.flexbox.JustifyContent;
 import com.rilixtech.materialfancybutton.MaterialFancyButton;
 
-import java.util.ArrayList;
-
 import op27no2.fitness.thirtymm.Database.Repository;
-import op27no2.fitness.thirtymm.MyApplication;
 import op27no2.fitness.thirtymm.R;
 
 /**
@@ -33,12 +27,12 @@ import op27no2.fitness.thirtymm.R;
 
 //TOP LEVEL ADAPTER FOR LIFT TAB THE HOLDS THE LIFT CARDS
 
-public class MyLiftWorkoutAdapter extends RecyclerView.Adapter<MyLiftWorkoutAdapter.ViewHolder>  implements DialogInterface {
+public class MyLiftWorkoutAdapter extends RecyclerView.Adapter<MyLiftWorkoutAdapter.ViewHolder>  implements MyDialogInterface {
     private LiftingWorkout mLiftingWorkout;
     private Repository mRepository;
     private int selected;
     private DialogLifts dialog;
-    DialogInterface mInterface;
+    MyDialogInterface mInterface;
 
     @Override
     public void onDialogDismiss() {

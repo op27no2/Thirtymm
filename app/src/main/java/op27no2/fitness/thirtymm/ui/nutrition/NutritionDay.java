@@ -4,6 +4,9 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
 @Entity(tableName = "nutrition_days")
 public class NutritionDay {
 
@@ -25,6 +28,12 @@ public class NutritionDay {
     @ColumnInfo(name = "fat")
     private Integer fat;
 
+    @ColumnInfo(name = "categories")
+    private ArrayList<String> mNames = new ArrayList<String>();
+
+    @ColumnInfo(name = "values")
+    private ArrayList<Integer> mValues = new ArrayList<Integer>();
+
 
     public int getUid() {
         return uid;
@@ -41,6 +50,21 @@ public class NutritionDay {
     public void setDate(String date) {
         this.date = date;
     }
+
+    public void setNames(ArrayList<String> categories){
+        mNames = categories;
+    }
+    public ArrayList<String> getNames(){
+        return mNames;
+    }
+    public void setValues(ArrayList<Integer> values){
+        mValues = values;
+    }
+    public ArrayList<Integer> getValues(){
+        return mValues;
+    }
+
+
 
     public Integer getCals(){
         return cals;

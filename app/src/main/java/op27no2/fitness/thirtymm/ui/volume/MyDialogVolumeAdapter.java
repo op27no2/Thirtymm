@@ -8,19 +8,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.michaelmuenzer.android.scrollablennumberpicker.ScrollableNumberPicker;
-import com.rilixtech.materialfancybutton.MaterialFancyButton;
 
 import java.util.ArrayList;
 
 import op27no2.fitness.thirtymm.Database.Repository;
-import op27no2.fitness.thirtymm.MyApplication;
 import op27no2.fitness.thirtymm.R;
-import op27no2.fitness.thirtymm.ui.lifting.DialogInterface;
+import op27no2.fitness.thirtymm.ui.lifting.MyDialogInterface;
 import op27no2.fitness.thirtymm.ui.lifting.LiftMap;
 import op27no2.fitness.thirtymm.ui.lifting.LiftingWorkout;
 
@@ -34,7 +29,7 @@ public class MyDialogVolumeAdapter extends RecyclerView.Adapter<MyDialogVolumeAd
     private ArrayList<String> mData;
     private LiftingWorkout mLiftingWorkout;
     private int parentPosition;
-    private DialogInterface mListener;
+    private MyDialogInterface mListener;
     private Context mContext;
     private LiftMap mLiftMap;
     private ArrayList<Double> ratios;

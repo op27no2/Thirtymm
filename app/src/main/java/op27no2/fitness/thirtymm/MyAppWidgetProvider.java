@@ -8,11 +8,17 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Bundle;
+import android.util.TypedValue;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 import op27no2.fitness.thirtymm.Database.AppDatabase;
@@ -26,6 +32,8 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
     private SharedPreferences prefs;
     private SharedPreferences.Editor edt;
     private Integer cals;
+    private ArrayList<String> mNames = new ArrayList<String>(2);
+    private ArrayList<Integer> mValues = new ArrayList<Integer>(2);
 
     @SuppressLint("StaticFieldLeak")
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -45,7 +53,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
             views.setOnClickPendingIntent(R.id.button_minus, buildButtonPendingIntent(context, appWidgetId, "MINUS_BUTTON"));
             views.setOnClickPendingIntent(R.id.button_plus_small, buildButtonPendingIntent(context, appWidgetId, "PLUS_BUTTON_SMALL"));
             views.setOnClickPendingIntent(R.id.button_minus_small, buildButtonPendingIntent(context, appWidgetId, "MINUS_BUTTON_SMALL"));
-            views.setOnClickPendingIntent(R.id.text1, buildButtonPendingIntent(context, appWidgetId, "HOME_BUTTON"));
+            views.setOnClickPendingIntent(R.id.top, buildButtonPendingIntent(context, appWidgetId, "HOME_BUTTON"));
             mRepository = new Repository(context);
 
             Long time = Calendar.getInstance().getTimeInMillis();
@@ -58,11 +66,16 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                 }
                 protected Void doInBackground(Void... unused) {
                     mDay = AppDatabase.getAppDatabase(context).ntDAO().findByDate(date);
-                    if(mDay == null){
-                        System.out.println("day null should create");
+                    if(mDay == null) {
                         mDay = new NutritionDay();
+                        System.out.println("day null should create");
+                        mNames.add("Cals");
+                        mValues.add(prefs.getInt("BaseCals", -2000));
+                        mNames.add("Protein");
+                        mValues.add(0);
+                        mDay.setNames(mNames);
+                        mDay.setValues(mValues);
                         mDay.setDate(date);
-                        mDay.setCals(prefs.getInt("BaseCals", 2000));
                         mRepository.insertNutrition(mDay);
                     }
                     return null;
@@ -80,10 +93,15 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
     }
 
     public void finishUI(RemoteViews views, AppWidgetManager mgr,ComponentName watchWidget){
-        if(mDay.getCals() != null) {
-            cals = mDay.getCals();
+        if(mDay.getValues() != null) {
+            cals = mDay.getValues().get(0);
             System.out.println("cals is "+cals);
             views.setTextViewText(R.id.text1,Integer.toString(cals));
+            if(cals<0){
+                views.setTextColor(R.id.text1, Color.RED);
+            }else{
+                views.setTextColor(R.id.text1, Color.GREEN);
+            }
         }
         mgr.updateAppWidget(watchWidget, views);
 
@@ -130,22 +148,35 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                 }
                 protected Void doInBackground(Void... unused) {
                     mDay = AppDatabase.getAppDatabase(context).ntDAO().findByDate(date);
-                    if(mDay == null){
+               /*     if(mDay == null){
                         System.out.println("day null should create");
                         mDay = new NutritionDay();
                         mDay.setDate(date);
                         mDay.setCals(prefs.getInt("BaseCals", 2000));
                         mRepository.insertNutrition(mDay);
+                    }*/
+                    if(mDay == null || mDay.getValues() == null || mDay.getValues().size() == 0){
+                        mDay = new NutritionDay();
+                        System.out.println("day null should create");
+                        mNames.add("Cals");
+                        mValues.add(prefs.getInt("BaseCals", -2000));
+                        mNames.add("Protein");
+                        mValues.add(0);
+                        mDay.setNames(mNames);
+                        mDay.setValues(mValues);
+                        mDay.setDate(date);
+                        mRepository.insertNutrition(mDay);
+                    }else{
+                        mNames = mDay.getNames();
+                        mValues = mDay.getValues();
                     }
+                    cals = mValues.get(0);
+
+
                     return null;
                 }
                 protected void onPostExecute(Void unused) {
-                    if(mDay != null) {
-                        cals = mDay.getCals();
-                        if(cals == null){
-                            mDay.setCals(prefs.getInt("BaseCals", 2000));
-                            cals = prefs.getInt("BaseCals", 2000);
-                        }
+                    if(mDay != null && cals !=null) {
                         if (intent.getAction().equals("PLUS_BUTTON")) {
                             cals = cals + 100;
                         }
@@ -158,8 +189,8 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                         if (intent.getAction().equals("MINUS_BUTTON_SMALL")) {
                             cals = cals - 10;
                         }
-
-                        mDay.setCals(cals);
+                        mValues.set(0,cals);
+                        mDay.setValues(mValues);
                         mRepository.updateNutrition(mDay);
                         finishUI(remoteViews, mgr, watchWidget);
                     }
@@ -192,5 +223,53 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                 appWidgetId);
         return PendingIntent.getBroadcast(context, appWidgetId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+
+
+    @Override
+    public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager, int appWidgetId, Bundle newOptions){
+
+        super.onAppWidgetOptionsChanged(context,appWidgetManager,appWidgetId,newOptions);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            int maxWidth = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH);
+            int maxHeight = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT);
+
+            int size = Math.min(maxHeight/2,maxWidth/2);
+
+            int pxSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,size,context.getResources().getDisplayMetrics());
+
+            RemoteViews remoteViews = new RemoteViews(context.getPackageName(),R.layout.appwidget);
+            float newSize = refitText("2000",pxSize);
+
+            remoteViews.setTextViewTextSize(R.id.text1, TypedValue.COMPLEX_UNIT_PX,newSize);
+
+            appWidgetManager.updateAppWidget(appWidgetId,remoteViews);
+        }
+
+    }
+
+    private float refitText(String text, int textWidth)
+    {
+        if (textWidth <= 0)
+            return 0;
+
+        float hi = 1000;
+        float lo = 2;
+        final float threshold = 0.5f; // How close we have to be
+
+        Paint testPaint = new Paint();
+
+        while((hi - lo) > threshold) {
+            float size = (hi+lo)/2;
+            testPaint.setTextSize(size);
+            if(testPaint.measureText(text) >= textWidth)
+                hi = size; // too big
+            else
+                lo = size; // too small
+        }
+        // Use lo so that we undershoot rather than overshoot
+        return lo;
     }
 }
