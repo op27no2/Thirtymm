@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Binder;
 import android.os.Build;
@@ -40,22 +41,46 @@ import java.util.concurrent.Executor;
 import op27no2.fitness.thirtymm.R;
 
 public class TimerService extends Service  {
+    private SharedPreferences prefs;
+    private SharedPreferences.Editor edt;
+
 
     // Constants
     private static final int ID_SERVICE = 101;
     private TimerInterface myCallback;
     private IBinder serviceBinder = new GPSBinder();
+    private long pausedTime;
     private long startTime;
+    private long startPause;
     private ArrayList<Point> routeCoordinates = new ArrayList<Point>();
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
     private double lat;
     private double lon;
+    private double alt;
+    private double maxalt = 0;
+    private double minalt = 1000000;
+    private boolean paused = false;
 
     public void registerCallBack(TimerInterface myCallback){
         this.myCallback= myCallback;
     }
+
+
+    public void unregisterCallBack(){
+        this.myCallback= null;
+    }
+
+    public void pauseService(){
+        paused = true;
+        startPause = System.currentTimeMillis();
+    }
+    public void resumeService(){
+        paused = false;
+        pausedTime = pausedTime + (System.currentTimeMillis()-startPause);
+    }
+
 
     public class GPSBinder extends Binder {
 
@@ -74,18 +99,20 @@ public class TimerService extends Service  {
         locationRequest = LocationRequest.create();
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         locationRequest.setInterval(200);
+
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult == null) {
                     return;
                 }else{
-                    System.out.println("location result null");
+                    System.out.println("locationresult not null");
                 }
                 for (Location location : locationResult.getLocations()) {
                     if (location != null) {
                         lat = location.getLatitude();
                         lon = location.getLongitude();
+                        alt = location.getAltitude();
                     }else{
                         System.out.println("location null");
                     }
@@ -112,6 +139,10 @@ public class TimerService extends Service  {
     @Override
     public void onCreate() {
         super.onCreate();
+        prefs = getSharedPreferences("PREFS", Context.MODE_PRIVATE);
+        edt = getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
+        edt.putBoolean("service_running", true);
+        edt.commit();
 
         // do stuff like register for BroadcastReceiver, etc.
         System.out.println("service onCreate");
@@ -147,17 +178,29 @@ public class TimerService extends Service  {
     private Runnable runnable = new Runnable() {
         @Override
         public void run() {
-
             updateTime();
             handler.postDelayed(this, 100);
         }
     };
+
+
     public void updateTime(){
         System.out.println("lat: "+ lat + "lon" + lon);
-        routeCoordinates.add(Point.fromLngLat(lon,lat));
-        long elapsedTime = System.currentTimeMillis() - startTime;
-        myCallback.getData(elapsedTime, routeCoordinates);
+        if(!paused) {
+            if (alt > maxalt) {
+                maxalt = alt;
+            }
+            if (alt < minalt) {
+                minalt = alt;
+            }
 
+            routeCoordinates.add(Point.fromLngLat(lon, lat, alt));
+            long elapsedTime = System.currentTimeMillis() - startTime - pausedTime;
+
+            if (myCallback != null) {
+                myCallback.getData(elapsedTime, routeCoordinates, minalt, maxalt);
+            }
+        }
 
     }
 
@@ -168,7 +211,8 @@ public class TimerService extends Service  {
             mFusedLocationClient.removeLocationUpdates(locationCallback);
         }
 
-
+        edt.putBoolean("service_running", false);
+        edt.commit();
     }
 
 

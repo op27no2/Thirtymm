@@ -148,29 +148,31 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                 }
                 protected Void doInBackground(Void... unused) {
                     mDay = AppDatabase.getAppDatabase(context).ntDAO().findByDate(date);
-               /*     if(mDay == null){
-                        System.out.println("day null should create");
-                        mDay = new NutritionDay();
-                        mDay.setDate(date);
-                        mDay.setCals(prefs.getInt("BaseCals", 2000));
-                        mRepository.insertNutrition(mDay);
-                    }*/
-                    if(mDay == null || mDay.getValues() == null || mDay.getValues().size() == 0){
+
+                 //   if(mDay == null || mDay.getValues() == null || mDay.getValues().size() == 0){
+                    if(mDay == null){
                         mDay = new NutritionDay();
                         System.out.println("day null should create");
                         mNames.add("Cals");
-                        mValues.add(prefs.getInt("BaseCals", -2000));
+                        mValues.add(Integer.parseInt(prefs.getString("bmr", "-2000")));
                         mNames.add("Protein");
                         mValues.add(0);
                         mDay.setNames(mNames);
                         mDay.setValues(mValues);
                         mDay.setDate(date);
                         mRepository.insertNutrition(mDay);
+
+                        long id = AppDatabase.getAppDatabase(context).ntDAO().insert(mDay);
+                        mDay = AppDatabase.getAppDatabase(context).ntDAO().findById((int) id);
+
+
                     }else{
                         mNames = mDay.getNames();
                         mValues = mDay.getValues();
                     }
+
                     cals = mValues.get(0);
+
 
 
                     return null;

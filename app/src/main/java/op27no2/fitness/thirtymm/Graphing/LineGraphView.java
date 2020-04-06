@@ -33,6 +33,7 @@ public class LineGraphView extends GraphView {
 	public int dayset;
 
 	public int listsize;
+	public String aTitle = "";
 	
 	public LineGraphView(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -43,9 +44,9 @@ public class LineGraphView extends GraphView {
 		paintBackground.setAlpha(128);
 	}
 
-	public LineGraphView(Context context, String title) {
+	public LineGraphView(Context context, String title, String activeTitle) {
 		super(context, title);
-
+		aTitle = activeTitle;
 		SharedPreferences prefs3 = context.getSharedPreferences("PREFS", Context.MODE_PRIVATE);
 	    int widgetId = prefs3.getInt("currentId", 2);
 		
@@ -141,25 +142,37 @@ public class LineGraphView extends GraphView {
 
 					//paints up to zero as red, endix endiy is crossing zero point
 					paint.setColor(Color.rgb(255,0,0));
+					if(aTitle.equals("Grams")){
+						paint.setColor(style.color);
+					}
 					canvas.drawLine(startX, startY, endiX, endiY, paint);
 
 					//paints from crossing point up to the endX endY, the next point above zero.
 					paint.setColor(Color.rgb(0, 255, 0));
+					if(aTitle.equals("Grams")){
+						paint.setColor(style.color);
+					}
 					canvas.drawLine(endiX, endiY, endX, endY, paint);
 					
 					//paint fill color
 					paintBackground.setColor(Color.argb(45, 255, 0, 0));
-					bgPath.lineTo(endiX, endiY);
-					bgPath.lineTo(prevX, prevY);
-					bgPath.close();
+					if (bgPath != null) {
+						bgPath.lineTo(endiX, endiY);
+						bgPath.lineTo(prevX, prevY);
+						bgPath.close();
+					}
 					prevX = endiX;
 					prevY = endiY;
-					canvas.drawPath(bgPath, paintBackground);
+					if (bgPath != null) {
+						canvas.drawPath(bgPath, paintBackground);
+					}
 					if (drawBackground) {
 						//shade background the color above, if not its like yellow or some shit?
 						bgPath = new Path();
 					}
-					bgPath.moveTo(endiX, endiY);
+					if (bgPath != null) {
+						bgPath.moveTo(endiX, endiY);
+					}
 					colorflag = "green";
 				
 					
@@ -181,32 +194,50 @@ public class LineGraphView extends GraphView {
 					float endiY = (float) (border - iy) + graphheight;
 					
 					paint.setColor(Color.rgb(0,255,0));
+					if(aTitle.equals("Grams")){
+						paint.setColor(style.color);
+					}
 					canvas.drawLine(startX, startY, endiX, endiY, paint);
 					
 					paint.setColor(Color.rgb(255, 0, 0));
+					if(aTitle.equals("Grams")){
+						paint.setColor(style.color);
+					}
 					canvas.drawLine(endiX, endiY, endX, endY, paint);
 					
 					paintBackground.setColor(Color.argb(45 , 0, 255, 0));
-					bgPath.lineTo(endiX, endiY);
-					bgPath.lineTo(prevX, prevY);
-					bgPath.close();
+					if (bgPath != null) {
+						bgPath.lineTo(endiX, endiY);
+						bgPath.lineTo(prevX, prevY);
+						bgPath.close();
+					}
 					prevX = endiX;
 					prevY = endiY;
-					canvas.drawPath(bgPath, paintBackground);
+					if (bgPath != null) {
+						canvas.drawPath(bgPath, paintBackground);
+					}
 					if (drawBackground) {
 						bgPath = new Path();
 					}
-					bgPath.moveTo(endiX, endiY);
+					if (bgPath != null) {
+						bgPath.moveTo(endiX, endiY);
+					}
 					colorflag="red";
 				}
 				//if its not a split case like above, its just a normal above or below, red or green.
 				else if(yY < 0){
 				paint.setColor(Color.rgb(255, 0, 0));
+					if(aTitle.equals("Grams")){
+						paint.setColor(style.color);
+					}
 				canvas.drawLine(startX, startY, endX, endY, paint);
 				}
 				//if its not a split case like above, its just a normal above or below, red or green.
 				else{
 				paint.setColor(style.color);
+					if(aTitle.equals("Grams")){
+						paint.setColor(style.color);
+					}
 				canvas.drawLine(startX, startY, endX, endY, paint);
 				}
 
@@ -275,6 +306,10 @@ public class LineGraphView extends GraphView {
 								if(sign<0){
 									paint.setColor(Color.rgb(255, 0, 0));
 								}
+								if(aTitle.equals("Grams")){
+									paint.setColor(style.color);
+								}
+
 								canvas.drawLine(endX, endY+15, endX,  graphheight+45, paint);
 								canvas.drawText(month+"-"+dayofmonth, endX, graphheight+80, paint);
 							}
@@ -285,6 +320,9 @@ public class LineGraphView extends GraphView {
 								}
 								if(sign<0){
 									paint.setColor(Color.rgb(255, 0, 0));
+								}
+								if(aTitle.equals("Grams")){
+									paint.setColor(style.color);
 								}
 
 								canvas.drawLine(endX, endY+15, endX,  graphheight+45, paint);
@@ -320,7 +358,7 @@ public class LineGraphView extends GraphView {
 					bgPath.lineTo(prevX, prevY);
 					bgPath.close();
 					if (yY > 0) {
-						paintBackground.setColor(Color.argb(45, 0, 255, 0));
+						paintBackground.setColor(Color.argb(45, 0, 225, 0));
 					}
 					if (yY < 0) {
 						paintBackground.setColor(Color.argb(45, 255, 0, 0));
@@ -370,11 +408,24 @@ public class LineGraphView extends GraphView {
 		}
 		else{
 			paint.setColor(Color.rgb(255, 0, 0));
-
 		}
-		
-		canvas.drawText(Integer.toString(sum1)+" Cal   =   "+Double.toString(sum3)+" "+units, graphwidth/2, graphheight/20, paint);
 
+
+		float hold = paint.getTextSize();
+		paint.setTextSize(80);
+
+		//if Cals, display pounds conversion
+		if(aTitle.equals("Cals")) {
+			canvas.drawText(Integer.toString(sum1) + " " + aTitle + " = " + Double.toString(sum3) + " " + units, graphwidth / 2, graphheight / 8, paint);
+		}
+		//if Macro display Grams
+		if(aTitle.equals("Grams")){
+			paint.setColor(Color.rgb(0, 0, 255));
+			canvas.drawText(Integer.toString(sum1) + " " + aTitle, graphwidth / 2, graphheight / 8, paint);
+		}
+
+
+		paint.setTextSize(hold);
 		/*if (bgPath != null) {
 			// end / close path
 			bgPath.lineTo((float) lastEndX, graphheight + border);

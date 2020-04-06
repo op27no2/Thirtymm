@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public interface TimerInterface {
 
-    public void getData(long elapsedTime, ArrayList<Point> routeCoordinates);
+    public void getData(long elapsedTime, ArrayList<Point> routeCoordinates, double minalt, double maxalt);
 
 
 

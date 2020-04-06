@@ -1,9 +1,13 @@
 package op27no2.fitness.thirtymm.Database;
 
+import android.graphics.Bitmap;
+
 import androidx.room.TypeConverter;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mapbox.geojson.Point;
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -23,6 +27,7 @@ public class Converters {
         String json = gson.toJson(list);
         return json;
     }
+
 
     @TypeConverter
     public static ArrayList<String> fromString2(String value) {
@@ -62,4 +67,24 @@ public class Converters {
         String json = gson.toJson(list);
         return json;
     }
+
+    @TypeConverter
+    public static ArrayList<Point> fromString5(String value) {
+        Type listType = new TypeToken<ArrayList<Point>>() {}.getType();
+        return new Gson().fromJson(value, listType);
+    }
+
+    @TypeConverter
+    public static String fromArrayList5(ArrayList<Point> list) {
+        Gson gson = new Gson();
+        String json = gson.toJson(list);
+        return json;
+    }
+
+
+
+
+
+
+
 }

@@ -5,6 +5,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -19,6 +21,7 @@ import op27no2.fitness.thirtymm.R;
 public class NutritionAdapter extends RecyclerView.Adapter<NutritionAdapter.ViewHolder>  {
     private ArrayList<String> mNames;
     private ArrayList<Integer> mValues;
+    private int selected;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -66,24 +69,23 @@ public class NutritionAdapter extends RecyclerView.Adapter<NutritionAdapter.View
         mText1.setText(mNames.get(position));
         mText2.setText(Integer.toString(mValues.get(position)));
 
-       /* if(position == selected){
-            mFB.setBackgroundColor(ResourcesCompat.getColor(res, R.color.colorAccent, null));
+        if(position == selected){
+            holder.mView.setBackgroundColor(ColorUtils.setAlphaComponent(ContextCompat.getColor(holder.mView.getContext(), R.color.lightgrey),200));
         }else{
-            mFB.setBackgroundColor(ResourcesCompat.getColor(res, R.color.colorPrimary, null));
-        }*/
-
+            holder.mView.setBackgroundColor(ContextCompat.getColor(holder.mView.getContext(), R.color.white));
+        }
 
     }
 
 
 
- /*   public void setSelected(int position){
+    public void setSelected(int position){
         selected = position;
     }
     public int getSelected(){
         return selected;
     }
-*/
+
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {

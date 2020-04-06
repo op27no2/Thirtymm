@@ -17,7 +17,7 @@
             android:layout_marginLeft="16dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sleep"
+            android:text="Activities"
             android:textSize="20sp"
             android:textColor="#FFFFFF"
             android:layout_alignParentLeft="true"
@@ -28,10 +28,20 @@
 
     </RelativeLayout>
     <RelativeLayout
+        android:layout_below="@+id/toolbar"
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="100dp">
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/my_recycler_view"
+            android:fastScrollEnabled="false"
+            android:layout_marginTop="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+
     </RelativeLayout>
 
 </RelativeLayout>

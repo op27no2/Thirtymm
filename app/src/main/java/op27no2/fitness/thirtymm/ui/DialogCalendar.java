@@ -90,15 +90,17 @@ public class DialogCalendar extends Dialog  {
 
         MaterialCalendarView mCal = findViewById(R.id.calendar_view);
         int year = fragCalendar.get(Calendar.YEAR);
-        int month = fragCalendar.get(Calendar.DAY_OF_MONTH);
-        int day = fragCalendar.get(Calendar.DAY_OF_WEEK);
+        int month = fragCalendar.get(Calendar.MONTH);
+        month = month+1;
+        int day = fragCalendar.get(Calendar.DAY_OF_MONTH);
         mCal.setDateSelected(CalendarDay.from(year, month, day),true);
         mCal.setCurrentDate(CalendarDay.from(year, month, day));
+
         mCal.setOnDateChangedListener(new OnDateSelectedListener() {
             @Override
             public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
-                mInterface.onDialogDismiss(date.toString());
-
+                mInterface.onDialogDismiss(date);
+                DialogCalendar.this.dismiss();
             }
         });
 

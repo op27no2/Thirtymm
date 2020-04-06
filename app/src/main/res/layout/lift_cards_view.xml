@@ -61,6 +61,7 @@
                 fancy:mfb_text="Bench Press"
                 fancy:mfb_textColor="@color/black" />
 
+
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/row_recycler_view"
                     android:layout_below="@+id/text_lift"

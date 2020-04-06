@@ -1,29 +1,45 @@
 package op27no2.fitness.thirtymm.ui.run;
 
+import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PointF;
+import android.graphics.RectF;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Vibrator;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -39,11 +55,12 @@ import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
-import com.mapbox.geojson.Polygon;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.camera.CameraUpdate;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapbox.mapboxsdk.location.LocationComponent;
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions;
 import com.mapbox.mapboxsdk.location.modes.CameraMode;
@@ -52,31 +69,47 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.snapshotter.MapSnapshotter;
 import com.mapbox.mapboxsdk.style.layers.FillExtrusionLayer;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.layers.LineLayer;
-import com.mapbox.mapboxsdk.style.layers.Property;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.mapboxsdk.utils.ColorUtils;
 import com.rilixtech.materialfancybutton.MaterialFancyButton;
 
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
+import op27no2.fitness.thirtymm.Database.AppDatabase;
+import op27no2.fitness.thirtymm.Database.Repository;
 import op27no2.fitness.thirtymm.R;
+import op27no2.fitness.thirtymm.ui.nutrition.NutritionDay;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import timber.log.Timber;
 
+import static android.graphics.Color.argb;
 import static com.mapbox.core.constants.Constants.PRECISION_6;
+import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.eq;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.exponential;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.interpolate;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.literal;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.stop;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.zoom;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionHeight;
@@ -84,7 +117,6 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionOpa
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth;
 import static com.mapbox.api.directions.v5.DirectionsCriteria.PROFILE_DRIVING;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
 
 
 public class RunFragment extends Fragment implements OnMapReadyCallback, PermissionsListener, TimerInterface {
@@ -94,9 +126,14 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private MapboxMap mapboxMap;
     private Vibrator rabbit;
     private ArrayList<Point> routeCoordinates = new ArrayList<Point>();
+    private double maxalt;
+    private double minalt;
+    private NutritionDay mNutritionDay;
+
     private Style mStyle;
     private TextView timerText;
     private TextView distanceText;
+    private ImageView edit;
     private long startTime;
     private TimerService timerService;
     private Intent notifyMeIntent;
@@ -104,11 +141,37 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private SharedPreferences.Editor edt;
     private int locationRequestCode = 1000;
     private boolean DrawModeActive = false;
+    private boolean trackBearing = true;
     private int cameraY = 90;
+    private MaterialFancyButton startButton;
+    private MaterialFancyButton stopButton;
+    private Boolean isPaused = false;
+    private long secondHold = 0;
+    private List<Feature> globalFeatureList = new ArrayList<Feature>();
+    private Repository mRepository;
+    private Calendar cal;
+    private String formattedDate;
+    private long finalTIme;
+    private MapSnapshotter mapSnapshotter;
+    private FrameLayout mFrame;
+
+    private EditText mEditDuration;
+    private EditText mEditDistance;
+    private EditText mEditPace;
+    private EditText mEditCals;
+
+    private Integer saveTime;
+    private float saveDistance;
+    private int saveCals;
+    private String saveDescription;
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+
+
         Mapbox.getInstance(getActivity(), mapboxToken);
         View view = inflater.inflate(R.layout.fragment_run, container, false);
         rabbit = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
@@ -116,29 +179,81 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         distanceText = view.findViewById(R.id.distance);
         prefs = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
+        globalFeatureList = getFeatureList();
+        mFrame = view.findViewById(R.id.frame);
+        edt.putInt("fragtag",this.getId());
+        edt.commit();
+
+
+        mRepository = new Repository(getActivity());
+        cal = Calendar.getInstance();
+        Date c = cal.getTime();
+        Long time = Calendar.getInstance().getTimeInMillis();
+        System.out.println("Current time => " + time);
+        SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, ''yy");
+        formattedDate = df.format(c);
 
 
         mapView = view.findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
 
-        MaterialFancyButton mStart = view.findViewById(R.id.start_run);
-        mStart.setOnClickListener(view1 -> {
+
+        startButton = view.findViewById(R.id.start_run);
+        startButton.setOnClickListener(view1 -> {
             System.out.println("start click");
 
-            startTimerService();
-            //   startRun();
+            //not started, start and set text to pausable
+            if(timerService == null){
+                startRun();
+                startButton.setText("Pause");
+            }else {
+                if(isPaused){
+                    timerService.resumeService();
+                    startButton.setText("Pause");
+                    isPaused = false;
+                }else{
+                    timerService.pauseService();
+                    startButton.setText("Resume");
+                    isPaused = true;
+                }
+
+            }
 
         });
 
-
-        MaterialFancyButton mStop = view.findViewById(R.id.stop_run);
-        mStop.setOnClickListener(new View.OnClickListener() {
+        ImageView mFreeze = view.findViewById(R.id.freeze);
+        mFreeze.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                System.out.println("stop click");
-                enableMapDrawing();
-//            stopRun();
+                addTrails();
+            }
+        });
+        stopButton = view.findViewById(R.id.stop_run);
+        stopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                  stopRun();
+            }
+        });
+        ImageView mExtrude = view.findViewById(R.id.extrude_button);
+        mExtrude.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                extrudeRoute();
+            }
+        });
+        ImageView eraseButton = view.findViewById(R.id.erase_button);
+        eraseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                routeCoordinates.clear();
+                clearExtrusion();
+                try {
+                    updateLine();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -148,6 +263,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             @Override
             public void onClick(View view) {
                 rabbit.vibrate(50);
+                trackBearing = true;
                 if (mapboxMap.getLocationComponent().getLastKnownLocation() != null) { // Check to ensure coordinates aren't null, probably a better way of doing this...
                     mapboxMap.animateCamera(com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngZoom(new LatLng(mapboxMap.getLocationComponent().getLastKnownLocation().getLatitude(), mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude()), 16));
                 }
@@ -163,13 +279,17 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             }
         });
 
-        ImageView edit = view.findViewById(R.id.edit_map);
+        edit = view.findViewById(R.id.edit_map);
         edit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 rabbit.vibrate(50);
-                disableMapDrawing();
-                // lol this feature sucks
+                if(!DrawModeActive) {
+                    enableMapDrawing();
+                }else {
+                    disableMapDrawing();
+                }
+                // lol this route snap feature sucks?
                 /*if(routeCoordinates !=null) {
                     requestMapMatched(routeCoordinates);
                 }*/
@@ -179,10 +299,26 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         ImageView angle = view.findViewById(R.id.view_angle);
         angle.setOnTouchListener(handleTouch);
 
+        ImageView rotation = view.findViewById(R.id.view_rotation);
+        rotation.setOnTouchListener(handle360left);
+
+        ImageView rotation2 = view.findViewById(R.id.view_rotation2);
+        rotation2.setOnTouchListener(handle360);
+
+        ImageView zoom1 = view.findViewById(R.id.view_zoom);
+        zoom1.setOnTouchListener(handleZoom);
+
+        getNutritionDayData();
+
+
+
+
+
         return view;
     }
 
 
+/*
     private Handler handler = new Handler();
     private Runnable runnable = new Runnable() {
         @Override
@@ -191,8 +327,9 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             handler.postDelayed(this, 100);
         }
     };
+*/
 
-    public void updateTime() {
+/*    public void updateTime() {
 
         long elapsedTime = System.currentTimeMillis() - startTime;
         long micro = elapsedTime / 100000;
@@ -216,147 +353,121 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             e.printStackTrace();
             System.out.println("JSON error: " + e.getMessage());
         }
-    }
+    }*/
 
     public void startRun() {
+        //used for bearing updates
+        isPaused = false;
+
+        secondHold = 0;
         System.out.println("start click2");
-
-
+        startButton.setText("Pause");
         startTime = System.currentTimeMillis();
-        handler.postDelayed(runnable, 1000);
+
+        //start timer service
+        notifyMeIntent = new Intent(getActivity(), TimerService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            getActivity().startForegroundService(notifyMeIntent);
+        } else {
+            getActivity().startService(notifyMeIntent);
+        }
+        getActivity().bindService(notifyMeIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+
     }
 
-    public void stopRun() {
-        unbindService();
+    public void pauseRun() {
+        isPaused = true;
+        startButton.setText("Resume");
 
-        //  handler.removeCallbacks(runnable);
+    }
+
+    public void continueRun() {
+        isPaused = false;
+
+
+    }
+
+
+    public void stopRun() {
+        if(timerService != null) {
+            if (!isPaused) {
+                isPaused = true;
+                timerService.pauseService();
+                startButton.setText("Resume");
+            }
+
+        }
+        saveDialog();
+
+
     }
 
     private void updateLine() throws JSONException {
         //     System.out.println("update line called "+routeCoordinates);
-        if (mStyle.getSource("line-source") == null) {
-            mStyle.addSource(new GeoJsonSource("line-source",
-                    FeatureCollection.fromFeatures(new Feature[]{Feature.fromGeometry(
-                            LineString.fromLngLats(routeCoordinates)
-                    )})));
-        } else {
-            GeoJsonSource line = mStyle.getSourceAs("line-source");
-            if (line != null) {
-                line.setGeoJson(FeatureCollection.fromFeature(
-                        Feature.fromGeometry(LineString.fromLngLats(routeCoordinates))
+        if(mStyle != null && mStyle.isFullyLoaded()) {
+            if (mStyle.getSource("line-source") == null) {
+                mStyle.addSource(new GeoJsonSource("line-source",
+                        FeatureCollection.fromFeatures(new Feature[]{Feature.fromGeometry(
+                                LineString.fromLngLats(routeCoordinates)
+                        )})));
+            } else {
+                GeoJsonSource line = mStyle.getSourceAs("line-source");
+                if (line != null) {
+                    line.setGeoJson(FeatureCollection.fromFeature(
+                            Feature.fromGeometry(LineString.fromLngLats(routeCoordinates))
+                    ));
+                }
+            }
+
+            // The layer properties for our line. This is where we make the line dotted, set the
+            // color, etc.
+            if (mStyle.getLayer("linelayer") == null) {
+                mStyle.addLayer(new LineLayer("linelayer", "line-source").withProperties(
+                        lineWidth(5f),
+                        lineColor(Color.parseColor("#e55e5e"))
                 ));
             }
-        }
+
+
 
         float total = 0f;
         for (int i = 0; i < routeCoordinates.size() - 1; i++) {
             float[] distance = new float[2];
             Location.distanceBetween(routeCoordinates.get(i).latitude(), routeCoordinates.get(i).longitude(), routeCoordinates.get(i + 1).latitude(), routeCoordinates.get(i + 1).longitude(), distance);
+
             total = total + distance[0];
         }
         distanceText.setText(getMiles(total));
 
 
-        /*ArrayList<Feature> mFeatures = new ArrayList<Feature>();
-        for(int j=0; j<routeCoordinates.size(); j++){
-            Polygon.fromLngLats(getBounds(routeCoordinates.get(j)));
-            mFeatures.add(new Feature.fromGeometry());
-        }*/
 
-        List<Feature> mFeatures = new ArrayList<Feature>();
-   /*     if(routeCoordinates.size() != 0 && routeCoordinates != null) {
-            for (int i = 0; i < routeCoordinates.size(); i++) {
-                ArrayList<Point> mPoint = new ArrayList<Point>();
-                mPoint.add(routeCoordinates.get(i));
-                JsonObject innerObject = new JsonObject();
-                innerObject.addProperty("height", 100);
-                JsonObject jsonObject = new JsonObject();
-                jsonObject.add("properties", innerObject);
-                Feature mf = Feature.fromGeometry(Polygon.fromLngLats(getBounds(mPoint)), jsonObject);
-                mFeatures.add(mf);
-            }
-        }*/
-
-        if (routeCoordinates.size() != 0 && routeCoordinates != null) {
-            JsonObject totalObject = new JsonObject();
-            totalObject.addProperty("type", "FeatureCollection");
-            JsonArray ja = new JsonArray();
-
-            for (int i = 0; i < routeCoordinates.size(); i++) {
-                ArrayList<Double[]> marray = getBox(routeCoordinates.get(i));
-                ArrayList<ArrayList<Double[]>> what = new ArrayList<ArrayList<Double[]>>();
-                what.add(marray);
-                JsonElement result = new GsonBuilder().create().toJsonTree(what);
+        }
+    }
 
 
-                JsonObject coordinateObject = new JsonObject();
-                coordinateObject.addProperty("type", "Polygon");
-                coordinateObject.add("coordinates", result);
-
-                JsonObject heightObject = new JsonObject();
-                heightObject.addProperty("e", Math.abs(2000*Math.sin(.05*i)));
-
-                JsonObject outerObject = new JsonObject();
-                outerObject.addProperty("type", "Feature");
-                outerObject.add("geometry", coordinateObject);
-                outerObject.add("properties", heightObject);
-                ja.add(outerObject);
-            }
-
-            totalObject.add("features", ja);
-
-
-            //    add polygon extrusion layer.
-            if (mStyle.getSource("extrusion") == null) {
-            /*mStyle.addSource(new GeoJsonSource("extrusion",
-                    FeatureCollection.fromFeatures(new Feature[]{Feature.fromGeometry(
-                            Polygon.fromLngLats(getBounds(routeCoordinates))
-                    )})));*/
-
-            ;
-
-                System.out.println("JSON: " + totalObject.toString());
-                mStyle.addSource(new GeoJsonSource("extrusion", FeatureCollection.fromJson(totalObject.toString())));
-
-                // mStyle.addSource(new GeoJsonSource("extrusion",FeatureCollection.fromFeatures(mFeatures)));
-
-            } else {
-                GeoJsonSource ex = mStyle.getSourceAs("extrusion");
-                if (ex != null) {
-                    System.out.println("JSON: " + totalObject.toString());
-                    ex.setGeoJson(FeatureCollection.fromJson(totalObject.toString()));
+    private void updateBearing(){
+        if(trackBearing) {
+            int j = routeCoordinates.size() - 1;
+            float[] distance2 = new float[2];
+            if (j > 1) {
+                System.out.println("update bearing called");
+                Location.distanceBetween(routeCoordinates.get(j - 1).latitude(), routeCoordinates.get(j - 1).longitude(), routeCoordinates.get(j).latitude(), routeCoordinates.get(j).longitude(), distance2);
+                if (!DrawModeActive && distance2[0] > 1) {
+                    double bearing = getDirection(routeCoordinates.get(j - 1).latitude(), routeCoordinates.get(j - 1).longitude(), routeCoordinates.get(j).latitude(), routeCoordinates.get(j).longitude());
+                    CameraPosition position = new CameraPosition.Builder()
+                            .bearing(bearing)
+                            .build();
+                    mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 1000);
                 }
             }
-
-            //add Extrusion layer, need polygons though
-            if (mStyle.getLayer("course") == null) {
-                // Add FillExtrusion layer to map using GeoJSON data
-                System.out.println("add extrustions");
-                mStyle.addLayer(new FillExtrusionLayer("course", "extrusion").withProperties(    
-                        fillExtrusionColor(Color.RED),
-                        fillExtrusionOpacity(0.5f),
-                        fillExtrusionHeight(get("e"))));
-
-                
-            }
         }
-
-        // The layer properties for our line. This is where we make the line dotted, set the
-        // color, etc.
-        if (mStyle.getLayer("linelayer") == null) {
-            mStyle.addLayer(new LineLayer("linelayer", "line-source").withProperties(
-                    lineWidth(5f),
-                    lineColor(Color.parseColor("#e55e5e"))
-            ));
-        }
-
-
     }
 
 
     @Override
     public void onMapReady(@NonNull final MapboxMap mapboxMap) {
         RunFragment.this.mapboxMap = mapboxMap;
+
 
         // mapboxMap.setStyle(new Style.Builder().fromUri("mapbox://styles/op27no2/ck2tujbra2ox21cqzxh4ql48y"),new Style.OnStyleLoaded() {
         //  mapboxMap.setStyle(Style.OUTDOORS, new Style.OnStyleLoaded() {
@@ -365,14 +476,16 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             public void onStyleLoaded(@NonNull Style style) {
                 enableLocationComponent(style);
                 mStyle = style;
-                // Create the LineString from the list of coordinates and then make a GeoJSON
-                // FeatureCollection so we can add the line to our map as a layer.
+
+                //snapshotter
+
+
 
 
                 //listing layers
                 List<Layer> mlayers = style.getLayers();
                 for (int i = 0; i < mlayers.size(); i++) {
-                    System.out.println("layer: " + mlayers.get(i).getId() + ", minzoom: " + mlayers.get(i).getMinZoom() + ", maxzoom: " + mlayers.get(i).getMaxZoom());
+                 //   System.out.println("layer: " + mlayers.get(i).getId() + ", minzoom: " + mlayers.get(i).getMinZoom() + ", maxzoom: " + mlayers.get(i).getMaxZoom());
                     //mlayers.get(i).setProperties(PropertyFactory.fillColor(Color.parseColor("#000000")));
                     String hey = mlayers.get(i).getId();
                     if (hey.equals("road-path-smooth")) {
@@ -380,12 +493,17 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                         mlayers.get(i).setProperties(PropertyFactory.lineColor(Color.parseColor("#000000")));
                     }
                 }
+
+            //adds all frozen trails
+             addTrails();
+
             }
         });
 
         mapboxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {
             @Override
             public boolean onMapClick(@NonNull LatLng point) {
+                trackBearing = false;
                 if (DrawModeActive) {
                     routeCoordinates.add(Point.fromLngLat(point.getLongitude(), point.getLatitude()));
                     System.out.println("map clicked: " + point.getLongitude() + " " + point.getLatitude() + " " + point.getAltitude());
@@ -397,6 +515,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                     }
                 }
 
+
                 return false;
             }
         });
@@ -404,6 +523,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         mapboxMap.addOnMoveListener(new MapboxMap.OnMoveListener() {
             @Override
             public void onMoveBegin(@NonNull MoveGestureDetector detector) {
+                trackBearing = false;
 
             }
 
@@ -418,12 +538,15 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             }
         });
 
+
+
     }
 
     @SuppressWarnings({"MissingPermission"})
     private void enableLocationComponent(@NonNull Style loadedMapStyle) {
         // Check if permissions are enabled and if not request
         if (PermissionsManager.areLocationPermissionsGranted(getActivity())) {
+            System.out.println("enable location component called");
 
             // Get an instance of the component
             LocationComponent locationComponent = mapboxMap.getLocationComponent();
@@ -441,26 +564,90 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             // Set the component's render mode
             locationComponent.setRenderMode(RenderMode.COMPASS);
 
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    //set to location
+                    if (mapboxMap.getLocationComponent().getLastKnownLocation() != null) { // Check to ensure coordinates aren't null, probably a better way of doing this...
+                        System.out.println("set location");
+                        mapboxMap.animateCamera(com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngZoom(new LatLng(mapboxMap.getLocationComponent().getLastKnownLocation().getLatitude(), mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude()), 16));
+                    }                }
+            }, 200);
+
 
         } else {
+            System.out.println("request permission");
             permissionsManager = new PermissionsManager(this);
             permissionsManager.requestLocationPermissions(getActivity());
         }
+    }
+
+    public void enableLocationComponentAfterResult(){
+
+        mapboxMap.getStyle(new Style.OnStyleLoaded() {
+            @Override
+            public void onStyleLoaded(@NonNull Style style) {
+                System.out.println("permission granted recalling enable location component");
+
+                        // Check if permissions are enabled and if not request
+                        if (PermissionsManager.areLocationPermissionsGranted(getActivity())) {
+                            System.out.println("enable location component called");
+
+                            // Get an instance of the component
+                            LocationComponent locationComponent = mapboxMap.getLocationComponent();
+
+                            // Activate with options
+                            locationComponent.activateLocationComponent(
+                                    LocationComponentActivationOptions.builder(getActivity(), style).build());
+
+                            // Enable to make component visible
+                            locationComponent.setLocationComponentEnabled(true);
+
+                            // Set the component's camera mode
+                            locationComponent.setCameraMode(CameraMode.TRACKING, 200, 16.0, null, 40.0, null);
+
+                            // Set the component's render mode
+                            locationComponent.setRenderMode(RenderMode.COMPASS);
+
+                            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    //set to location
+                                    if (mapboxMap.getLocationComponent().getLastKnownLocation() != null) { // Check to ensure coordinates aren't null, probably a better way of doing this...
+                                        System.out.println("set location");
+                                        mapboxMap.animateCamera(com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngZoom(new LatLng(mapboxMap.getLocationComponent().getLastKnownLocation().getLatitude(), mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude()), 16));
+                                    }                }
+                            }, 200);
+
+
+                        } else {
+                            System.out.println("still need to request permission");
+                        }
+
+
+
+            }
+        });
+
     }
 
 
     @Override
     public void onPermissionResult(boolean granted) {
         if (granted) {
+            System.out.println("permission granted");
+
             mapboxMap.getStyle(new Style.OnStyleLoaded() {
                 @Override
                 public void onStyleLoaded(@NonNull Style style) {
+                    System.out.println("permission granted recalling enable location component");
+
                     enableLocationComponent(style);
                 }
             });
         } else {
             Toast.makeText(getActivity(), "Location Permission not Granted, Location Cannot Load", Toast.LENGTH_LONG).show();
-            // getActivity().finish();
+            System.out.println("permission NOT granted");
         }
     }
 
@@ -474,12 +661,19 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     @Override
     public void onResume() {
         super.onResume();
+        if(prefs.getBoolean("service_running", false) == true){
+            bindTimerService();
+        }
+
         mapView.onResume();
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        if(prefs.getBoolean("service_running", false) == true){
+            unbindTimerService();
+        }
         mapView.onPause();
     }
 
@@ -501,7 +695,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     }
 
     public void onDestroyView() {
-        handler.removeCallbacks(runnable);
+        //handler.removeCallbacks(runnable);
         mapView.onDestroy();
 
         super.onDestroyView();
@@ -535,36 +729,38 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
+
+            timerService.unregisterCallBack();
             edt.putBoolean("bound", false);
             edt.commit();
         }
     };
 
 
-    private void unbindService() {
-        if (prefs.getBoolean("bound", false)) {
+    private void stopTimerService(){
+        //getActivity().stopService(new Intent(getActivity(), TimerService.class));
+        timerService.stopSelf();
+    }
+
+    private void unbindTimerService() {
+        if (prefs.getBoolean("bound", false) && timerService !=null) {
             timerService.registerCallBack(null); // unregister
             getActivity().unbindService(serviceConnection);
-            getActivity().stopService(new Intent(getActivity(), TimerService.class));
             edt.putBoolean("bound", false);
             edt.commit();
         }
     }
 
-    private void startTimerService() {
+    private void bindTimerService() {
         notifyMeIntent = new Intent(getActivity(), TimerService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            getActivity().startForegroundService(notifyMeIntent);
-        } else {
-            getActivity().startService(notifyMeIntent);
-        }
         getActivity().bindService(notifyMeIntent, serviceConnection, Context.BIND_AUTO_CREATE);
-
     }
 
+
     @Override
-    public void getData(long elapsedTime, ArrayList<Point> rCoordinates) {
+    public void getData(long elapsedTime, ArrayList<Point> rCoordinates, double min, double max) {
         System.out.println("elapsedTime:" + elapsedTime);
+        finalTIme = elapsedTime;
         long micro = elapsedTime / 100000;
         long elapsedSeconds = elapsedTime / 1000;
         long secondsDisplay = elapsedSeconds % 60;
@@ -576,6 +772,9 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             timerText.setText(minutesDisplay + ":" + secondsDisplay);
         }
 
+        maxalt = max;
+        minalt = min;
+
         /*float total=0f;
         for(int i=0; i<rCoordinates.size()-1;i++) {
             float[] distance = new float[2];
@@ -585,7 +784,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
         //  distanceText.setText(Float.toString(total));
         routeCoordinates = rCoordinates;
-        System.out.println(routeCoordinates.size());
+
         try {
             updateLine();
         } catch (JSONException e) {
@@ -593,18 +792,19 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             System.out.println("JSON error: " + e.getMessage());
         }
 
+        //update bearing at most 1 per second
+        if(elapsedSeconds > secondHold){
+            updateBearing();
+            secondHold = elapsedSeconds;
+        }
+
 
     }
-
-
-    private String getMiles(float i) {
-        return String.format("%.2f", i * 0.000621371192f);
-    }
-
 
     private View.OnTouchListener customOnTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
+            trackBearing = false;
 
             LatLng latLngTouchCoordinate = mapboxMap.getProjection().fromScreenLocation(
                     new PointF(motionEvent.getX(), motionEvent.getY()));
@@ -635,12 +835,14 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
      */
     private void enableMapDrawing() {
         mapView.setOnTouchListener(customOnTouchListener);
+        edit.setBackgroundResource(R.drawable.circle_red_plain);
         DrawModeActive = true;
     }
 
 
     private void disableMapDrawing() {
         mapView.setOnTouchListener(null);
+        edit.setBackgroundResource(R.drawable.circle_white_plain);
         DrawModeActive = false;
     }
 
@@ -728,6 +930,18 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         return mBoxes;
     }
 
+    private double getDirection(double lat1, double lon1, double lat2, double lon2){
+            double longitude1 = lon1;
+            double longitude2 = lon2;
+            double latitude1 = Math.toRadians(lat1);
+            double latitude2 = Math.toRadians(lat2);
+            double longDiff= Math.toRadians(longitude2-longitude1);
+            double y= Math.sin(longDiff)*Math.cos(latitude2);
+            double x=Math.cos(latitude1)*Math.sin(latitude2)-Math.sin(latitude1)*Math.cos(latitude2)*Math.cos(longDiff);
+
+            return (Math.toDegrees(Math.atan2(y, x))+360)%360;
+    }
+
     private ArrayList<Double[]> getBox(Point mPoint) {
         ArrayList<Double[]> mArray = new ArrayList<Double[]>();
         Double[] mBox = new Double[2];
@@ -759,18 +973,27 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
 
+            double height = view.getMeasuredHeight();
+            System.out.println("hieght: "+height);
+
+
             int x = (int) motionEvent.getX();
-            int y = (int) motionEvent.getY();
+            double y = (double) motionEvent.getY();
             System.out.println("touch y: "+y);
             double tilt = mapboxMap.getCameraPosition().tilt;
-            if(y>cameraY){
+
+            /*if(y>cameraY){
                 tilt = tilt+ 5;
             }else{
                 tilt = tilt - 5;
             }
-            cameraY = y;
 
-             System.out.println("new tilt"+tilt);
+            cameraY = y;*/
+
+            //tilt is zero to 60
+            tilt = (y/height)*60;
+
+            System.out.println("new tilt"+tilt);
              CameraPosition position = new CameraPosition.Builder()
              	.tilt(tilt)
              	.build();
@@ -782,6 +1005,599 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         }
 
     };
+
+    private View.OnTouchListener handle360 = new View.OnTouchListener() {
+        Handler handler = new Handler();
+
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            switch(motionEvent.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+
+                    int delay = 10; //milliseconds
+
+                    handler.postDelayed(new Runnable(){
+                        public void run(){
+                            //do something
+
+                            double mapbearing = mapboxMap.getCameraPosition().bearing;
+                            mapbearing = mapbearing+ 5;
+                            System.out.println("new bearing"+mapbearing);
+                            CameraPosition position = new CameraPosition.Builder()
+                                    .bearing(mapbearing)
+                                    .build();
+
+                            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 100);
+
+
+                            handler.postDelayed(this, delay);
+                        }
+                    }, delay);
+
+
+
+                    break;
+
+                case MotionEvent.ACTION_MOVE:
+                    // touch move code
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                    // touch up code
+                    handler.removeCallbacksAndMessages(null);
+                    break;
+            }
+
+
+            return true;
+        }
+    };
+    private View.OnTouchListener handle360left = new View.OnTouchListener() {
+        Handler handler = new Handler();
+
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            switch(motionEvent.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+
+                    int delay = 10; //milliseconds
+
+                    handler.postDelayed(new Runnable(){
+                        public void run(){
+                            //do something
+
+                            double mapbearing = mapboxMap.getCameraPosition().bearing;
+                            mapbearing = mapbearing - 5;
+                            System.out.println("new bearing"+mapbearing);
+                            CameraPosition position = new CameraPosition.Builder()
+                                    .bearing(mapbearing)
+                                    .build();
+
+                            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 100);
+
+
+                            handler.postDelayed(this, delay);
+                        }
+                    }, delay);
+
+
+
+                    break;
+
+                case MotionEvent.ACTION_MOVE:
+                    // touch move code
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                    // touch up code
+                    handler.removeCallbacksAndMessages(null);
+                    break;
+            }
+
+
+            return true;
+        }
+    };
+
+
+    private View.OnTouchListener handleZoom = new View.OnTouchListener() {
+
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            double height = view.getMeasuredHeight();
+
+            double y = (double) motionEvent.getY();
+            System.out.println("touch y: "+y);
+
+            double zoom = mapboxMap.getCameraPosition().zoom;
+
+            zoom = (1 - y/height)*5+13;
+
+            System.out.println("new tilt"+zoom);
+            CameraPosition position = new CameraPosition.Builder()
+                    .zoom(zoom)
+                    .build();
+
+            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 100);
+
+
+
+            return true;
+        }
+    };
+
+
+
+    private void extrudeRoute(){
+
+        if (routeCoordinates.size() != 0 && routeCoordinates != null) {
+
+            //add Json objects for extrusion, move to
+            JsonObject totalObject = new JsonObject();
+            totalObject.addProperty("type", "FeatureCollection");
+            JsonArray ja = new JsonArray();
+
+            for (int i = 0; i < routeCoordinates.size(); i++) {
+                float[] distance2 = new float[2];
+                if (i > 1) {
+                    System.out.println("update bearing called");
+                    Location.distanceBetween(routeCoordinates.get(i - 1).latitude(), routeCoordinates.get(i - 1).longitude(), routeCoordinates.get(i).latitude(), routeCoordinates.get(i).longitude(), distance2);
+                    //TODO extrusion to not overdraw points
+                    if ( distance2[0] > 0) {
+
+
+                        ArrayList<Double[]> marray = getBox(routeCoordinates.get(i));
+                        ArrayList<ArrayList<Double[]>> what = new ArrayList<ArrayList<Double[]>>();
+                        what.add(marray);
+                        JsonElement result = new GsonBuilder().create().toJsonTree(what);
+
+
+                        JsonObject coordinateObject = new JsonObject();
+                        coordinateObject.addProperty("type", "Polygon");
+                        coordinateObject.add("coordinates", result);
+
+
+                        //adjust altitude data to min
+                        //TODO futher adjust based on max too?
+                        double height = (routeCoordinates.get(i).altitude() - minalt) * 50;
+                        JsonObject heightObject = new JsonObject();
+                        heightObject.addProperty("e", height);
+                        System.out.println("coord values: " + routeCoordinates.get(i).altitude());
+                        System.out.println("height values: " + height);
+
+
+                        JsonObject outerObject = new JsonObject();
+                        outerObject.addProperty("type", "Feature");
+                        outerObject.add("geometry", coordinateObject);
+                        outerObject.add("properties", heightObject);
+                        ja.add(outerObject);
+
+
+                    }}
+            }
+
+            totalObject.add("features", ja);
+
+
+            //    add polygon extrusion layer.
+            if (mStyle.getSource("extrusion") == null) {
+            /*mStyle.addSource(new GeoJsonSource("extrusion",
+                    FeatureCollection.fromFeatures(new Feature[]{Feature.fromGeometry(
+                            Polygon.fromLngLats(getBounds(routeCoordinates))
+                    )})));*/
+
+                ;
+
+                System.out.println("JSON: " + totalObject.toString());
+                mStyle.addSource(new GeoJsonSource("extrusion", FeatureCollection.fromJson(totalObject.toString())));
+
+                // mStyle.addSource(new GeoJsonSource("extrusion",FeatureCollection.fromFeatures(mFeatures)));
+
+            } else {
+                GeoJsonSource ex = mStyle.getSourceAs("extrusion");
+                if (ex != null) {
+                    System.out.println("JSON: " + totalObject.toString());
+                    ex.setGeoJson(FeatureCollection.fromJson(totalObject.toString()));
+                }
+            }
+
+            //add Extrusion layer, need polygons though
+            if (mStyle.getLayer("course") == null) {
+                // Add FillExtrusion layer to map using GeoJSON data
+                System.out.println("add extrustions");
+                mStyle.addLayer(new FillExtrusionLayer("course", "extrusion").withProperties(
+                        fillExtrusionColor(Color.RED),
+                        fillExtrusionOpacity(0.5f),
+                        fillExtrusionHeight(get("e"))));
+
+
+
+            }
+        }
+
+    }
+
+    private void clearExtrusion(){
+        mStyle.removeLayer("course");
+    }
+
+    public void saveFeatureList(List<Feature> mList){
+        for(int i=0; i<mList.size();i++) {
+            edt.putString("feature_list" + i, mList.get(i).toJson());
+        }
+        edt.putInt("feature_list_size", mList.size());
+        edt.commit();
+    }
+
+    public List<Feature> getFeatureList() {
+        int listsize = prefs.getInt("feature_list_size",0);
+        List<Feature> mlist = new ArrayList<Feature>();
+        for(int i=0; i<listsize; i++){
+            String json = prefs.getString("feature_list"+i, "");
+            if(!json.equals("")) {
+                Feature mfeat = Feature.fromJson(json);
+                mlist.add(mfeat);
+            }
+        }
+
+        return mlist;
+    }
+
+    public void addTrails(){
+
+        //highlight feature testing
+        System.out.println("got here1");
+        RectF rectF = new RectF(
+                mapView.getLeft(),
+                mapView.getTop(),
+                mapView.getRight(),
+                mapView.getBottom()
+        );
+        List<Feature> featureList = mapboxMap.queryRenderedFeatures(rectF, "road-path-smooth");
+        globalFeatureList.addAll(featureList);
+        saveFeatureList(globalFeatureList);
+
+        //appears to work too
+        if (globalFeatureList.size() > 0) {
+            System.out.println("got here2");
+            if(mStyle.isFullyLoaded()) {
+
+                if (mStyle.getSource("myline-source") == null) {
+                    mStyle.addSource(new GeoJsonSource("myline-source", FeatureCollection.fromFeatures(globalFeatureList)));
+
+                } else {
+                    GeoJsonSource line = mStyle.getSourceAs("myline-source");
+                    if (line != null) {
+                        line.setGeoJson(FeatureCollection.fromFeatures(globalFeatureList));
+                    }
+                }
+                // The layer properties for our line. This is where we make the line dotted, set the
+                // color, etc.
+                if (mStyle.getLayer("mylinelayer") == null) {
+                    System.out.println("adding line layer");
+                    LineLayer mlayer = new LineLayer("mylinelayer", "myline-source").withProperties(
+                            lineWidth(interpolate(exponential(1f), zoom(),
+                                    stop(1f,0.5 ),
+                                    stop(8.5f,0.5),
+                                    stop(18f, 2),
+                                    stop(21f, 6))),
+                            lineColor(Color.parseColor("#c919ff")));
+
+                    mStyle.addLayer(mlayer);
+                }
+
+            }
+        }
+
+    }
+
+
+
+    public void saveDialog(){
+
+        final Dialog dialog = new Dialog(getActivity());
+
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_save_run);
+
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        int width = metrics.widthPixels;
+
+        dialog.getWindow().setLayout((8 * width) / 9, LinearLayout.LayoutParams.WRAP_CONTENT);
+
+        TextView mText = dialog.findViewById(R.id.confirm_title);
+
+        EditText mEditDuration = dialog.findViewById(R.id.duration_value);
+        EditText mEditDistance = dialog.findViewById(R.id.distance_value);
+        EditText mEditPace = dialog.findViewById(R.id.pace_value);
+        EditText mEditCals = dialog.findViewById(R.id.cals_value);
+        EditText mEditDescription = dialog.findViewById(R.id.workout_description);
+        //set initial texts, can edit then save
+        float total = 0f;
+        for (int i = 0; i < routeCoordinates.size() - 1; i++) {
+            float[] distance = new float[2];
+            Location.distanceBetween(routeCoordinates.get(i).latitude(), routeCoordinates.get(i).longitude(), routeCoordinates.get(i + 1).latitude(), routeCoordinates.get(i + 1).longitude(), distance);
+            total = total + distance[0];
+        }
+        long pace = (long) (finalTIme/(total*0.000621371192f));
+
+        mEditDuration.setText(getDuration(finalTIme));
+        mEditDistance.setText(getMiles(total));
+        mEditPace.setText(getDuration(pace)+" /mi");
+        mEditCals.setText(Integer.toString(((int) Math.floor(total*0.000621371192f*prefs.getInt("weight",215)*0.63))));
+
+
+
+        dialog.findViewById(R.id.save).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //check time is formatted correctly
+                String timefield = mEditDuration.getText().toString();
+                int pos = timefield.indexOf(":");
+                String before = timefield.substring(0,pos);
+                String after = timefield.substring(pos+1,timefield.length());
+
+                if(timefield.contains(":") && before.matches("[0-9]+") && after.matches("[0-9]+")) {
+
+
+                    //stop service set screen miles back to 0
+                    startButton.setText("Start");
+                    if (timerService != null) {
+                        unbindTimerService();
+                        stopTimerService();
+                    }
+                    timerService = null;
+                    timerText.setText("0:00");
+                    distanceText.setText("0");
+
+                    //get fields from EditTexts
+
+                    saveDistance = (int) Math.floor(Float.parseFloat(mEditDistance.getText().toString()) * 1609.34400);
+                    saveCals = Integer.parseInt(mEditCals.getText().toString());
+                    saveTime = getIntFromDuration(mEditDuration.getText().toString());
+                    saveDescription = mEditDescription.getText().toString();
+
+                    //starts save process, gets image then callback finishes and calls saveRun(bitmap)
+                    moveToBounds();
+                    new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            //Do something here
+                            startSnapShot();
+
+                        }
+                    }, 200);
+
+
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        dialog.findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!isPaused && timerService != null) {
+                    timerService.resumeService();
+                }
+                dialog.dismiss();
+            }
+        });
+
+        dialog.findViewById(R.id.discard).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startButton.setText("Start");
+                if(timerService != null) {
+                    unbindTimerService();
+                    stopTimerService();
+                }
+                timerService = null;
+                timerText.setText("0:00");
+                distanceText.setText("0");
+                dialog.dismiss();
+            }
+        });
+
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.show();
+    }
+
+
+    public void saveRun(Bitmap bMap){
+        RunWorkout mRunWorkout = new RunWorkout();
+        mRunWorkout.setWorkoutDate(formattedDate);
+
+   /*     float total = 0f;
+        for (int i = 0; i < routeCoordinates.size() - 1; i++) {
+            float[] distance = new float[2];
+            Location.distanceBetween(routeCoordinates.get(i).latitude(), routeCoordinates.get(i).longitude(), routeCoordinates.get(i + 1).latitude(), routeCoordinates.get(i + 1).longitude(), distance);
+            total = total + distance[0];
+        }*/
+
+
+        mRunWorkout.setDuration((int) saveTime);
+        mRunWorkout.setDistance((int) saveDistance);
+        mRunWorkout.setCalories(saveCals);
+        mRunWorkout.setDescription(saveDescription);
+
+
+        int cals = mNutritionDay.getValues().get(0);
+
+        ArrayList<Integer> mvals = mNutritionDay.getValues();
+        cals = cals - saveCals;
+        mvals.set(0, cals);
+        mNutritionDay.setValues(mvals);
+        mRepository.updateNutrition(mNutritionDay);
+
+
+        String bmp = saveBitmap(bMap,UUID.randomUUID().toString());
+        System.out.println("bmp string: "+bmp);
+        String coords = saveCoordinates(routeCoordinates,UUID.randomUUID().toString());
+        mRunWorkout.setImage(bmp);
+        mRunWorkout.setCoordinates(coords);
+
+
+        mRepository.insertRunWorkout(mRunWorkout);
+
+    }
+
+
+
+
+    private void startSnapShot() {
+        MapboxMap.SnapshotReadyCallback snapCallback = new MapboxMap.SnapshotReadyCallback() {
+            @Override
+            public void onSnapshotReady(@NonNull Bitmap snapshot) {
+                saveRun(snapshot);
+            }
+        };
+        mapboxMap.snapshot(snapCallback);
+    }
+
+
+    public String saveBitmap(Bitmap bitmapImage, String filename){
+            ContextWrapper cw = new ContextWrapper(getApplicationContext());
+            // path to /data/data/yourapp/app_data/imageDir
+            File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+            // Create imageDir
+            File mypath=new File(directory,filename+".jpg");
+
+            FileOutputStream fos = null;
+            try {
+                fos = new FileOutputStream(mypath);
+                // Use the compress method on the BitMap object to write image to the OutputStream
+                bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return mypath.getAbsolutePath();
+        }
+
+    public String saveCoordinates(ArrayList<Point> coords, String uid){
+            Gson gson = new Gson();
+            String json = gson.toJson(coords);
+            edt.putString(json, uid);
+            edt.commit();
+            return uid;
+
+    }
+
+    private void moveToBounds(){
+        if(routeCoordinates != null && routeCoordinates.size() >2) {
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+            for (int i = 0; i < routeCoordinates.size(); i++) {
+                LatLng l = new LatLng(routeCoordinates.get(i).latitude(), routeCoordinates.get(i).longitude());
+                builder.include(l);
+            }
+            LatLngBounds bounds = builder.build();
+            System.out.println("N: " + bounds.getLatNorth());
+            System.out.println("S: " + bounds.getLatSouth());
+            System.out.println("Span: " + bounds.getLatitudeSpan());
+
+            LatLngBounds.Builder builder2 = new LatLngBounds.Builder();
+            if (bounds.getLatitudeSpan() > bounds.getLongitudeSpan() / 2) {
+                //TODO error latitude must be between -90 and 90
+                LatLng l = new LatLng(bounds.getLatNorth() + bounds.getLatitudeSpan() * 1.5, bounds.getLonEast());
+                LatLng l2 = new LatLng(bounds.getLatSouth() - bounds.getLatitudeSpan() * 1.5, bounds.getLonEast());
+                builder2.include(l);
+                builder2.include(l2);
+                LatLngBounds bounds2 = builder2.build();
+                bounds = bounds.union(bounds2);
+            }
+
+
+            int padding = 100; // offset from edges of the map in pixels
+
+            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+            mapboxMap.animateCamera(cu);
+        }
+    }
+
+
+    @SuppressLint("StaticFieldLeak")
+    private void getNutritionDayData() {
+        new AsyncTask<Void, Void, Void>() {
+            //Get today's workout => finishUI
+            //get today's workout, if it doesn't exist create it
+
+            protected void onPreExecute() {
+
+            }
+
+            protected Void doInBackground(Void... unused) {
+                //nutritionDay and formatted day change with selected day up top, used to edit values
+                mNutritionDay = AppDatabase.getAppDatabase(getActivity()).ntDAO().findByDate(formattedDate);
+
+                if (mNutritionDay == null) {
+                    mNutritionDay = new NutritionDay();
+                    System.out.println("day null should create");
+                    ArrayList<String> mNames = new ArrayList<String>(2);
+                    ArrayList<Integer> mValues = new ArrayList<Integer>(2);
+                    mNames.add("Cals");
+                    mValues.add(prefs.getInt("BaseCals", -2000));
+                    mNames.add("Protein");
+                    mValues.add(0);
+                    mNutritionDay.setNames(mNames);
+                    mNutritionDay.setValues(mValues);
+                    mNutritionDay.setDate(formattedDate);
+                    mRepository.insertNutrition(mNutritionDay);
+                } else {
+                    System.out.println("found Day get names/values");
+
+                }
+
+                //populate a list with all days up to current that shouldn't change like mNutritionDay and formattedDate, this async is called onResume and on date change
+                //TODO will this get updated appropriately with databse operations saving edits?
+                System.out.println("check exec1");
+
+
+                return null;
+            }
+
+            protected void onPostExecute(Void unused) {
+                // Post Code
+            }
+        }.execute();
+    }
+
+
+
+    private String getMiles(float i) {
+        return String.format("%.2f", i * 0.000621371192f);
+    }
+
+
+
+    private Integer getIntFromDuration(String text){
+        Integer time = null;
+        int pos = text.indexOf(":");
+        String before = text.substring(0,pos);
+        String after = text.substring(pos+1,text.length());
+        int msecond = Integer.parseInt(before)*60*1000;
+        msecond = msecond+Integer.parseInt(after)*1000;
+
+        return msecond;
+    }
+
+    private String getDuration(long elapsedTime){
+        long micro = elapsedTime / 100000;
+        long elapsedSeconds = elapsedTime / 1000;
+        long secondsDisplay = elapsedSeconds % 60;
+        long elapsedMinutes = elapsedSeconds / 60;
+        long minutesDisplay = elapsedMinutes % 60;
+        if (secondsDisplay < 10) {
+            return((minutesDisplay + ":0" + secondsDisplay));
+        } else {
+            return((minutesDisplay + ":" + secondsDisplay));
+        }
+    }
 
 
 

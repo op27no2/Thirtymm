@@ -22,6 +22,7 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -30,13 +31,19 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.prolificinteractive.materialcalendarview.CalendarDay;
+import com.rilixtech.materialfancybutton.MaterialFancyButton;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import op27no2.fitness.thirtymm.Database.AppDatabase;
+import op27no2.fitness.thirtymm.Database.NutritionDAO;
 import op27no2.fitness.thirtymm.Database.Repository;
 import op27no2.fitness.thirtymm.Graphing.GraphView;
 import op27no2.fitness.thirtymm.Graphing.GraphViewSeries;
@@ -52,6 +59,7 @@ import op27no2.fitness.thirtymm.ui.lifting.MyDialogInterface;
 import op27no2.fitness.thirtymm.ui.volume.VolumeAdapter;
 
 import static java.lang.Integer.max;
+import static op27no2.fitness.thirtymm.Graphing.GraphViewStyle.*;
 
 public class NutritionFragment extends Fragment implements CalendarDialogInterface{
     private SharedPreferences prefs;
@@ -84,6 +92,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
     public ArrayList<NutritionDay> mNutritionDays = new ArrayList<NutritionDay>();
     public SimpleDateFormat df;
     public ArrayList<String> mDates = new ArrayList<String>();
+    int checkThis = 0;
 
     private CalendarDialogInterface mInterface;
     private int selectedPosition = 0;
@@ -165,6 +174,8 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         ImageView buttonMinus = (ImageView) view.findViewById(R.id.button_minus);
         ImageView buttonPlusSmall = (ImageView) view.findViewById(R.id.button_plus_small);
         ImageView buttonMinusSmall = (ImageView) view.findViewById(R.id.button_minus_small);
+        MaterialFancyButton monday = (MaterialFancyButton) view.findViewById(R.id.monday);
+        MaterialFancyButton seven = (MaterialFancyButton) view.findViewById(R.id.seven);
 
         buttonPlus.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -252,8 +263,6 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
             }
         });
 
-
-
         buttonMinusSmall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -282,6 +291,54 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
             }
         });
 
+        monday.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int day = cal.get(Calendar.DAY_OF_WEEK);
+                int subtract = 0;
+                switch(day) {
+                    case Calendar.MONDAY:
+                        subtract= 1;
+                    break;
+                    case Calendar.TUESDAY:
+                        subtract= 2;
+                        break;
+                    case Calendar.WEDNESDAY:
+                        subtract= 3;
+                        break;
+                    case Calendar.THURSDAY:
+                        subtract= 4;
+                        break;
+                    case Calendar.FRIDAY:
+                        subtract= 5;
+                        break;
+                    case Calendar.SATURDAY:
+                        subtract= 6;
+                        break;
+                    case Calendar.SUNDAY:
+                        subtract= 7;
+                        break;
+                }
+
+                graphView.setViewPort(data.length-subtract,subtract-1);
+                graphView2.setViewPort(data.length-subtract,subtract-1);
+                exampleSeries.resetData(data);
+                exampleSeries2.resetData(data2);
+            }
+        });
+
+        seven.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                graphView.setViewPort(data.length-7,6);
+                graphView2.setViewPort(data.length-7,6);
+                exampleSeries.resetData(data);
+                exampleSeries2.resetData(data2);
+            }
+        });
+
+
+
         getDayData();
 
         System.out.println("check1");
@@ -297,16 +354,17 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         exampleSeries = new GraphViewSeries("",style, data);
         exampleSeries2 = new GraphViewSeries("",style2, data2);
 
-        graphView = new LineGraphView(getActivity(),""); // context, "" // heading);
+        // Third field is active title, setting to cals give cal behavior in LineGraphView, Gram grams behavior, etc.
+        graphView = new LineGraphView(getActivity(),"", "Cals"); // context, "" // heading);
         graphView.setScrollable(true);
         graphView.setScalable(true);
 
-        graphView2 = new LineGraphView(getActivity(),""); // context, "" // heading);
+        graphView2 = new LineGraphView(getActivity(),"", "Grams"); // context, "" // heading);
         graphView2.setScrollable(true);
         graphView2.setScalable(true);
 
         GraphViewStyle mstyle = graphView.getGraphViewStyle();
-        mstyle.setTextSize(50);
+        mstyle.setTextSize(40);
         graphView.setGraphViewStyle(mstyle);
 
         GraphViewStyle mstyle2 = graphView2.getGraphViewStyle();
@@ -321,20 +379,23 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         if (data.length > 8){
             graphView.setViewPort(data.length-7,6);
             int maxY = getMax(data, data.length-8, data.length-1);
-            graphView.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+            //graphView.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+            graphView.setManualYAxisBounds(1500,-1500);
         }
 
         else if(data.length == 2){
             graphView.setViewPort(0,1);
             int maxY = getMax(data, 0, data.length-1);
             maxY = 2200;
-            graphView.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+            //graphView.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+            graphView.setManualYAxisBounds(1500,-1500);
         }
 
         else{
             graphView.setViewPort(0,data.length-1);
             int maxY = getMax(data, 0, data.length-1);
-            graphView.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+            //graphView.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+            graphView.setManualYAxisBounds(1500,-1500);
         }
 
 
@@ -346,20 +407,26 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         if (data2.length > 8){
             graphView2.setViewPort(data2.length-7,6);
             int maxY = getMax(data2,data2.length-8, data2.length-1);
-            graphView2.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+           // graphView2.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+            graphView.setManualYAxisBounds(1500,-1500);
+
         }
 
         else if(data2.length == 2){
             graphView2.setViewPort(0,1);
             int maxY = getMax(data2,0, data.length-1);
            // maxY = 2200;
-            graphView2.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+           // graphView2.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+            graphView.setManualYAxisBounds(1500,-1500);
+
         }
 
         else{
             graphView2.setViewPort(0,data2.length-1);
             int maxY = getMax(data2,0, data2.length-1);
-            graphView2.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+           // graphView2.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+            graphView.setManualYAxisBounds(1500,-1500);
+
         }
 
         System.out.println("check3");
@@ -367,21 +434,25 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         graphView.addSeries(exampleSeries); // data
         graphView2.addSeries(exampleSeries2); // data
         // graphView.addSeries(exampleSeries3);
-        graphView.getGraphViewStyle().setNumVerticalLabels(5);
+        graphView.getGraphViewStyle().setNumVerticalLabels(7);
         graphView.getGraphViewStyle().setNumHorizontalLabels(1);
         graphView.getGraphViewStyle().setVerticalLabelsWidth(0);
 
         graphView2.getGraphViewStyle().setNumVerticalLabels(5);
         graphView2.getGraphViewStyle().setNumHorizontalLabels(1);
         graphView2.getGraphViewStyle().setVerticalLabelsWidth(0);
+        graphView2.setManualYAxisBounds(200,0);
+
 
         ((LineGraphView) graphView).setDrawBackground(true);
+        ((LineGraphView) graphView).setDrawDataPoints(true);
         // ((LineGraphView) graphView).setBackgroundColor(Color.argb(55, 0, 255, 21));
-        // graphView.getGraphViewStyle().setGridColor(Color.DKGRAY);
+        graphView.getGraphViewStyle().setGridColor(Color.LTGRAY);
         ((LineGraphView) graphView).setDataPointsRadius(4f);
 
-      //  ((LineGraphView) graphView2).setDrawDataPoints(true);
+        ((LineGraphView) graphView2).setDrawDataPoints(true);
         ((LineGraphView) graphView2).setDrawBackground(false);
+        graphView2.getGraphViewStyle().setGridColor(Color.LTGRAY);
         ((LineGraphView) graphView2).setDataPointsRadius(4f);
 
 
@@ -400,7 +471,6 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
 
     }
 
-
     @SuppressLint("StaticFieldLeak")
     private void getDayData(){
         new AsyncTask<Void, Void, Void>() {
@@ -408,6 +478,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
             //get today's workout, if it doesn't exist create it
 
             protected void onPreExecute() {
+                System.out.println("NUTRITION GET DAY DATA CALLED");
                 // Pre Code
                 mValues.clear();
                 mNames.clear();
@@ -423,18 +494,34 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
 
                 if(mNutritionDay == null){
                     mNutritionDay = new NutritionDay();
-                    System.out.println("day null should create");
+                    System.out.println("nutrition day null create uid: "+mNutritionDay.getUid());
+
                     mNames.add("Cals");
-                    mValues.add(prefs.getInt("BaseCals", -2000));
+                    mValues.add(Integer.parseInt(prefs.getString("bmr", "-2000")));
                     mNames.add("Protein");
                     mValues.add(0);
                     mNutritionDay.setNames(mNames);
                     mNutritionDay.setValues(mValues);
                     mNutritionDay.setDate(formattedDate);
                     mRepository.insertNutrition(mNutritionDay);
+          /*          try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }*/
+
+                    long id = AppDatabase.getAppDatabase(getActivity()).ntDAO().insert(mNutritionDay);
+                    mNutritionDay = AppDatabase.getAppDatabase(getActivity()).ntDAO().findById((int) id);
+
+
+                    System.out.println("nutrition day after insertion uid: "+mNutritionDay.getUid());
+
+
+
                     cals = mValues.get(0);
+
                 }else{
-                    System.out.println("found Day get names/values");
+                    System.out.println("nutrition day found get names/values uid: "+mNutritionDay.getUid());
                     mNames = mNutritionDay.getNames();
                     mValues = mNutritionDay.getValues();
                     cals = mValues.get(0);
@@ -471,6 +558,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                 // Post Code
                 System.out.println("check postexec");
 
+
                 finishUI();
                 setupGraphView();
 
@@ -493,6 +581,8 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                     @Override public void onItemClick(View view, int position) {
                         System.out.println("item clicked: "+position);
                         selectedPosition = position;
+                        mAdapter.setSelected(selectedPosition);
+                        mAdapter.notifyDataSetChanged();
                     }
                     @Override
                     public void onItemLongClick(View view, int position) {
@@ -519,18 +609,22 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         if (data.length > 8){
             graphView.setViewPort(data.length-7,6);
             int maxY = getMax(data,data.length-8, data.length-1);
-            graphView.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+            //graphView.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+            graphView.setManualYAxisBounds(1500,-1500);
         }
         else if(data.length == 2){
             graphView.setViewPort(0,1);
             int maxY = getMax(data,0, data.length-1);
             maxY = 2200;
-            graphView.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+           // graphView.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+            graphView.setManualYAxisBounds(1500,-1500);
         }
         else{
             graphView.setViewPort(0,data.length-1);
             int maxY = getMax(data,0, data.length-1);
-            graphView.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+           // graphView.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+            graphView.setManualYAxisBounds(1500,-1500);
+
         }
         exampleSeries.resetData(data);
 
@@ -548,18 +642,23 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         if (data2.length > 8){
             graphView2.setViewPort(data2.length-7,6);
             int maxY = getMax(data2,data2.length-8, data2.length-1);
-            graphView2.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+            //graphView2.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+            graphView.setManualYAxisBounds(1500,-1500);
         }
         else if(data2.length == 2){
             graphView2.setViewPort(0,1);
             int maxY = getMax(data2,0, data2.length-1);
             maxY = 2200;
-            graphView2.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+            //graphView2.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+            graphView.setManualYAxisBounds(1500,-1500);
+
         }
         else{
             graphView2.setViewPort(0,data2.length-1);
             int maxY = getMax(data2,0, data2.length-1);
-            graphView2.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+            //graphView2.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+            graphView.setManualYAxisBounds(1500,-1500);
+
         }
         exampleSeries2.resetData(data2);
       /*  GraphViewSeries.GraphViewSeriesStyle style = new GraphViewSeries.GraphViewSeriesStyle(Color.rgb(0, 255, 21),4);
@@ -677,10 +776,6 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
     }
 
 
-    @Override
-    public void onDialogDismiss(String m) {
-        System.out.println("received date: "+m);
-    }
 
     public void yFit(){
         int low = (int) Math.floor(graphView.getMinX(false));
@@ -692,7 +787,9 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         int maxY = getMax(data, low, high);
         System.out.println("maxy "+maxY);
 
-        graphView.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+      //  graphView.setManualYAxisBounds(maxY*1.1,-maxY*1.1);
+        graphView.setManualYAxisBounds(1500,-1500);
+
         exampleSeries.resetData(data);
 
         int low2 = (int) Math.floor(graphView2.getMinX(false));
@@ -704,9 +801,24 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         int maxY2 = getMax(data2, low2, high2);
         System.out.println("maxy2 "+maxY2);
 
-        graphView2.setManualYAxisBounds(maxY2*1.1,-maxY2*1.1);
+       // graphView2.setManualYAxisBounds(maxY2*1.1,-maxY2*1.1);
+        graphView.setManualYAxisBounds(1500,-1500);
+
         exampleSeries2.resetData(data2);
     }
 
+
+    @Override
+    public void onDialogDismiss(CalendarDay m) {
+        Calendar c = Calendar.getInstance();
+        c.set(m.getYear(), m.getMonth() - 1, m.getDay());
+        Date d = c.getTime();
+        SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, ''yy");
+        formattedDate = df.format(d);
+        System.out.println("formdate:" + formattedDate);
+
+        getDayData();
+
+    }
 
 }

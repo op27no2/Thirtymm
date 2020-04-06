@@ -73,6 +73,7 @@ public class VolumeAdapter extends RecyclerView.Adapter<VolumeAdapter.ViewHolder
             @Override
             public void onClick(View view) {
                 Dialog dialog = new DialogVolumeMap(view.getContext(), mRepository, mData.get(position).getKey(), passThisInterface);
+
                 dialog.show();
 
             }

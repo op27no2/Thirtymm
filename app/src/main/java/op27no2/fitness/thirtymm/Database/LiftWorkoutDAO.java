@@ -20,8 +20,14 @@ public interface LiftWorkoutDAO {
     @Query("SELECT * FROM lifting_workouts where date LIKE  :date")
     LiftingWorkout findByDate(String date);
 
+    @Query("SELECT * FROM lifting_workouts where uid LIKE  :id")
+    LiftingWorkout findById(int id);
+
     @Insert
     void insertAll(LiftingWorkout... lws);
+
+    @Insert
+    long insert(LiftingWorkout lw);
 
     @Update
     void updateWorkouts(LiftingWorkout... lws);

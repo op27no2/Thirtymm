@@ -1,8 +1,12 @@
 package op27no2.fitness.thirtymm.ui.lifting;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,12 +22,15 @@ import op27no2.fitness.thirtymm.R;
  */
 
 public class MyDialogAdapter extends RecyclerView.Adapter<MyDialogAdapter.ViewHolder>  {
+    private SharedPreferences prefs;
+    private SharedPreferences.Editor edt;
     private int selected;
     private Repository mRepository;
     private ArrayList<LiftMap> liftMapArrayList;
     private LiftingWorkout mLiftingWorkout;
     private int parentPosition;
     private MyDialogInterface mListener;
+    private Context mContext;
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
     // you provide access to all the views for a data item in a view holder
@@ -37,12 +44,14 @@ public class MyDialogAdapter extends RecyclerView.Adapter<MyDialogAdapter.ViewHo
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public MyDialogAdapter(ArrayList<LiftMap> lifts, Repository repository, LiftingWorkout lw, int p, MyDialogInterface ml) {
+    public MyDialogAdapter(Context context, ArrayList<LiftMap> lifts, Repository repository, LiftingWorkout lw, int p, MyDialogInterface ml) {
         liftMapArrayList = lifts;
         mRepository = repository;
         mLiftingWorkout = lw;
         parentPosition = p;
         mListener = ml;
+        mContext = context;
+
     }
 
     // Create new views (invoked by the layout manager)
@@ -54,6 +63,8 @@ public class MyDialogAdapter extends RecyclerView.Adapter<MyDialogAdapter.ViewHo
                 .inflate(R.layout.row_view, parent, false);
         // set the view's size, margins, paddings and layout parameters
 
+        prefs = mContext.getSharedPreferences("PREFS", Context.MODE_PRIVATE);
+        edt = mContext.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
 
 
         ViewHolder vh = new ViewHolder(v);
@@ -66,14 +77,18 @@ public class MyDialogAdapter extends RecyclerView.Adapter<MyDialogAdapter.ViewHo
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
 
-
         TextView mText = holder.mView.findViewById(R.id.row_text);
         mText.setText(liftMapArrayList.get(position).getName());
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mLiftingWorkout.getMyLifts().get(parentPosition).setName(liftMapArrayList.get(holder.getAdapterPosition()).getName());
+
+                //TODO this is correct position language?
+                String name = liftMapArrayList.get(holder.getAdapterPosition()).getName();
+                int weight = prefs.getInt("last_weight"+name, 200);
+                mLiftingWorkout.getMyLifts().get(parentPosition).setName(name);
+                mLiftingWorkout.getMyLifts().get(parentPosition).setWeight(weight);
                 mRepository.updateWorkout(mLiftingWorkout);
                 mListener.onDialogDismiss();
             }
@@ -84,10 +99,12 @@ public class MyDialogAdapter extends RecyclerView.Adapter<MyDialogAdapter.ViewHo
             @Override
             public boolean onLongClick(View view) {
                 System.out.println("lift dialog long click");
+                //TODO create dialog to confirm this delete code
                 LiftMap row = liftMapArrayList.get(holder.getAdapterPosition());
                 mRepository.deleteLiftMap(row);
                 liftMapArrayList.remove(holder.getAdapterPosition());
                 notifyDataSetChanged();
+
                 return false;
             }
         });

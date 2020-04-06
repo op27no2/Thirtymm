@@ -30,7 +30,7 @@ public class LiftMap {
     private ArrayList<String> muscles = new ArrayList<String>();
 
     @ColumnInfo(name = "weights")
-    private ArrayList<Double> ratios = new ArrayList<Double>();
+    private ArrayList<Integer> ratios = new ArrayList<Integer>();
 
  /*   public LiftMap(){
       *//*  muscles = new ArrayList<String>(Arrays.asList((MyApplication.getAppContext().getResources().getStringArray(R.array.female_front))));
@@ -63,11 +63,11 @@ public class LiftMap {
         return muscles;
     }
 
-    public void setRatios(ArrayList<Double> mRatios){
+    public void setRatios(ArrayList<Integer> mRatios){
         ratios = mRatios;
     }
 
-    public ArrayList<Double> getRatios(){
+    public ArrayList<Integer> getRatios(){
         return ratios;
     }
 

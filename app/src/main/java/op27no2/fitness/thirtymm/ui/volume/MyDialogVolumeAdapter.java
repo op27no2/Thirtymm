@@ -1,17 +1,22 @@
 package op27no2.fitness.thirtymm.ui.volume;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import op27no2.fitness.thirtymm.Database.Repository;
 import op27no2.fitness.thirtymm.R;
@@ -32,8 +37,9 @@ public class MyDialogVolumeAdapter extends RecyclerView.Adapter<MyDialogVolumeAd
     private MyDialogInterface mListener;
     private Context mContext;
     private LiftMap mLiftMap;
-    private ArrayList<Double> ratios;
+    private ArrayList<Integer> ratios;
     private ArrayList<String> name;
+    private ArrayList<Integer> mVisibilities;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -45,13 +51,17 @@ public class MyDialogVolumeAdapter extends RecyclerView.Adapter<MyDialogVolumeAd
             super(v);
             mView = v;
         }
+
+
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public MyDialogVolumeAdapter(LiftMap map, Repository repository, Context context) {
+    public MyDialogVolumeAdapter(LiftMap map, Repository repository, Context context, ArrayList<Integer> visibilities) {
         mLiftMap = map;
         mRepository = repository;
         mContext = context;
+        mVisibilities = visibilities;
+
     }
 
     // Create new views (invoked by the layout manager)
@@ -66,6 +76,7 @@ public class MyDialogVolumeAdapter extends RecyclerView.Adapter<MyDialogVolumeAd
         ratios = mLiftMap.getRatios();
         name = mLiftMap.getMuscles();
 
+
         ViewHolder vh = new ViewHolder(v);
         return vh;
     }
@@ -78,9 +89,30 @@ public class MyDialogVolumeAdapter extends RecyclerView.Adapter<MyDialogVolumeAd
 
 
         TextView mText = holder.mView.findViewById(R.id.text1);
-        mText.setText(mLiftMap.getMuscles().get(position));
+        //mText.setText(mLiftMap.getMuscles().get(position));
+        mText.setText(mLiftMap.getMuscles().get(mVisibilities.get(position)));
+        String muscle = mLiftMap.getMuscles().get(mVisibilities.get(position));
+        if(muscle.equals("Arms")||muscle.equals("Chest")||muscle.equals("Back")||muscle.equals("Core")||muscle.equals("Legs")){
+            mText.setTextColor(Color.BLACK);
+            mText.setTextSize(30);
+        }else{
+            mText.setTextColor(Color.GRAY);
+            mText.setTextSize(20);
+        }
 
-        EditText mEdit = holder.mView.findViewById(R.id.edit_text);
+        TextView mText2 = holder.mView.findViewById(R.id.text2);
+        Double rat = (double) mLiftMap.getRatios().get(mVisibilities.get(position))/10;
+        mText2.setText(Double.toString(rat));
+
+        if(mVisibilities.get(position) == selected){
+            holder.mView.setBackgroundColor(ColorUtils.setAlphaComponent(ContextCompat.getColor(holder.mView.getContext(), R.color.lightgrey),200));
+        }else{
+            holder.mView.setBackgroundColor(ContextCompat.getColor(holder.mView.getContext(), R.color.white));
+        }
+
+
+
+ /*       EditText mEdit = holder.mView.findViewById(R.id.edit_text);
         mEdit.setText(Double.toString(mLiftMap.getRatios().get(position)));
         mEdit.addTextChangedListener(new TextWatcher() {
             @Override
@@ -90,8 +122,8 @@ public class MyDialogVolumeAdapter extends RecyclerView.Adapter<MyDialogVolumeAd
                 if(!s.toString().isEmpty()) {
                     System.out.println("muscle at position: "+holder.getAdapterPosition());
                     ratios.set(holder.getAdapterPosition(), Double.parseDouble(s.toString()));
-                    /*mLiftMap.setRatios(ratios);
-                    mRepository.updateLiftMap(mLiftMap);*/
+                    *//*mLiftMap.setRatios(ratios);
+                    mRepository.updateLiftMap(mLiftMap);*//*
                 }
             }
 
@@ -103,22 +135,52 @@ public class MyDialogVolumeAdapter extends RecyclerView.Adapter<MyDialogVolumeAd
             public void onTextChanged(CharSequence s, int start, int before, int count) {
 
             }
-        });
+        });*/
 
 
 
     }
 
 
-    public ArrayList<Double> getRatios(){
+    public ArrayList<Integer> getRatios(){
 
         return ratios;
     }
 
+    public void setSelected(int position){
+        selected = mVisibilities.get(position);
+    }
+    public int getSelected(){
+        return selected;
+    }
+
+    public String getLine(int position){
+        return mLiftMap.getMuscles().get(mVisibilities.get(position));
+    }
+    public int getRealPosition(int position){
+        return (mVisibilities.get(position));
+    }
+
+
+    public void toggleVisibilty(int position){
+        if(mVisibilities.contains(position)){
+            mVisibilities.remove(mVisibilities.indexOf(position));
+        }else{
+            mVisibilities.add(position);
+        }
+        Collections.sort(mVisibilities);
+    }
+
+
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return mLiftMap.getMuscles().size();
+        int size = 38;
+        if(mVisibilities.size() != 0){
+             size = mVisibilities.size();
+        }
+
+        return size;
     }
 
 

@@ -1,6 +1,10 @@
 package op27no2.fitness.thirtymm.ui.lifting;
 
+import android.app.Dialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.os.Vibrator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +24,8 @@ import com.rilixtech.materialfancybutton.MaterialFancyButton;
 
 import op27no2.fitness.thirtymm.Database.Repository;
 import op27no2.fitness.thirtymm.R;
+import op27no2.fitness.thirtymm.ui.volume.DialogVolumeMap;
+import op27no2.fitness.thirtymm.ui.volume.DialogVolumeMapnterface;
 
 /**
  * Created by CristMac on 11/3/17.
@@ -27,18 +33,25 @@ import op27no2.fitness.thirtymm.R;
 
 //TOP LEVEL ADAPTER FOR LIFT TAB THE HOLDS THE LIFT CARDS
 
-public class MyLiftWorkoutAdapter extends RecyclerView.Adapter<MyLiftWorkoutAdapter.ViewHolder>  implements MyDialogInterface {
+public class LiftCardviewWorkoutAdapter extends RecyclerView.Adapter<LiftCardviewWorkoutAdapter.ViewHolder>  implements PickerDialogInterface, MyDialogInterface {
     private LiftingWorkout mLiftingWorkout;
+    private SharedPreferences prefs;
+    private SharedPreferences.Editor edt;
     private Repository mRepository;
     private int selected;
     private DialogLifts dialog;
     MyDialogInterface mInterface;
+    private Boolean direction = true;
+    private Vibrator rabbit;
+    private PickerDialogInterface passThisInterface;
+
 
     @Override
     public void onDialogDismiss() {
         dialog.dismiss();
         notifyDataSetChanged();
     }
+
 
 
     // Provide a reference to the views for each data item
@@ -53,8 +66,7 @@ public class MyLiftWorkoutAdapter extends RecyclerView.Adapter<MyLiftWorkoutAdap
         }
     }
 
-    // Provide a suitable constructor (depends on the kind of dataset)
-    public MyLiftWorkoutAdapter(LiftingWorkout workout, Repository repository) {
+      public LiftCardviewWorkoutAdapter(LiftingWorkout workout, Repository repository) {
         mLiftingWorkout = workout;
         mRepository = repository;
 
@@ -62,12 +74,22 @@ public class MyLiftWorkoutAdapter extends RecyclerView.Adapter<MyLiftWorkoutAdap
 
     // Create new views (invoked by the layout manager)
     @Override
-    public MyLiftWorkoutAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public LiftCardviewWorkoutAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         // create a new view
         View v = (View) LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.cards_view, parent, false);
+                .inflate(R.layout.lift_cards_view, parent, false);
         // set the view's size, margins, paddings and layout parameters
+
+        //interface for lift selection
         mInterface = this;
+
+        //interface to change weight
+        passThisInterface = this;
+
+        prefs = parent.getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
+        edt = parent.getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
+        rabbit = (Vibrator) v.getContext().getSystemService(Context.VIBRATOR_SERVICE);
+
 
         ViewHolder vh = new ViewHolder(v);
         return vh;
@@ -82,11 +104,19 @@ public class MyLiftWorkoutAdapter extends RecyclerView.Adapter<MyLiftWorkoutAdap
        // TextView mText = holder.mView.findViewById(R.id.text_lift);
         MaterialFancyButton mText = holder.mView.findViewById(R.id.text_lift);
         mText.setText(mLiftingWorkout.getMyLifts().get(position).getName());
+
+        //weight text below circle
         final TextView mWeightText = holder.mView.findViewById(R.id.weight_text);
         final int[] weight = {Integer.parseInt(mWeightText.getText().toString())};
         mWeightText.setText(Integer.toString(mLiftingWorkout.getMyLifts().get(position).getWeight()));
+        mWeightText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Dialog dialog = new PickerDialog(view.getContext(), position,  mRepository, passThisInterface);
+                dialog.show();
+            }
+        });
 
-        mLiftingWorkout.getMyLifts().get(position);
 
         //recyclerview and layoutmanager
         RecyclerView mRecyclerView = holder.mView.findViewById(R.id.row_recycler_view);
@@ -101,7 +131,8 @@ public class MyLiftWorkoutAdapter extends RecyclerView.Adapter<MyLiftWorkoutAdap
         mRecyclerView.setLayoutManager(layoutManager);
 
         //set lift data to recyclerview
-        final MyRepAdapter mRepAdapter = new MyRepAdapter(mLiftingWorkout, position, mRepository);
+        LiftCardviewWorkoutAdapter madapter = this;
+        final MyRepAdapter mRepAdapter = new MyRepAdapter(madapter, mLiftingWorkout, position, mRepository);
         mRecyclerView.setAdapter(mRepAdapter);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
@@ -131,15 +162,22 @@ public class MyLiftWorkoutAdapter extends RecyclerView.Adapter<MyLiftWorkoutAdap
                 System.out.println("lift  click");
                 dialog = new DialogLifts(view.getContext(), mRepository, mLiftingWorkout, position, mInterface);
                 dialog.show();
+
             }
         });
+
 
         ImageView addCircle = holder.mView.findViewById(R.id.circle_add);
         addCircle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                rabbit.vibrate(10);
                 System.out.println("lift  click");
                 mLiftingWorkout.getMyLifts().get(position).addSet();
+                int size = mLiftingWorkout.getMyLifts().get(position).getRepWeights().size();
+                System.out.println("lift  click size "+size);
+
+                mLiftingWorkout.getMyLifts().get(position).setRepNumber(size-1,  prefs.getInt("default_reps"+mLiftingWorkout.getMyLifts().get(position).getName(),0));
                 mRepository.updateWorkout(mLiftingWorkout);
                 mRepAdapter.notifyDataSetChanged();
             }
@@ -149,8 +187,12 @@ public class MyLiftWorkoutAdapter extends RecyclerView.Adapter<MyLiftWorkoutAdap
         weightUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                rabbit.vibrate(5);
+
                 int weight = mLiftingWorkout.getMyLifts().get(position).getWeight();
                 weight = weight+5;
+                edt.putInt("last_weight"+mLiftingWorkout.getMyLifts().get(position).getName() , weight);
+                edt.commit();
                 mLiftingWorkout.getMyLifts().get(position).setWeight(weight);
                 mRepository.updateWorkout(mLiftingWorkout);
                 mWeightText.setText(Integer.toString(weight));
@@ -161,8 +203,11 @@ public class MyLiftWorkoutAdapter extends RecyclerView.Adapter<MyLiftWorkoutAdap
         weightDown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                rabbit.vibrate(5);
                 int weight = mLiftingWorkout.getMyLifts().get(position).getWeight();
                 weight = weight-5;
+                edt.putInt("last_weight"+mLiftingWorkout.getMyLifts().get(position).getName() , weight);
+                edt.commit();
                 mLiftingWorkout.getMyLifts().get(position).setWeight(weight);
                 mRepository.updateWorkout(mLiftingWorkout);
                 mWeightText.setText(Integer.toString(weight));
@@ -212,10 +257,22 @@ public class MyLiftWorkoutAdapter extends RecyclerView.Adapter<MyLiftWorkoutAdap
         return selected;
     }
 
+
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
         return mLiftingWorkout.getMyLifts().size();
+    }
+
+
+    @Override
+    public void onPickerDialogDismiss(int weight, int position) {
+
+        edt.putInt("last_weight"+mLiftingWorkout.getMyLifts().get(position).getName() , weight);
+        edt.commit();
+        mLiftingWorkout.getMyLifts().get(position).setWeight(weight);
+        mRepository.updateWorkout(mLiftingWorkout);
+        notifyDataSetChanged();
     }
 
 

@@ -6,6 +6,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:androidx.cardview="http://schemas.android.com/tools"
     android:orientation="vertical"
+    android:animateLayoutChanges="true"
     android:tag="cards main container">
 
     <androidx.cardview.widget.CardView
@@ -39,10 +40,12 @@
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
              <TextView
-                 android:id="@+id/title"
+                 android:id="@+id/my_title"
                  android:layout_width="wrap_content"
                  android:layout_height="wrap_content"
-                 android:hint="Lift Name"
+                 android:textSize="22sp"
+                 android:textColor="@color/colorPrimary"
+                 android:text="Lift Name"
                  />
 
             </LinearLayout>
@@ -50,6 +53,7 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/my_recycler_view"
                     android:layout_below="@+id/linear"
+                    android:layout_above="@+id/plusminus"
                     android:fastScrollEnabled="false"
                     android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"
@@ -57,54 +61,79 @@
                     android:layout_height="wrap_content"/>
 
             <LinearLayout
-                android:layout_below="@+id/my_recycler_view"
+                android:id="@+id/plusminus"
+                android:layout_alignParentBottom="true"
                 android:layout_centerHorizontal="true"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-            <com.rilixtech.materialfancybutton.MaterialFancyButton
-                android:id="@+id/volume_dialog_dismiss"
-                android:layout_width="100dp"
-                android:layout_height="50dp"
-                android:layout_margin="10dp"
-                android:paddingBottom="5dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:paddingTop="5dp"
-                android:elevation="5dp"
-                fancy:mfb_borderColor="@color/black"
-                fancy:mfb_borderWidth="1dp"
-                fancy:mfb_defaultColor="@color/white"
-                fancy:mfb_focusColor="@color/colorPrimaryDark"
-                fancy:mfb_iconFont="fontawesome.ttf"
-                fancy:mfb_iconPosition="left"
-                fancy:mfb_radius="1dp"
-                fancy:mfb_textSize="18sp"
-                fancy:mfb_text="Dismiss"
-                fancy:mfb_textColor="@color/black" />
-
-            <com.rilixtech.materialfancybutton.MaterialFancyButton
-                android:id="@+id/volume_dialog_save"
-                android:layout_toRightOf="@+id/start_run"
-                android:layout_width="100dp"
-                android:layout_height="50dp"
-                android:layout_margin="10dp"
-                android:paddingBottom="5dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:paddingTop="5dp"
-                android:elevation="5dp"
-                fancy:mfb_borderColor="@color/black"
-                fancy:mfb_borderWidth="1dp"
-                fancy:mfb_defaultColor="@color/white"
-                fancy:mfb_focusColor="@color/colorPrimaryDark"
-                fancy:mfb_iconFont="fontawesome.ttf"
-                fancy:mfb_iconPosition="left"
-                fancy:mfb_radius="1dp"
-                fancy:mfb_textSize="18sp"
-                fancy:mfb_text="Save"
-                fancy:mfb_textColor="@color/black" />
+                <com.rilixtech.materialfancybutton.MaterialFancyButton
+                    android:id="@+id/dismiss"
+                    android:layout_width="0dp"
+                    android:layout_weight="0.3"
+                    android:layout_height="50dp"
+                    android:layout_margin="10dp"
+                    android:paddingBottom="5dp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:paddingTop="5dp"
+                    android:elevation="5dp"
+                    fancy:mfb_borderColor="@color/black"
+                    fancy:mfb_borderWidth="1dp"
+                    fancy:mfb_defaultColor="@color/white"
+                    fancy:mfb_focusColor="@color/colorPrimaryDark"
+                    fancy:mfb_iconPosition="left"
+                    fancy:mfb_radius="1dp"
+                    fancy:mfb_textSize="16sp"
+                    fancy:mfb_text="Dismiss"
+                    fancy:mfb_textColor="@color/black" />
+                <com.rilixtech.materialfancybutton.MaterialFancyButton
+                    android:id="@+id/minus"
+                    android:padding="10dp"
+                    android:layout_width="0dp"
+                    android:layout_weight="0.3"
+                    android:layout_height="50dp"
+                    android:layout_margin="10dp"
+                    android:paddingBottom="5dp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:paddingTop="5dp"
+                    android:elevation="5dp"
+                    fancy:mfb_borderColor="@color/black"
+                    fancy:mfb_borderWidth="1dp"
+                    fancy:mfb_defaultColor="@color/white"
+                    fancy:mfb_focusColor="@color/colorPrimaryDark"
+                    fancy:mfb_iconPosition="left"
+                    fancy:mfb_iconResource="@drawable/ic_remove"
+                    fancy:mfb_radius="1dp"
+                    fancy:mfb_textSize="18sp"
+                    fancy:mfb_text="Dismiss"
+                    fancy:mfb_textColor="@color/black" />
+                <com.rilixtech.materialfancybutton.MaterialFancyButton
+                    android:id="@+id/plus"
+                    android:padding="10dp"
+                    android:layout_width="0dp"
+                    android:layout_weight="0.3"
+                    android:layout_height="50dp"
+                    android:layout_margin="10dp"
+                    android:paddingBottom="10dp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:paddingTop="10dp"
+                    android:elevation="5dp"
+                    fancy:mfb_borderColor="@color/black"
+                    fancy:mfb_borderWidth="1dp"
+                    fancy:mfb_defaultColor="@color/white"
+                    fancy:mfb_focusColor="@color/colorPrimaryDark"
+                    fancy:mfb_iconPosition="left"
+                    fancy:mfb_iconResource="@drawable/ic_add"
+                    fancy:mfb_radius="1dp"
+                    fancy:mfb_textSize="18sp"
+                    fancy:mfb_text="Dismiss"
+                    fancy:mfb_textColor="@color/black" />
             </LinearLayout>
+
+
 
         </RelativeLayout>
 

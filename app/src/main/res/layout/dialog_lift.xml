@@ -6,6 +6,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:androidx.cardview="http://schemas.android.com/tools"
     android:orientation="vertical"
+    android:background="@android:color/transparent"
+    android:animateLayoutChanges="true"
     android:tag="cards main container">
 
     <androidx.cardview.widget.CardView
@@ -42,7 +44,7 @@
                  android:id="@+id/edit_text"
                  android:layout_width="wrap_content"
                  android:layout_height="wrap_content"
-                 android:hint="Search or Add"
+                 android:hint="Type Lift &amp; Press to Add"
                  />
             <ImageView
                 android:id="@+id/circle_add"
@@ -57,10 +59,18 @@
                 android:src="@drawable/ic_add"
                 />
             </LinearLayout>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/my_recycler_view1"
+                android:layout_below="@+id/linear"
+                android:fastScrollEnabled="false"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/my_recycler_view"
-                    android:layout_below="@+id/linear"
+                    android:layout_below="@+id/my_recycler_view1"
                     android:fastScrollEnabled="false"
                     android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"

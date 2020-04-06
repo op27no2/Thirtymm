@@ -12,25 +12,31 @@ import java.util.concurrent.Executors;
 import op27no2.fitness.thirtymm.MyApplication;
 import op27no2.fitness.thirtymm.ui.lifting.LiftMap;
 import op27no2.fitness.thirtymm.ui.lifting.LiftingWorkout;
+import op27no2.fitness.thirtymm.ui.lifting.NamedWorkout;
 import op27no2.fitness.thirtymm.ui.nutrition.NutritionDay;
+import op27no2.fitness.thirtymm.ui.run.RunWorkout;
 
 public class Repository {
-    private LiftWorkoutDAO mDataDao;
+    private LiftWorkoutDAO mLiftDao;
+    private RunWorkoutDAO mRunDao;
     private NutritionDAO mNutritionDao;
+    private NamedWorkoutDAO mNamedWorkoutDAO;
     private LiftMapDAO mLiftMapDao;
     private LiftingWorkout liftWorkout;
 
     public Repository(Context context) {
         AppDatabase dataRoombase = AppDatabase.getAppDatabase(context);
-        this.mDataDao = dataRoombase.lwDAO();
+        this.mLiftDao = dataRoombase.lwDAO();
         this.mNutritionDao = dataRoombase.ntDAO();
+        this.mNamedWorkoutDAO = dataRoombase.nwDAO();
         this.mLiftMapDao = dataRoombase.lmDAO();
+        this.mRunDao = dataRoombase.rwDAO();
     }
 
     LiftingWorkout getTodaysWorkout(String date) {
         Executor myExecutor = Executors.newSingleThreadExecutor();
         myExecutor.execute(() -> {
-            liftWorkout = mDataDao.findByDate(date);
+            liftWorkout = mLiftDao.findByDate(date);
         });
 
         return liftWorkout;
@@ -41,7 +47,14 @@ public class Repository {
     public void insertWorkout(LiftingWorkout liftWorkout) {
         Executor myExecutor = Executors.newSingleThreadExecutor();
         myExecutor.execute(() -> {
-            mDataDao.insertAll(liftWorkout);
+            mLiftDao.insertAll(liftWorkout);
+        });
+    }
+
+    public void insertRunWorkout(RunWorkout mWorkout) {
+        Executor myExecutor = Executors.newSingleThreadExecutor();
+        myExecutor.execute(() -> {
+            mRunDao.insertAll(mWorkout);
         });
     }
 
@@ -61,9 +74,10 @@ public class Repository {
 
 
     public void insertNutrition(NutritionDay mDay) {
+        System.out.println("nutrition day inserting uid:"+mDay.getUid());
         Executor myExecutor = Executors.newSingleThreadExecutor();
         myExecutor.execute(() -> {
-            mNutritionDao.insertAll(mDay);
+           mNutritionDao.insertAll(mDay);
         });
     }
 
@@ -85,15 +99,49 @@ public class Repository {
     public void updateWorkout(LiftingWorkout liftWorkout) {
         Executor myExecutor = Executors.newSingleThreadExecutor();
         myExecutor.execute(() -> {
-            mDataDao.updateWorkouts(liftWorkout);
+            mLiftDao.updateWorkouts(liftWorkout);
         });
     }
+
+    public void updateRunWorkout(RunWorkout runWorkout) {
+        Executor myExecutor = Executors.newSingleThreadExecutor();
+        myExecutor.execute(() -> {
+            mRunDao.updateWorkouts(runWorkout);
+        });
+    }
+
+
     public void updateNutrition(NutritionDay mDay) {
+        System.out.println("nutrition day updating: uid:"+mDay.getUid());
         Executor myExecutor = Executors.newSingleThreadExecutor();
         myExecutor.execute(() -> {
             mNutritionDao.updateDays(mDay);
         });
     }
+
+
+    public void insertNamedWorkout(NamedWorkout mWorkout) {
+        Executor myExecutor = Executors.newSingleThreadExecutor();
+        myExecutor.execute(() -> {
+            mNamedWorkoutDAO.insertAll(mWorkout);
+        });
+    }
+
+    public void updateNamedWorkout(NamedWorkout mWorkout) {
+        Executor myExecutor = Executors.newSingleThreadExecutor();
+        myExecutor.execute(() -> {
+            mNamedWorkoutDAO.updateWorkouts(mWorkout);
+        });
+    }
+
+    public void deleteNamedWorkout(NamedWorkout mWorkout) {
+        Executor myExecutor = Executors.newSingleThreadExecutor();
+        myExecutor.execute(() -> {
+            mNamedWorkoutDAO.delete(mWorkout);
+        });
+    }
+
+
 
 
 

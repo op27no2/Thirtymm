@@ -71,7 +71,6 @@ public class NutritionDay {
     }
 
     public void setCals(Integer cals){
-        System.out.println("nutrition set cals");
 
         this.cals = cals;
     }

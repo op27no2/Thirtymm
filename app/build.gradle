@@ -73,7 +73,9 @@ dependencies {
     implementation 'com.github.prolificinteractive:material-calendarview:2.0.0'
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.0'
 
-
+    //glide
+    implementation 'com.github.bumptech.glide:glide:4.10.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'
 
 
     //Mapbox
@@ -82,6 +84,8 @@ dependencies {
     implementation 'com.google.android.gms:play-services-location:17.0.0'
     implementation 'com.mapbox.mapboxsdk:mapbox-android-navigation:0.42.3'
 
+    //preferences
+    implementation 'androidx.preference:preference:1.1.0'
 
     
 

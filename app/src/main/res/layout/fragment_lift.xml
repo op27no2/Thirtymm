@@ -58,6 +58,15 @@
         android:layout_height="56dp"
         android:src="@drawable/ic_myarrow_right"/>
 
+    <ImageView
+        android:id="@+id/save_workout"
+        android:padding="20dp"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:layout_gravity="center"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:src="@drawable/ic_save"/>
 
 
 </RelativeLayout>
@@ -102,6 +111,17 @@
 
 
     </androidx.cardview.widget.CardView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/named_workouts"
+        android:layout_below="@+id/card_view"
+        android:layout_toLeftOf="@+id/right_content"
+        android:fastScrollEnabled="false"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
 
 </RelativeLayout>
 

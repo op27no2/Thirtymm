@@ -24,9 +24,18 @@
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             />
+        <ImageView
+            android:id="@+id/freeze"
+            android:padding="20dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:src="@drawable/ic_freeze"/>
     </RelativeLayout>
 
     <FrameLayout
+        android:id="@+id/frame"
         android:layout_below="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -75,15 +84,70 @@
             <ImageView
                 android:id="@+id/view_angle"
                 android:padding="15dp"
-                android:layout_above="@+id/edit_map"
+                android:layout_above="@+id/view_rotation"
                 android:layout_alignParentRight="true"
-                android:layout_margin="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="5dp"
                 android:layout_width="20dp"
                 android:layout_height="300dp"
                 android:background="#FFFFFF"
                 android:elevation="5dp"
                 android:clickable="true"
                 android:src="@android:drawable/ic_menu_rotate"
+                />
+
+
+            <ImageView
+                android:id="@+id/view_zoom"
+                android:padding="15dp"
+                android:layout_above="@+id/view_rotation"
+                android:layout_toLeftOf="@id/view_angle"
+                android:layout_marginRight="5dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="5dp"
+                android:layout_width="20dp"
+                android:layout_height="300dp"
+                android:background="#FFFFFF"
+                android:elevation="5dp"
+                android:clickable="true"
+                android:src="@android:drawable/ic_menu_rotate"
+                />
+
+
+            <ImageView
+                android:id="@+id/erase_button"
+                android:rotation="270"
+                android:padding="15dp"
+                android:layout_below="@+id/extrude_button"
+                android:layout_alignParentLeft="true"
+                android:layout_margin="10dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:elevation="5dp"
+                android:layout_gravity="center"
+                android:background="@drawable/circle_white_plain"
+                android:gravity="center"
+                android:clickable="true"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                />
+
+            <ImageView
+                android:id="@+id/extrude_button"
+                android:rotation="270"
+                android:padding="15dp"
+                android:layout_alignParentLeft="true"
+                android:layout_margin="10dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:elevation="5dp"
+                android:layout_gravity="center"
+                android:background="@drawable/circle_white_plain"
+                android:gravity="center"
+                android:clickable="true"
+                android:src="@android:drawable/ic_menu_sort_by_size"
                 />
 
             <com.rilixtech.materialfancybutton.MaterialFancyButton
@@ -130,6 +194,39 @@
                 fancy:mfb_textSize="18sp"
                 fancy:mfb_text="Stop"
                 fancy:mfb_textColor="@color/black" />
+
+            <ImageView
+                android:id="@+id/view_rotation"
+                android:padding="15dp"
+                android:layout_toLeftOf="@+id/view_rotation2"
+                android:layout_above="@+id/edit_map"
+                android:layout_marginRight="5dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="10dp"                android:layout_width="20dp"
+                android:layout_height="50dp"
+                android:background="#FFFFFF"
+                android:elevation="5dp"
+                android:clickable="true"
+                android:src="@android:drawable/ic_menu_rotate"
+                />
+            <ImageView
+                android:id="@+id/view_rotation2"
+                android:padding="15dp"
+                android:layout_alignParentRight="true"
+                android:layout_above="@+id/edit_map"
+                android:layout_marginRight="10dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="10dp"
+                android:layout_width="20dp"
+                android:layout_height="50dp"
+                android:background="#FFFFFF"
+                android:elevation="5dp"
+                android:clickable="true"
+                android:src="@android:drawable/ic_menu_rotate"
+                />
+
 
             <TextView
                 android:id="@+id/counttime"

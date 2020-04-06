@@ -6,6 +6,8 @@ import java.util.ArrayList;
 public class Lift {
     String mName;
     int mWeight;
+    int defaultReps =0;
+    private Boolean direction = true;
     private ArrayList<Integer> mReps = new ArrayList<Integer>();
     private ArrayList<Integer> mWeights = new ArrayList<Integer>();
 
@@ -34,7 +36,7 @@ public class Lift {
         return mReps;
     }
 
-    public void setmWeights(ArrayList<Integer> mWeightArray){
+    public void setWeights(ArrayList<Integer> mWeightArray){
         mWeights = mWeightArray;
     }
     public ArrayList<Integer> getRepWeights(){
@@ -44,15 +46,40 @@ public class Lift {
     public void setRepWeight(int index, int weight){
         mWeights.set(index, weight);
     }
+    public void setRepNumber(int index, int number){
+        mReps.set(index, number);
+    }
+    public int getRepNumber(int index){
+        return mReps.get(index);
+    }
+
+
+    public void setDefaultReps(int reps){
+        defaultReps = reps;
+    }
+    public int getDefaultReps(){
+        return defaultReps;
+    }
+
+    public void setDirection(Boolean dir){
+        direction = dir;
+    }
+    public Boolean getDirection(){
+        return direction;
+    }
+
+
 
     public void plusRep(int index){
         int hold = mReps.get(index);
         hold = hold+1;
+        defaultReps = hold;
         mReps.set(index, hold);
     }
     public void minueRep(int index){
         int hold = mReps.get(index);
         hold = hold-1;
+        defaultReps = hold;
         mReps.set(index, hold);
     }
 

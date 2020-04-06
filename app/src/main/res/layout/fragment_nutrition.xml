@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fancy="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:animateLayoutChanges="false"
     android:layout_height="match_parent">
@@ -57,11 +57,13 @@
             android:src="@drawable/ic_myarrow_right"/>
 
 
+
     </RelativeLayout>
     <LinearLayout
         android:id="@+id/graph"
         android:layout_below="@+id/toolbar"
         android:layout_margin="5dp"
+        android:paddingLeft="5dp"
         android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_height="200dip"
@@ -73,20 +75,22 @@
             android:layout_height="200dip"
             android:id="@+id/graph1" />
     </LinearLayout>
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/bottom_graph"
         android:layout_below="@+id/graph"
         android:layout_margin="5dp"
-        android:orientation="vertical"
+        android:paddingLeft="5dp"
+        android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="200dip"
         android:background="@drawable/background_border">
         <LinearLayout
             android:orientation="vertical"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="200dp"
             android:id="@+id/graph2" />
-    </LinearLayout>
+
+    </RelativeLayout>
 
     <LinearLayout
         android:id="@+id/buttons"
@@ -94,6 +98,26 @@
         android:layout_below="@+id/bottom_graph"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+        <com.rilixtech.materialfancybutton.MaterialFancyButton
+            android:id="@+id/monday"
+            android:padding="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:paddingBottom="5dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="5dp"
+            android:elevation="5dp"
+            fancy:mfb_borderColor="@color/black"
+            fancy:mfb_borderWidth="1dp"
+            fancy:mfb_defaultColor="@color/white"
+            fancy:mfb_focusColor="@color/colorPrimaryDark"
+            fancy:mfb_radius="1dp"
+            fancy:mfb_textSize="18sp"
+            fancy:mfb_text="M"
+            fancy:mfb_textColor="@color/black" />
+
         <ImageView
             android:id="@+id/button_minus"
             android:padding="10dp"
@@ -129,6 +153,25 @@
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:src="@drawable/ic_add"/>
+        <com.rilixtech.materialfancybutton.MaterialFancyButton
+            android:id="@+id/seven"
+            android:padding="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:paddingBottom="5dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="5dp"
+            android:elevation="5dp"
+            fancy:mfb_borderColor="@color/black"
+            fancy:mfb_borderWidth="1dp"
+            fancy:mfb_defaultColor="@color/white"
+            fancy:mfb_focusColor="@color/colorPrimaryDark"
+            fancy:mfb_radius="1dp"
+            fancy:mfb_textSize="18sp"
+            fancy:mfb_text="7"
+            fancy:mfb_textColor="@color/black" />
 
     </LinearLayout>
 

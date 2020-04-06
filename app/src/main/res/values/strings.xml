@@ -1,10 +1,9 @@
 <resources>
     <string name="app_name">Thirtymm</string>
     <string name="title_home">Lift</string>
-    <string name="title_dashboard">Nutrition</string>
-    <string name="title_notifications">History</string>
+    <string name="title_track">Track</string>
+    <string name="title_history">History</string>
     <string name="title_run">Run</string>
-    <string name="title_sleep">Sleep</string>
     <string name="title_volume">Volume</string>
 
 
@@ -262,9 +261,7 @@
         <item>Soleus</item>
 
     </string-array>
-
-
-    <string-array name = "full_muscle_list">
+<!--    <string-array name = "full_muscle_list">
         <item>Arms</item>
         <item>Upper Body</item>
         <item>Traps</item>
@@ -307,7 +304,122 @@
         <item>Biceps Femoris</item>
         <item>Gastrocnemius Lateralis</item>
         <item>Gastrocnemius Medialis</item>
+    </string-array>
+    0.13,16,25,29-42
+    -->
 
+    <string-array name = "full_muscle_list">
+        <item>Arms</item>
+        <item>Front Deltoids</item>
+        <item>Middle Deltoids</item>
+        <item>Rear Deltoids</item>
+        <item>Biceps - Long Head</item>
+        <item>Biceps - Short Head</item>
+        <item>Triceps - Long Head</item>
+        <item>Triceps - Medial Head</item>
+        <item>Triceps - Lateral Head</item>
+        <item>Brachialis</item>
+        <item>Brachioradialis</item>
+        <item>Extensors</item>
+        <item>Flexors</item>
+
+        <item>Chest</item>
+        <item>Upper Pectorals</item>
+        <item>Lower Pectorals</item>
+
+
+        <item>Back</item>
+        <item>Upper Traps</item>
+        <item>Middle Traps</item>
+        <item>Lower Traps</item>
+        <item>Infraspinatus</item>
+        <item>Teres Major</item>
+        <item>Teres Minor</item>
+        <item>Lats</item>
+        <item>Erector Spinae</item>
+
+        <item>Core</item>
+        <item>Abdominals</item>
+        <item>Serratus</item>
+        <item>Obliques</item>
+
+        <item>Legs</item>
+        <item>Glutes</item>
+        <item>Tensor Fasciae Latae</item>
+
+
+        <item>Adductors</item>
+        <item>Sartorius</item>
+
+<!--
+        <item>QUADS</item>
+-->
+        <item>Vastus Lateralis</item>
+        <item>Vastus Medialis</item>
+        <item>Rectus Femoris</item>
+
+        <item>Biceps Femoris</item>
+        <item>Semitendinosus</item>
+
+        <item>Soleus</item>
+        <item>Tibialis Anterior</item>
+        <item>Gastrocnemius Lateralis</item>
+        <item>Gastrocnemius Medialis</item>
+    </string-array>
+
+
+    <string-array name = "Chest">
+        <item>Upper Pectorals</item>
+        <item>Lower Pectorals</item>
+    </string-array>
+
+    <string-array name = "Arms">
+        <item>Front Deltoids</item>
+        <item>Middle Deltoids</item>
+        <item>Rear Deltoids</item>
+        <item>Biceps - Long Head</item>
+        <item>Biceps - Short Head</item>
+        <item>Triceps - Long Head</item>
+        <item>Triceps - Medial Head</item>
+        <item>Triceps - Lateral Head</item>
+        <item>Brachialis</item>
+        <item>Brachioradialis</item>
+        <item>Extensors</item>
+        <item>Flexors</item>
+    </string-array>
+
+    <string-array name = "Back">
+        <item>Upper Traps</item>
+        <item>Middle Traps</item>
+        <item>Lower Traps</item>
+        <item>Lats</item>
+        <item>Infraspinatus</item>
+        <item>Teres Major</item>
+        <item>Teres Minor</item>
+        <item>Erector Spinae</item>
+    </string-array>
+
+    <string-array name = "Legs">
+        <item>Tensor Fasciae Latae</item>
+        <item>Glutes</item>
+        <item>Adductors</item>
+        <item>Sartorius</item>
+        <item>Vastus Lateralis</item>
+        <item>Vastus Medialis</item>
+        <item>Rectus Femoris</item>
+        <item>Semitendinosus</item>
+        <item>Biceps Femoris</item>
+
+        <item>Soleus</item>
+        <item>Tibialis Anterior</item>
+        <item>Gastrocnemius Lateralis</item>
+        <item>Gastrocnemius Medialis</item>
+    </string-array>
+
+    <string-array name = "Core">
+        <item>Abdominals</item>
+        <item>Serratus</item>
+        <item>Obliques</item>
     </string-array>
 
 

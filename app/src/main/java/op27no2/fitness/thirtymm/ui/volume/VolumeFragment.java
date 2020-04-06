@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.res.TypedArray;
 import android.graphics.BlendMode;
 import android.graphics.BlendModeColorFilter;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
@@ -13,6 +14,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -22,6 +24,9 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +38,7 @@ import java.util.Set;
 
 import op27no2.fitness.thirtymm.Database.AppDatabase;
 import op27no2.fitness.thirtymm.Database.Repository;
+import op27no2.fitness.thirtymm.MainActivity;
 import op27no2.fitness.thirtymm.R;
 import op27no2.fitness.thirtymm.ui.lifting.Lift;
 import op27no2.fitness.thirtymm.ui.lifting.LiftMap;
@@ -54,15 +60,21 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
     private ArrayList<ArrayList<String>> topMuscleList = new ArrayList<ArrayList<String>>();
     private ArrayList<String> allMuscles = new ArrayList<String>();
     private HashMap<String, Double> muscleVolumes = new HashMap<String, Double>();
+    private ArrayList<ImageView> imageViews = new ArrayList<ImageView>();
+    private ArrayList<ImageView> imageViews2 = new ArrayList<ImageView>();
 
     private Drawable[] darray;
     private Drawable[] darray2;
+    private FrameLayout frame1;
+    private FrameLayout frame2;
     private ImageView overLay1;
     private ImageView overLay2;
     private View view;
     private DialogVolumeMap dialog;
     private Repository mRepository;
+    private ImageView saveButton;
     DialogVolumeMapnterface mInterface;
+
 
 
     @SuppressLint("StaticFieldLeak")
@@ -78,7 +90,11 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(mLayoutManager);
         overLay1 = view.findViewById(R.id.my_overlay1);
+        frame1 = view.findViewById(R.id.frame_layout1);
+        frame2 = view.findViewById(R.id.frame_layout2);
         overLay2 = view.findViewById(R.id.my_overlay2);
+        saveButton = (ImageView) view.findViewById(R.id.save_workout);
+
 
         // Creates ArrayList of ArrayLists for Images and Names
         topImageList.add(getResources().obtainTypedArray(R.array.images_male_bb_front));
@@ -101,6 +117,13 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
         diagramSetup(0);
 
         mRepository = new Repository(getActivity());
+
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((MainActivity)getActivity()).goToSettings();
+            }
+        });
 
 
 
@@ -148,18 +171,24 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
 
     public void otherStuff(){
         for(int i=0; i<weeksWorkouts.size(); i++){
-            ArrayList<Lift> mLifts = weeksWorkouts.get(i).getMyLifts();
-            for(int j=0; j<mLifts.size();j++){
-                String name = mLifts.get(j).getName();
-                int sets = mLifts.get(j).getReps().size();
-                if(mVolume.containsKey(name)){
-                    int hold = mVolume.get(name);
-                    hold = hold + sets;
-                    mVolume.put(name, hold);
-                }else{
-                    mVolume.put(name, sets);
+            //TODO this gave a null object reference once, please check timing
+            LiftingWorkout mWorkout = weeksWorkouts.get(i);
+            if(mWorkout != null) {
+                ArrayList<Lift> mLifts = mWorkout.getMyLifts();
+
+                for (int j = 0; j < mLifts.size(); j++) {
+                    String name = mLifts.get(j).getName();
+                    int sets = mLifts.get(j).getReps().size();
+                    if (mVolume.containsKey(name)) {
+                        int hold = mVolume.get(name);
+                        hold = hold + sets;
+                        mVolume.put(name, hold);
+                    } else {
+                        mVolume.put(name, sets);
+                    }
                 }
             }
+
         }
 
         for (Map.Entry<String, Integer> entry : mVolume.entrySet()) {
@@ -175,6 +204,7 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
         mRecyclerView.setNestedScrollingEnabled(false);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
+        System.out.println("oncreate GetLiftMaps called");
         //get all info and set colors
         for(int j=0; j<listOfEntry.size(); j++){
             if(j==listOfEntry.size()-1){
@@ -199,23 +229,23 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
 
                 if (vol >= 75) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        darray[i].setColorFilter(new BlendModeColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), BlendMode.SRC_ATOP));
+                        imageViews.get(i).setColorFilter(new BlendModeColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), BlendMode.SRC_ATOP));
                     } else {
-                        darray[i].setColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+                        imageViews.get(i).setColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
                     }
                     //  imgg.setColorFilter(argb(125 + (int) Math.floor((progress - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (progress - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
 
                 }
                 if (vol >= 50 && vol < 75) {
-                    darray[i].setColorFilter(argb(125, 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+                    imageViews.get(i).setColorFilter(argb(125, 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
 
                 }
                 if (vol >= 25 && vol < 50) {
-                    darray[i].setColorFilter(argb(125, (int) Math.floor((vol - 25) * 4 * 2.55), 255, 0), PorterDuff.Mode.SRC_ATOP);
+                    imageViews.get(i).setColorFilter(argb(125, (int) Math.floor((vol - 25) * 4 * 2.55), 255, 0), PorterDuff.Mode.SRC_ATOP);
 
                 }
                 if (vol < 25) {
-                    darray[i].setColorFilter(argb(125, 0, 255, (255 - (int) Math.floor(2.55 * (vol) * 4))), PorterDuff.Mode.SRC_ATOP);
+                    imageViews.get(i).setColorFilter(argb(125, 0, 255, (255 - (int) Math.floor(2.55 * (vol) * 4))), PorterDuff.Mode.SRC_ATOP);
 
                 }
             }
@@ -228,23 +258,23 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
                 }
                 if (vol >= 75) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        darray2[i].setColorFilter(new BlendModeColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), BlendMode.SRC_ATOP));
+                        imageViews2.get(i).setColorFilter(new BlendModeColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), BlendMode.SRC_ATOP));
                     } else {
-                        darray2[i].setColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+                        imageViews2.get(i).setColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
                     }
                     //  imgg.setColorFilter(argb(125 + (int) Math.floor((progress - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (progress - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
 
                 }
                 if (vol >= 50 && vol < 75) {
-                    darray2[i].setColorFilter(argb(125, 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+                    imageViews2.get(i).setColorFilter(argb(125, 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
 
                 }
                 if (vol >= 25 && vol < 50) {
-                    darray2[i].setColorFilter(argb(125, (int) Math.floor((vol - 25) * 4 * 2.55), 255, 0), PorterDuff.Mode.SRC_ATOP);
+                    imageViews2.get(i).setColorFilter(argb(125, (int) Math.floor((vol - 25) * 4 * 2.55), 255, 0), PorterDuff.Mode.SRC_ATOP);
 
                 }
                 if (vol < 25) {
-                    darray2[i].setColorFilter(argb(125, 0, 255, (255 - (int) Math.floor(2.55 * (vol) * 4))), PorterDuff.Mode.SRC_ATOP);
+                    imageViews2.get(i).setColorFilter(argb(125, 0, 255, (255 - (int) Math.floor(2.55 * (vol) * 4))), PorterDuff.Mode.SRC_ATOP);
 
                 }
             }
@@ -254,13 +284,18 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
     public void diagramSetup(int type) {
         System.out.println("TYPE:" + type);
 
+
+
         //set my frame with correct backgroundimage
         ImageView myFrame = (ImageView) view.findViewById(R.id.my_frame1);
         ImageView myFrame2 = (ImageView) view.findViewById(R.id.my_frame2);
 
         if (type == 0) {
-            myFrame.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.male_bb_front));
-            myFrame2.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.male_bb_back));
+           // myFrame.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.male_bb_front));
+            Glide.with(this).load(R.drawable.male_bb_front).into(myFrame);
+          //  myFrame2.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.male_bb_back));
+            Glide.with(this).load(R.drawable.male_bb_back).into(myFrame2);
+
         } else if (type == 1) {
             myFrame.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.female_front));
             myFrame2.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.female_back));
@@ -284,9 +319,27 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
         LayerDrawable layer = new LayerDrawable(darray);
         LayerDrawable layer2 = new LayerDrawable(darray2);
 
-        //add layers to overlay
-        overLay1.setImageDrawable(layer);
-        overLay2.setImageDrawable(layer2);
+        for(int i=0; i<darray.length; i++){
+            ImageView mImage = new ImageView(getActivity());
+            Glide.with(this).load(darray[i]).centerCrop().into(mImage);
+            imageViews.add(mImage);
+            frame1.addView(mImage);
+        }
+
+        for(int i=0; i<darray2.length; i++){
+            ImageView mImage = new ImageView(getActivity());
+            Glide.with(this).load(darray2[i]).centerCrop().into(mImage);
+            imageViews2.add(mImage);
+            frame2.addView(mImage);
+        }
+
+
+        //add layers to overlaym
+      //  Glide.with(this).load(layer).into(overLay1);
+     //   Glide.with(this).load(layer2).into(overLay2);
+
+/*        overLay1.setImageDrawable(layer);
+        overLay2.setImageDrawable(layer2);*/
     }
 
     @SuppressLint("StaticFieldLeak")
@@ -301,18 +354,24 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
             }
             protected Void doInBackground(Void... unused) {
                 LiftMap mMap = AppDatabase.getAppDatabase(getActivity()).lmDAO().findByName(liftName);
-                ArrayList<String> names = mMap.getMuscles();
-                ArrayList<Double> ratios = mMap.getRatios();
-                if(mMap.getRatios() !=null) {
-                    for(int i=0; i<mMap.getRatios().size(); i++) {
-                        if (muscleVolumes.containsKey(names.get(i))) {
-                            Double hold = muscleVolumes.get(names.get(i));
-                            hold = hold + ratios.get(i) * numSets;
-                            muscleVolumes.put(names.get(i), hold);
-                        } else {
-                            muscleVolumes.put(names.get(i), ratios.get(i) * numSets);
+                if(mMap != null) {
+                    ArrayList<String> names = mMap.getMuscles();
+                    ArrayList<Integer> ratios = mMap.getRatios();
+                    if (mMap.getRatios() != null) {
+                        for (int i = 0; i < mMap.getRatios().size(); i++) {
+                            if (muscleVolumes.containsKey(names.get(i))) {
+                                Double hold = muscleVolumes.get(names.get(i));
+                                //dividing by 10 because stored as integers
+                                hold = hold +  ((double) ratios.get(i)/10) * numSets;
+                                muscleVolumes.put(names.get(i), hold);
+                            } else {
+                                //dividing by 10 because stored as integers
+                                muscleVolumes.put(names.get(i), ((double) ratios.get(i)/10) * numSets);
+                            }
                         }
                     }
+                }else{
+                    System.out.println("LIFT MAP NULL: "+liftName);
                 }
 
 
@@ -335,10 +394,11 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
 
     @Override
     public void onDialogDismiss() {
-        System.out.println("Volume Dialog ondismiss called");
+        System.out.println("Volume Dialog ondismiss getliftmaps called");
         muscleVolumes.clear();
         for(int j=0; j<listOfEntry.size(); j++){
             if(j==listOfEntry.size()-1){
+                //flags the last entry, this list is the lifts and their volumes, have to get ratios (lift map) for each lift/volume key pair
                 getLiftMap(true, listOfEntry.get(j).getKey(),listOfEntry.get(j).getValue());
             }else{
                 getLiftMap(false, listOfEntry.get(j).getKey(), listOfEntry.get(j).getValue());
@@ -347,6 +407,16 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
 
     }
 
+    @Override
+    public void onPause() {
+        System.out.println("volume onPause");
+        super.onPause();
+    }
+    @Override
+    public void onResume() {
+        System.out.println("volume onReusme");
+        super.onResume();
+    }
 
 
 }
