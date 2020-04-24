@@ -132,7 +132,7 @@ public class LiftCardviewWorkoutAdapter extends RecyclerView.Adapter<LiftCardvie
 
         //set lift data to recyclerview
         LiftCardviewWorkoutAdapter madapter = this;
-        final MyRepAdapter mRepAdapter = new MyRepAdapter(madapter, mLiftingWorkout, position, mRepository);
+        MyRepAdapter mRepAdapter = new MyRepAdapter(madapter, mLiftingWorkout, position, mRepository);
         mRecyclerView.setAdapter(mRepAdapter);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
@@ -181,6 +181,7 @@ public class LiftCardviewWorkoutAdapter extends RecyclerView.Adapter<LiftCardvie
                 mLiftingWorkout.getMyLifts().get(position).setRepNumber(size-1,  prefs.getInt("default_reps"+mLiftingWorkout.getMyLifts().get(position).getName(),0));
                 mRepository.updateWorkout(mLiftingWorkout);
                 mRepAdapter.notifyDataSetChanged();
+
             }
         });
 
@@ -230,9 +231,10 @@ public class LiftCardviewWorkoutAdapter extends RecyclerView.Adapter<LiftCardvie
             @Override
             public boolean onLongClick(View view) {
                 System.out.println("lift long click");
+                notifyItemRemoved(position);
+                notifyItemRangeChanged(position, getItemCount());
                 mLiftingWorkout.removeLift(position);
                 mRepository.updateWorkout(mLiftingWorkout);
-                notifyDataSetChanged();
                 return false;
             }
         });

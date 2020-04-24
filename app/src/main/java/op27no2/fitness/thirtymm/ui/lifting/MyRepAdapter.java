@@ -149,8 +149,12 @@ public class MyRepAdapter extends RecyclerView.Adapter<MyRepAdapter.ViewHolder>{
             @Override
             public boolean onLongClick(View view) {
                 System.out.println("lift long click");
+
                 mLiftingWorkout.getMyLifts().get(parentPosition).removeSet(position);
                 mRepository.updateWorkout(mLiftingWorkout);
+           /*     notifyItemRemoved(position);
+                notifyItemRangeChanged(position, getItemCount());
+                view.getParent();*/
                 notifyDataSetChanged();
                 return false;
             }

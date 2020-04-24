@@ -157,8 +157,9 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
 
                 mLiftingWorkout.addLift(mLift);
                 mRepository.updateWorkout(mLiftingWorkout);
-                mLiftAdapter.notifyDataSetChanged();
-            }
+                mLiftAdapter.notifyItemInserted(mLiftAdapter.getItemCount());
+                mRecyclerView.smoothScrollToPosition(mLiftAdapter.getItemCount() - 1);
+        }
         });
 
 
@@ -405,6 +406,8 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
         mLiftingWorkout = mWorkout;
         mRepository.updateWorkout(mLiftingWorkout);
         mLiftAdapter.notifyDataSetChanged();
+        mRecyclerView.smoothScrollToPosition(mLiftAdapter.getItemCount() - 1);
+
 
     }
 
