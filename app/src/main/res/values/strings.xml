@@ -203,7 +203,7 @@
         <item>Arms</item>
         <item>Legs</item>
         <item>Upper Body</item>
-        <item>Traps</item>
+        <item>Upper Traps</item>
         <item>Upper Pectorals</item>
         <item>Lower Pectorals</item>
         <item>Abdominals</item>
@@ -225,7 +225,7 @@
         <item>Sartorius</item>
         <item>Adductors</item>
         <item>Tensor Fasciae Latae</item>
-        <item>Gastrocnemius</item>
+        <item>Gastrocnemius Medialis</item>
         <item>Soleus</item>
         <item>Tibialis Anterior</item>
     </string-array>
@@ -422,6 +422,21 @@
         <item>Obliques</item>
     </string-array>
 
+
+
+    <string name="title_gender">Avatar</string>
+    <string name="gender">gender</string>
+    <string name="gender_summary">Select Avatar</string>
+    <string name="gender_title">Avatar</string>
+
+    <string-array name = "entries_gender">
+        <item>Male</item>
+        <item>Female</item>
+    </string-array>
+    <string-array name = "values_gender">
+        <item>Male</item>
+        <item>Female</item>
+    </string-array>
 
 
 </resources>

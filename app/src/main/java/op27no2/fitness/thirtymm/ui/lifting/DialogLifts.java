@@ -3,6 +3,7 @@ package op27no2.fitness.thirtymm.ui.lifting;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -27,6 +28,7 @@ import op27no2.fitness.thirtymm.RecyclerItemClickListener;
 public class DialogLifts extends Dialog  {
 
         public Context c;
+        private SharedPreferences.Editor edt;
         public Dialog d;
         public Button yes, no;
         private RecyclerView mRecyclerView;
@@ -80,6 +82,9 @@ public class DialogLifts extends Dialog  {
         for(int i=0; i<allMuscles.size(); i++){
             allRatios.add(0);
         }
+        edt = c.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
+        edt.putBoolean("dialog_opened", true);
+        edt.commit();
 
         chestMuscles = new ArrayList(Arrays.asList((mContext.getResources().getStringArray(R.array.Chest))));
         armMuscles = new ArrayList(Arrays.asList((mContext.getResources().getStringArray(R.array.Arms))));

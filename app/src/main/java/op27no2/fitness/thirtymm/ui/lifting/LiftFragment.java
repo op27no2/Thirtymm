@@ -3,22 +3,17 @@ package op27no2.fitness.thirtymm.ui.lifting;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.Vibrator;
-import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -35,17 +30,13 @@ import com.google.android.flexbox.AlignItems;
 import com.google.android.flexbox.FlexDirection;
 import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.flexbox.JustifyContent;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 
-import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 import op27no2.fitness.thirtymm.Database.AppDatabase;
 import op27no2.fitness.thirtymm.Database.Repository;
@@ -72,6 +63,10 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
     private CalendarDialogInterface mInterface;
     private NamedWorkoutInterface mDialogInterface;
     private ArrayList<NamedWorkout> mNamedWorkouts = new ArrayList<NamedWorkout>();
+    private ArrayList<String> allMuscles = new ArrayList<String>();
+    private ArrayList<Integer> allRatios = new ArrayList<Integer>();
+
+
 
     @SuppressLint("StaticFieldLeak")
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -83,6 +78,10 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
         edt = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
         mInterface = (CalendarDialogInterface) this;
         mDialogInterface = this;
+        allMuscles = new ArrayList(Arrays.asList((getActivity().getResources().getStringArray(R.array.full_muscle_list))));
+        for(int i=0; i<allMuscles.size(); i++){
+            allRatios.add(0);
+        }
 
         cal = Calendar.getInstance();
         Date c = cal.getTime();
@@ -96,7 +95,7 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
         dateText = view.findViewById(R.id.toolbar_date);
         ImageView arrowLeft = (ImageView) view.findViewById(R.id.arrow_left);
         ImageView arrowRight = (ImageView) view.findViewById(R.id.arrow_right);
-        ImageView saveButton = (ImageView) view.findViewById(R.id.save_workout);
+        ImageView saveButton = (ImageView) view.findViewById(R.id.save);
 
         arrowLeft.setAlpha(0.8f);
         arrowRight.setAlpha(0.8f);
@@ -140,11 +139,21 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
         addCard = view.findViewById(R.id.card_view);
         addCard.setOnClickListener(new View.OnClickListener() {
             @Override
+
             public void onClick(View view) {
                 Lift mLift = new Lift("Bench Press", prefs.getInt("last_weightBench Press", 225));
                 mLift.addSet();
                 mLift.setRepNumber(0, prefs.getInt("default_reps" + "Bench Press", 0));
                 System.out.println("lift  click");
+
+                //if dialog has not been open you need to add the bench press lift map too
+                if(prefs.getBoolean("dialog_opened", false) == false) {
+                    LiftMap mLiftMap = new LiftMap("Bench Press");
+                    mLiftMap.setMuscles(allMuscles);
+                    mLiftMap.setRatios(allRatios);
+                    mRepository.insertLiftMap(mLiftMap);
+                }
+
 
                 mLiftingWorkout.addLift(mLift);
                 mRepository.updateWorkout(mLiftingWorkout);

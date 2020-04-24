@@ -60,6 +60,21 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     }
 
 
+    public void goToRunDetail(int id){
+        /*ConfirmationAction action =  SpecifyAmountFragmentDirections.confirmationAction();
+        action.setAmount(amount);
+        Navigation.findNavController(view).navigate(action);
+*/
+        System.out.println("activity level runworkout id: "+id);
+
+        NavController navController = Navigation.findNavController(this, nav_host_fragment);
+        Bundle bundle = new Bundle();
+        bundle.putInt("uid", id);
+        navController.navigate(R.id.navigation_rundetail, bundle);
+
+    }
+
+
     @Override
     public void onExplanationNeeded(List<String> permissionsToExplain) {
 

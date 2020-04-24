@@ -1,5 +1,6 @@
 package op27no2.fitness.thirtymm.ui.nutrition;
 
+import android.app.Dialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +13,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.Map;
 
+import op27no2.fitness.thirtymm.Database.Repository;
 import op27no2.fitness.thirtymm.R;
+import op27no2.fitness.thirtymm.ui.lifting.PickerDialog;
+import op27no2.fitness.thirtymm.ui.lifting.PickerDialogInterface;
 
 /**
  * Created by CristMac on 11/3/17.
@@ -22,6 +26,9 @@ public class NutritionAdapter extends RecyclerView.Adapter<NutritionAdapter.View
     private ArrayList<String> mNames;
     private ArrayList<Integer> mValues;
     private int selected;
+    private Repository mRepository;
+    private PickerDialogInterface passThisInterface;
+
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -36,9 +43,10 @@ public class NutritionAdapter extends RecyclerView.Adapter<NutritionAdapter.View
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public NutritionAdapter(ArrayList<String> names, ArrayList<Integer> values ) {
+    public NutritionAdapter(ArrayList<String> names, ArrayList<Integer> values, PickerDialogInterface mInterface ) {
         mNames = names;
         mValues = values;
+        passThisInterface = mInterface;
     }
 
     // Create new views (invoked by the layout manager)
@@ -49,7 +57,7 @@ public class NutritionAdapter extends RecyclerView.Adapter<NutritionAdapter.View
         View v = (View) LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.volume_row, parent, false);
         // set the view's size, margins, paddings and layout parameters
-
+        mRepository = new Repository(v.getContext());
 
 
         ViewHolder vh = new ViewHolder(v);
@@ -66,8 +74,18 @@ public class NutritionAdapter extends RecyclerView.Adapter<NutritionAdapter.View
         TextView mText1 = holder.mView.findViewById(R.id.volume_lift);
         TextView mText2 = holder.mView.findViewById(R.id.volume_sets);
 
+
         mText1.setText(mNames.get(position));
         mText2.setText(Integer.toString(mValues.get(position)));
+        mText2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                System.out.println("heyhey");
+              /*  Dialog dialog = new EditDialog(view.getContext(),position, mValues.get(position), passThisInterface);
+                dialog.show();*/
+            }
+        });
+
 
         if(position == selected){
             holder.mView.setBackgroundColor(ColorUtils.setAlphaComponent(ContextCompat.getColor(holder.mView.getContext(), R.color.lightgrey),200));
@@ -91,6 +109,11 @@ public class NutritionAdapter extends RecyclerView.Adapter<NutritionAdapter.View
     public int getItemCount() {
         return mNames.size();
     }
+
+
+
+
+
 }
 
 

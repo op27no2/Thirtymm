@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fancy="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+    <RelativeLayout
+        android:id="@+id/toolbar"
+        android:background="@color/colorPrimary"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize">
+
+        <TextView
+            android:id="@+id/toolbar_title"
+            android:layout_marginLeft="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Configure Widget"
+            android:textSize="20sp"
+            android:textColor="#FFFFFF"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            />
+    </RelativeLayout>
+
+    <com.rilixtech.materialfancybutton.MaterialFancyButton
+        android:id="@+id/calories"
+        android:layout_below="@+id/toolbar"
+        android:layout_centerHorizontal="true"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:layout_margin="10dp"
+        android:paddingBottom="5dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="5dp"
+        android:elevation="5dp"
+        fancy:mfb_borderColor="@color/black"
+        fancy:mfb_borderWidth="1dp"
+        fancy:mfb_defaultColor="@color/white"
+        fancy:mfb_focusColor="@color/colorPrimaryDark"
+        fancy:mfb_iconFont="fontawesome.ttf"
+        fancy:mfb_iconPosition="left"
+        fancy:mfb_radius="1dp"
+        fancy:mfb_textSize="18sp"
+        fancy:mfb_text="Calories"
+        fancy:mfb_textColor="@color/black" />
+
+    <com.rilixtech.materialfancybutton.MaterialFancyButton
+        android:id="@+id/protein"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/calories"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:layout_margin="10dp"
+        android:paddingBottom="5dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="5dp"
+        android:elevation="5dp"
+        fancy:mfb_borderColor="@color/black"
+        fancy:mfb_borderWidth="1dp"
+        fancy:mfb_defaultColor="@color/white"
+        fancy:mfb_focusColor="@color/colorPrimaryDark"
+        fancy:mfb_iconFont="fontawesome.ttf"
+        fancy:mfb_iconPosition="left"
+        fancy:mfb_radius="1dp"
+        fancy:mfb_textSize="18sp"
+        fancy:mfb_text="Protein"
+        fancy:mfb_textColor="@color/black" />
+
+
+    <com.rilixtech.materialfancybutton.MaterialFancyButton
+        android:id="@+id/finish"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:layout_margin="10dp"
+        android:paddingBottom="5dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="5dp"
+        android:elevation="5dp"
+        fancy:mfb_borderColor="@color/black"
+        fancy:mfb_borderWidth="1dp"
+        fancy:mfb_defaultColor="@color/white"
+        fancy:mfb_focusColor="@color/colorPrimaryDark"
+        fancy:mfb_iconFont="fontawesome.ttf"
+        fancy:mfb_iconPosition="left"
+        fancy:mfb_radius="1dp"
+        fancy:mfb_textSize="18sp"
+        fancy:mfb_text="Finish"
+        fancy:mfb_textColor="@color/black" />
+
+
+
+
+</RelativeLayout>

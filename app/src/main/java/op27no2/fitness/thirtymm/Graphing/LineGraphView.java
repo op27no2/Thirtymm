@@ -247,7 +247,10 @@ public class LineGraphView extends GraphView {
 		        Calendar c = Calendar.getInstance(); 
 		       // dayset = Integer.parseInt(prefs2.getString("tapnum2", "1"));
 
+				//find todays weekday, which is last displayed data point. Then subtract backwards as we move back from that data point xX are the X data points (e.g. 0 to 30?)
 				int weekday = c.get(7) - (listsize - (int) xX);
+
+				//if
 				if(values.length < 10){
 					weekday = dayset;
 				}
@@ -255,24 +258,18 @@ public class LineGraphView extends GraphView {
 					if(values.length < 10){
 						weekday = dayset;
 					}
-					/*if(values.length < 18){
-						weekday = (int) (weekday + Math.ceil(Math.abs(weekday/3.5))*3.5);
-					}*/
 					for(int k=1; k<25; k++){
-					
-					if(values.length < 45*k){
-						weekday = (int) (weekday + Math.ceil(Math.abs(weekday/(7*k)))*(7*k));
+						if(values.length < 45*k){
+							weekday = (int) (weekday + Math.ceil(Math.abs(weekday/(7*k)))*(7*k));
+						}
 					}
-					}
-					/*else{
-						weekday = (int) (weekday + Math.ceil(Math.abs(weekday/(values.length/6)))*(values.length/6));
-					}*/
+
 				}
 				
 				int day = c.get(6) ;
-				c.set(6, day - (listsize - (int) xX));
+				c.set(6, day - (listsize - (int) xX)+1);
 				int dayofmonth = c.get(5);
-				int month = c.get(2)+1;
+				int month = c.get(2);
 				int year = c.get(1);
 
 		        listsize = prefs.getInt("datasize", 1);

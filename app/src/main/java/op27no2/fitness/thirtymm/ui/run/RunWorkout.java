@@ -37,6 +37,9 @@ public class RunWorkout {
     @ColumnInfo(name = "description")
     private String description;
 
+    @ColumnInfo(name = "title")
+    private String title;
+
     @ColumnInfo(name = "runs")
     //private ArrayList<Point> coordinates = new ArrayList<Point>();
     private String coordinates;
@@ -65,6 +68,15 @@ public class RunWorkout {
         this.description = descrip;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String tit) {
+        this.title = tit;
+    }
+
+    //we just store a uid reference to the coordinates stored in sharedprefs as json object
     public String getCoordinates() {
         return coordinates;
     }

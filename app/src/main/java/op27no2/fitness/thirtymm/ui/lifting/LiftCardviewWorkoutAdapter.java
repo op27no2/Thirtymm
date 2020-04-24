@@ -106,7 +106,7 @@ public class LiftCardviewWorkoutAdapter extends RecyclerView.Adapter<LiftCardvie
         mText.setText(mLiftingWorkout.getMyLifts().get(position).getName());
 
         //weight text below circle
-        final TextView mWeightText = holder.mView.findViewById(R.id.weight_text);
+        TextView mWeightText = holder.mView.findViewById(R.id.weight_text);
         final int[] weight = {Integer.parseInt(mWeightText.getText().toString())};
         mWeightText.setText(Integer.toString(mLiftingWorkout.getMyLifts().get(position).getWeight()));
         mWeightText.setOnClickListener(new View.OnClickListener() {
@@ -171,6 +171,7 @@ public class LiftCardviewWorkoutAdapter extends RecyclerView.Adapter<LiftCardvie
         addCircle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 rabbit.vibrate(10);
                 System.out.println("lift  click");
                 mLiftingWorkout.getMyLifts().get(position).addSet();
@@ -188,11 +189,19 @@ public class LiftCardviewWorkoutAdapter extends RecyclerView.Adapter<LiftCardvie
             @Override
             public void onClick(View view) {
                 rabbit.vibrate(5);
+                mWeightText.setText(Integer.toString(10));
 
                 int weight = mLiftingWorkout.getMyLifts().get(position).getWeight();
+
+                System.out.println("weight: "+weight);
                 weight = weight+5;
-                edt.putInt("last_weight"+mLiftingWorkout.getMyLifts().get(position).getName() , weight);
-                edt.commit();
+                System.out.println("weight: "+weight);
+                mWeightText.setText(Integer.toString(weight));
+
+
+              /*  edt.putInt("last_weight"+mLiftingWorkout.getMyLifts().get(position).getName() , weight);
+                edt.commit();*/
+
                 mLiftingWorkout.getMyLifts().get(position).setWeight(weight);
                 mRepository.updateWorkout(mLiftingWorkout);
                 mWeightText.setText(Integer.toString(weight));

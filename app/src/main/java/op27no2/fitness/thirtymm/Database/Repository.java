@@ -109,6 +109,12 @@ public class Repository {
             mRunDao.updateWorkouts(runWorkout);
         });
     }
+    public void deleteRunWorkout(RunWorkout runWorkout) {
+        Executor myExecutor = Executors.newSingleThreadExecutor();
+        myExecutor.execute(() -> {
+            mRunDao.delete(runWorkout);
+        });
+    }
 
 
     public void updateNutrition(NutritionDay mDay) {

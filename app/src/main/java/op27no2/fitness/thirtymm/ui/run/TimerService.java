@@ -141,6 +141,7 @@ public class TimerService extends Service  {
         super.onCreate();
         prefs = getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
+        //TODO manifest process currently makes this non functional...
         edt.putBoolean("service_running", true);
         edt.commit();
 
@@ -167,7 +168,7 @@ public class TimerService extends Service  {
         String channelName = "My Foreground Service";
         NotificationChannel channel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH);
         // omitted the LED color
-        channel.setImportance(NotificationManager.IMPORTANCE_NONE);
+        channel.setImportance(NotificationManager.IMPORTANCE_HIGH);
         channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
         notificationManager.createNotificationChannel(channel);
         return channelId;
@@ -206,11 +207,13 @@ public class TimerService extends Service  {
 
     @Override
     public void onDestroy() {
-       handler.removeCallbacks((runnable));
+        System.out.println("service onDestroy");
+
+        handler.removeCallbacks((runnable));
         if (mFusedLocationClient != null) {
             mFusedLocationClient.removeLocationUpdates(locationCallback);
         }
-
+        //TODO manifest process currently makes this non functional...
         edt.putBoolean("service_running", false);
         edt.commit();
     }

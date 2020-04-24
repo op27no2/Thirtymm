@@ -13,6 +13,7 @@ import android.graphics.Paint;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.TypedValue;
 import android.widget.RemoteViews;
 import android.widget.Toast;
@@ -32,8 +33,11 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
     private SharedPreferences prefs;
     private SharedPreferences.Editor edt;
     private Integer cals;
+    private Integer protein;
     private ArrayList<String> mNames = new ArrayList<String>(2);
     private ArrayList<Integer> mValues = new ArrayList<Integer>(2);
+    private Vibrator rabbit;
+
 
     @SuppressLint("StaticFieldLeak")
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -55,6 +59,12 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
             views.setOnClickPendingIntent(R.id.button_minus_small, buildButtonPendingIntent(context, appWidgetId, "MINUS_BUTTON_SMALL"));
             views.setOnClickPendingIntent(R.id.top, buildButtonPendingIntent(context, appWidgetId, "HOME_BUTTON"));
             mRepository = new Repository(context);
+
+            System.out.println("test configure widget id: "+Integer.toString(appWidgetIds[i]));
+            System.out.println("test configure widget id value: "+prefs.getString(Integer.toString(appWidgetIds[i]),""));
+
+
+
 
             Long time = Calendar.getInstance().getTimeInMillis();
             SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, ''yy");
@@ -81,29 +91,43 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                     return null;
                 }
                 protected void onPostExecute(Void unused) {
-                finishUI(views, appWidgetManager, watchWidget);
+                finishUI(views, appWidgetManager, watchWidget, appWidgetId);
                 }
             }.execute();
 
 
 
             // Tell the AppWidgetManager to perform an update on the current app widget
-            appWidgetManager.updateAppWidget(watchWidget, views);
+      //      appWidgetManager.updateAppWidget(watchWidget, views);
         }
     }
 
-    public void finishUI(RemoteViews views, AppWidgetManager mgr,ComponentName watchWidget){
+    public void finishUI(RemoteViews views, AppWidgetManager mgr,ComponentName watchWidget, int appWidgetId){
         if(mDay.getValues() != null) {
             cals = mDay.getValues().get(0);
-            System.out.println("cals is "+cals);
-            views.setTextViewText(R.id.text1,Integer.toString(cals));
-            if(cals<0){
-                views.setTextColor(R.id.text1, Color.RED);
-            }else{
-                views.setTextColor(R.id.text1, Color.GREEN);
+            protein = mDay.getValues().get(1);
+
+            if(prefs.getString(Integer.toString(appWidgetId),"").equals("Protein")) {
+                System.out.println("protein settext"+protein);
+                views.setTextViewText(R.id.top, "Protein");
+                views.setTextViewText(R.id.text1,Integer.toString(protein));
+                views.setTextColor(R.id.text1, Color.BLUE);
+            }
+            if(prefs.getString(Integer.toString(appWidgetId),"").equals("Calories")) {
+                System.out.println("cal settext"+cals);
+
+                views.setTextViewText(R.id.top, "Calories");
+                views.setTextViewText(R.id.text1,Integer.toString(cals));
+                if(cals<0){
+                    views.setTextColor(R.id.text1, Color.RED);
+                }else{
+                    views.setTextColor(R.id.text1, Color.GREEN);
+                }
             }
         }
-        mgr.updateAppWidget(watchWidget, views);
+        //FIRST ONE WITH APP COMPONENT DIDN"T SEEM TO WORK, SWITCHED TO THIS SEEMS TO BE WORKING, Can get rid of Watch Widget
+     //   mgr.updateAppWidget(watchWidget, views);
+        mgr.updateAppWidget(appWidgetId, views);
 
     }
 
@@ -111,15 +135,18 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
     @SuppressLint("StaticFieldLeak")
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
+        rabbit = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
 
         //TODO test this code
     if (intent.getAction().equals("HOME_BUTTON")) {
         Intent i = new Intent(context, MainActivity.class);
         i.putExtra("frgToLoad", "Nutrition");
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(i);
-
+        rabbit.vibrate(20);
+        rabbit.vibrate(20);
     }else{
-
+        rabbit.vibrate(30);
 
         prefs = context.getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = context.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
@@ -130,15 +157,17 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
         ComponentName watchWidget = new ComponentName(context, MyAppWidgetProvider.class);
         mRepository = new Repository(context);
 
-            int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
-                    AppWidgetManager.INVALID_APPWIDGET_ID);
-           // int viewIndex = intent.getIntExtra(EXTRA_ITEM, 0);
-            System.out.println("widget pressed plus");
+        int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
+                AppWidgetManager.INVALID_APPWIDGET_ID);
+        // int viewIndex = intent.getIntExtra(EXTRA_ITEM, 0);
 
 
-            Long time = Calendar.getInstance().getTimeInMillis();
-            SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, ''yy");
-            String date = df.format(time);
+        System.out.println("widget pressed "+appWidgetId);
+
+
+        Long time = Calendar.getInstance().getTimeInMillis();
+        SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, ''yy");
+        String date = df.format(time);
         System.out.println("widget date: "+date);
 
 
@@ -172,13 +201,16 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                     }
 
                     cals = mValues.get(0);
-
+                    protein = mValues.get(1);
 
 
                     return null;
                 }
                 protected void onPostExecute(Void unused) {
                     if(mDay != null && cals !=null) {
+                    if(prefs.getString(Integer.toString(appWidgetId),"").equals("Calories")) {
+                        System.out.println("cal buttons"+cals);
+
                         if (intent.getAction().equals("PLUS_BUTTON")) {
                             cals = cals + 100;
                         }
@@ -191,10 +223,31 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                         if (intent.getAction().equals("MINUS_BUTTON_SMALL")) {
                             cals = cals - 10;
                         }
-                        mValues.set(0,cals);
+                        mValues.set(0, cals);
                         mDay.setValues(mValues);
-                        mRepository.updateNutrition(mDay);
-                        finishUI(remoteViews, mgr, watchWidget);
+                    }
+                    if(prefs.getString(Integer.toString(appWidgetId),"").equals("Protein")) {
+                        System.out.println("protein buttons"+protein);
+
+                        if (intent.getAction().equals("PLUS_BUTTON")) {
+                            protein = protein + 10;
+                        }
+                        if (intent.getAction().equals("MINUS_BUTTON")) {
+                            protein = protein - 10;
+                        }
+                        if (intent.getAction().equals("PLUS_BUTTON_SMALL")) {
+                            protein = protein + 1;
+                        }
+                        if (intent.getAction().equals("MINUS_BUTTON_SMALL")) {
+                            protein = protein - 1;
+                        }
+                        mValues.set(1, protein);
+                        mDay.setValues(mValues);
+                    }
+
+                    mRepository.updateNutrition(mDay);
+                    finishUI(remoteViews, mgr, watchWidget, appWidgetId);
+
                     }
                 }
             }.execute();
@@ -274,4 +327,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
         // Use lo so that we undershoot rather than overshoot
         return lo;
     }
+
+
+
 }

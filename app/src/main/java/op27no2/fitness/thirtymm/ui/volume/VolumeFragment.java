@@ -1,10 +1,12 @@
 package op27no2.fitness.thirtymm.ui.volume;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.graphics.BlendMode;
 import android.graphics.BlendModeColorFilter;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
@@ -16,17 +18,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.prolificinteractive.materialcalendarview.CalendarDay;
 
-import java.lang.reflect.Array;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,13 +43,17 @@ import op27no2.fitness.thirtymm.Database.AppDatabase;
 import op27no2.fitness.thirtymm.Database.Repository;
 import op27no2.fitness.thirtymm.MainActivity;
 import op27no2.fitness.thirtymm.R;
+import op27no2.fitness.thirtymm.ui.DialogCalendar;
 import op27no2.fitness.thirtymm.ui.lifting.Lift;
 import op27no2.fitness.thirtymm.ui.lifting.LiftMap;
 import op27no2.fitness.thirtymm.ui.lifting.LiftingWorkout;
+import op27no2.fitness.thirtymm.ui.nutrition.CalendarDialogInterface;
 
 import static android.graphics.Color.argb;
 
-public class VolumeFragment extends Fragment implements DialogVolumeMapnterface {
+public class VolumeFragment extends Fragment implements DialogVolumeMapnterface, CalendarDialogInterface {
+    private SharedPreferences prefs;
+    private SharedPreferences.Editor edt;
     private ArrayList<LiftingWorkout> weeksWorkouts = new ArrayList<LiftingWorkout>();
     private ArrayList<LiftMap> mLiftMaps = new ArrayList<LiftMap>();
     private SimpleDateFormat df;
@@ -72,9 +79,15 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
     private View view;
     private DialogVolumeMap dialog;
     private Repository mRepository;
-    private ImageView saveButton;
+    private ImageView settingsButton;
     DialogVolumeMapnterface mInterface;
 
+    private Calendar cal;
+    private String formattedDate;
+    private TextView dateText2;
+    private TextView dateText1;
+    private CalendarDialogInterface mCalendarInterface;
+    private String gender = "Male";
 
 
     @SuppressLint("StaticFieldLeak")
@@ -82,7 +95,47 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
                              ViewGroup container, Bundle savedInstanceState) {
 
         view = inflater.inflate(R.layout.fragment_volume, container, false);
+        prefs = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
+        edt = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
+        mCalendarInterface = this;
+
         df= new SimpleDateFormat("EEE, MMM d, ''yy");
+        cal = Calendar.getInstance();
+        Date c = cal.getTime();
+        Long time = Calendar.getInstance().getTimeInMillis();
+        formattedDate = df.format(c);
+
+        Calendar cal2 = Calendar.getInstance();
+        DateFormat df2= new SimpleDateFormat("EEE, M/d");
+        Date c2 = cal2.getTime();
+        String day2 = df2.format(c2);
+        while(cal2.get(Calendar.DAY_OF_WEEK) != 2) {
+            cal2.add(Calendar.DATE, -1);
+        }
+        Date c3 = cal2.getTime();
+        String day1 = df2.format(c3);
+
+        dateText1 = view.findViewById(R.id.toolbar_date1);
+        dateText2 = view.findViewById(R.id.toolbar_date2);
+        dateText1.setText(day1 +" - ");
+        dateText2.setText(day2);
+        dateText1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Dialog dialog = new DialogCalendar(view.getContext(), mCalendarInterface, cal);
+                dialog.show();
+            }
+        });
+        dateText2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Dialog dialog = new DialogCalendar(view.getContext(), mCalendarInterface, cal);
+                dialog.show();
+            }
+        });
+
+
+
         mInterface = this;
         mRecyclerView = view.findViewById(R.id.my_recycler_view);
         mRecyclerView.setHasFixedSize(true);
@@ -93,7 +146,7 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
         frame1 = view.findViewById(R.id.frame_layout1);
         frame2 = view.findViewById(R.id.frame_layout2);
         overLay2 = view.findViewById(R.id.my_overlay2);
-        saveButton = (ImageView) view.findViewById(R.id.save_workout);
+        settingsButton = (ImageView) view.findViewById(R.id.save);
 
 
         // Creates ArrayList of ArrayLists for Images and Names
@@ -114,11 +167,16 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
         //not currently used?
         allMuscles = new ArrayList(Arrays.asList((getResources().getStringArray(R.array.full_muscle_list))));
 
-        diagramSetup(0);
+        gender = prefs.getString("gender","Male");
+        if(gender.equals("Male")) {
+            diagramSetup(0);
+        }else{
+            diagramSetup(1);
+        }
 
         mRepository = new Repository(getActivity());
 
-        saveButton.setOnClickListener(new View.OnClickListener() {
+        settingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 ((MainActivity)getActivity()).goToSettings();
@@ -220,62 +278,124 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
 
     public void setColors() {
         System.out.println("set colors");
-        for(int i=0; i<darray.length; i++) {
-            if(muscleVolumes.get(topMuscleList.get(0).get(i))!= null) {
-                double vol = muscleVolumes.get(topMuscleList.get(0).get(i)) * 5;
-                if (vol > 100) {
-                    vol = 100;
-                }
-
-                if (vol >= 75) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        imageViews.get(i).setColorFilter(new BlendModeColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), BlendMode.SRC_ATOP));
-                    } else {
-                        imageViews.get(i).setColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+        if(prefs.getString("gender","Male").equals("Male")) {
+            for (int i = 0; i < darray.length; i++) {
+                if (muscleVolumes.get(topMuscleList.get(0).get(i)) != null) {
+                    double vol = muscleVolumes.get(topMuscleList.get(0).get(i)) * 5;
+                    if (vol > 100) {
+                        vol = 100;
                     }
-                    //  imgg.setColorFilter(argb(125 + (int) Math.floor((progress - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (progress - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
 
-                }
-                if (vol >= 50 && vol < 75) {
-                    imageViews.get(i).setColorFilter(argb(125, 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+                    if (vol >= 75) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            imageViews.get(i).setColorFilter(new BlendModeColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), BlendMode.SRC_ATOP));
+                        } else {
+                            imageViews.get(i).setColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+                        }
+                        //  imgg.setColorFilter(argb(125 + (int) Math.floor((progress - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (progress - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
 
-                }
-                if (vol >= 25 && vol < 50) {
-                    imageViews.get(i).setColorFilter(argb(125, (int) Math.floor((vol - 25) * 4 * 2.55), 255, 0), PorterDuff.Mode.SRC_ATOP);
+                    }
+                    if (vol >= 50 && vol < 75) {
+                        imageViews.get(i).setColorFilter(argb(125, 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
 
-                }
-                if (vol < 25) {
-                    imageViews.get(i).setColorFilter(argb(125, 0, 255, (255 - (int) Math.floor(2.55 * (vol) * 4))), PorterDuff.Mode.SRC_ATOP);
+                    }
+                    if (vol >= 25 && vol < 50) {
+                        imageViews.get(i).setColorFilter(argb(125, (int) Math.floor((vol - 25) * 4 * 2.55), 255, 0), PorterDuff.Mode.SRC_ATOP);
 
+                    }
+                    if (vol < 25) {
+                        imageViews.get(i).setColorFilter(argb(125, 0, 255, (255 - (int) Math.floor(2.55 * (vol) * 4))), PorterDuff.Mode.SRC_ATOP);
+
+                    }
                 }
             }
-        }
-        for(int i=0; i<darray2.length; i++) {
-            if(muscleVolumes.get(topMuscleList.get(1).get(i))!= null) {
-                double vol = muscleVolumes.get(topMuscleList.get(1).get(i)) * 5;
-                if (vol > 100) {
-                    vol = 100;
-                }
-                if (vol >= 75) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        imageViews2.get(i).setColorFilter(new BlendModeColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), BlendMode.SRC_ATOP));
-                    } else {
-                        imageViews2.get(i).setColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+            for (int i = 0; i < darray2.length; i++) {
+                if (muscleVolumes.get(topMuscleList.get(1).get(i)) != null) {
+                    double vol = muscleVolumes.get(topMuscleList.get(1).get(i)) * 5;
+                    if (vol > 100) {
+                        vol = 100;
                     }
-                    //  imgg.setColorFilter(argb(125 + (int) Math.floor((progress - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (progress - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+                    if (vol >= 75) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            imageViews2.get(i).setColorFilter(new BlendModeColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), BlendMode.SRC_ATOP));
+                        } else {
+                            imageViews2.get(i).setColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+                        }
+                        //  imgg.setColorFilter(argb(125 + (int) Math.floor((progress - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (progress - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
 
+                    }
+                    if (vol >= 50 && vol < 75) {
+                        imageViews2.get(i).setColorFilter(argb(125, 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+
+                    }
+                    if (vol >= 25 && vol < 50) {
+                        imageViews2.get(i).setColorFilter(argb(125, (int) Math.floor((vol - 25) * 4 * 2.55), 255, 0), PorterDuff.Mode.SRC_ATOP);
+
+                    }
+                    if (vol < 25) {
+                        imageViews2.get(i).setColorFilter(argb(125, 0, 255, (255 - (int) Math.floor(2.55 * (vol) * 4))), PorterDuff.Mode.SRC_ATOP);
+
+                    }
                 }
-                if (vol >= 50 && vol < 75) {
-                    imageViews2.get(i).setColorFilter(argb(125, 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+            }
+        }else if(prefs.getString("gender","Male").equals("Female")){
+            for (int i = 0; i < darray.length; i++) {
+                if (muscleVolumes.get(topMuscleList.get(2).get(i)) != null) {
+                    double vol = muscleVolumes.get(topMuscleList.get(2).get(i)) * 5;
+                    if (vol > 100) {
+                        vol = 100;
+                    }
 
+                    if (vol >= 75) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            imageViews.get(i).setColorFilter(new BlendModeColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), BlendMode.SRC_ATOP));
+                        } else {
+                            imageViews.get(i).setColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+                        }
+                        //  imgg.setColorFilter(argb(125 + (int) Math.floor((progress - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (progress - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+
+                    }
+                    if (vol >= 50 && vol < 75) {
+                        imageViews.get(i).setColorFilter(argb(125, 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+
+                    }
+                    if (vol >= 25 && vol < 50) {
+                        imageViews.get(i).setColorFilter(argb(125, (int) Math.floor((vol - 25) * 4 * 2.55), 255, 0), PorterDuff.Mode.SRC_ATOP);
+
+                    }
+                    if (vol < 25) {
+                        imageViews.get(i).setColorFilter(argb(125, 0, 255, (255 - (int) Math.floor(2.55 * (vol) * 4))), PorterDuff.Mode.SRC_ATOP);
+
+                    }
                 }
-                if (vol >= 25 && vol < 50) {
-                    imageViews2.get(i).setColorFilter(argb(125, (int) Math.floor((vol - 25) * 4 * 2.55), 255, 0), PorterDuff.Mode.SRC_ATOP);
+            }
+            for (int i = 0; i < darray2.length; i++) {
+                if (muscleVolumes.get(topMuscleList.get(3).get(i)) != null) {
+                    double vol = muscleVolumes.get(topMuscleList.get(3).get(i)) * 5;
+                    if (vol > 100) {
+                        vol = 100;
+                    }
+                    if (vol >= 75) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            imageViews2.get(i).setColorFilter(new BlendModeColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), BlendMode.SRC_ATOP));
+                        } else {
+                            imageViews2.get(i).setColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+                        }
+                        //  imgg.setColorFilter(argb(125 + (int) Math.floor((progress - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (progress - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
 
-                }
-                if (vol < 25) {
-                    imageViews2.get(i).setColorFilter(argb(125, 0, 255, (255 - (int) Math.floor(2.55 * (vol) * 4))), PorterDuff.Mode.SRC_ATOP);
+                    }
+                    if (vol >= 50 && vol < 75) {
+                        imageViews2.get(i).setColorFilter(argb(125, 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
 
+                    }
+                    if (vol >= 25 && vol < 50) {
+                        imageViews2.get(i).setColorFilter(argb(125, (int) Math.floor((vol - 25) * 4 * 2.55), 255, 0), PorterDuff.Mode.SRC_ATOP);
+
+                    }
+                    if (vol < 25) {
+                        imageViews2.get(i).setColorFilter(argb(125, 0, 255, (255 - (int) Math.floor(2.55 * (vol) * 4))), PorterDuff.Mode.SRC_ATOP);
+
+                    }
                 }
             }
         }
@@ -283,8 +403,6 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
 
     public void diagramSetup(int type) {
         System.out.println("TYPE:" + type);
-
-
 
         //set my frame with correct backgroundimage
         ImageView myFrame = (ImageView) view.findViewById(R.id.my_frame1);
@@ -297,13 +415,21 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
             Glide.with(this).load(R.drawable.male_bb_back).into(myFrame2);
 
         } else if (type == 1) {
-            myFrame.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.female_front));
-            myFrame2.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.female_back));
+            Glide.with(this).load(R.drawable.female_front).into(myFrame);
+            //  myFrame2.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.male_bb_back));
+            Glide.with(this).load(R.drawable.female_back).into(myFrame2);
         }
 
+        TypedArray imgs;
+        TypedArray imgs2;
         //get all images for that type
-        TypedArray imgs = topImageList.get(type);
-        TypedArray imgs2 = topImageList.get(type+1);
+        if(type == 0) {
+            imgs = topImageList.get(0);
+            imgs2 = topImageList.get(1);
+        }else{
+            imgs = topImageList.get(2);
+            imgs2 = topImageList.get(3);
+        }
         //add each image to a drawable array
         darray = new Drawable[imgs.length()];
         for(int i=0; i<imgs.length();i++) {
@@ -419,5 +545,9 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface 
     }
 
 
+    @Override
+    public void onDialogDismiss(CalendarDay m) {
+
+    }
 }
 

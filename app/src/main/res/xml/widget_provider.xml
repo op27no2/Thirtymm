@@ -5,7 +5,8 @@
     android:resizeMode="horizontal|vertical"
     android:previewImage="@drawable/ic_home_black_24dp"
     android:initialLayout="@layout/appwidget"
-    android:widgetCategory="home_screen">
+    android:widgetCategory="home_screen"
+    android:configure="op27no2.fitness.thirtymm.AppWidgetConfigure">
 
 </appwidget-provider>
 

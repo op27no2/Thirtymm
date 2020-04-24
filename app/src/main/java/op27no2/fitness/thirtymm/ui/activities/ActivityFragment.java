@@ -1,11 +1,19 @@
 package op27no2.fitness.thirtymm.ui.activities;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -19,7 +27,10 @@ import java.util.Calendar;
 import java.util.Date;
 
 import op27no2.fitness.thirtymm.Database.AppDatabase;
+import op27no2.fitness.thirtymm.Database.Repository;
+import op27no2.fitness.thirtymm.MainActivity;
 import op27no2.fitness.thirtymm.R;
+import op27no2.fitness.thirtymm.RecyclerItemClickListener;
 import op27no2.fitness.thirtymm.ui.lifting.LiftCardviewWorkoutAdapter;
 import op27no2.fitness.thirtymm.ui.lifting.LiftingWorkout;
 import op27no2.fitness.thirtymm.ui.run.RunWorkout;
@@ -33,6 +44,8 @@ public class ActivityFragment extends Fragment {
     private String formattedDate;
     private RunCardviewWorkoutAdapter mRunAdapter;
     private Bundle mState;
+    private Repository mRepository;
+
 
 
 
@@ -40,6 +53,10 @@ public class ActivityFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_activity, container, false);
+
+        mRepository = new Repository(getActivity());
+
+
 
         cal = Calendar.getInstance();
         Date c = cal.getTime();
@@ -62,6 +79,53 @@ public class ActivityFragment extends Fragment {
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setNestedScrollingEnabled(false);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mRecyclerView.addOnItemTouchListener(
+                new RecyclerItemClickListener(getActivity(), mRecyclerView, new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override public void onItemClick(View view, int position) {
+                        System.out.println("item clicked: "+position);
+
+                        ((MainActivity)getActivity()).goToRunDetail(mRunWorkouts.get(position).getUid());
+
+
+                    }
+
+                    @Override
+                    public void onItemLongClick(View view, int position) {
+                        System.out.println("item long clicked: "+position);
+
+                        final Dialog dialog = new Dialog(getActivity());
+                        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                        dialog.setContentView(R.layout.dialog_delete);
+
+                        DisplayMetrics metrics = getResources().getDisplayMetrics();
+                        int width = metrics.widthPixels;
+
+                        dialog.getWindow().setLayout((8 * width) / 9, LinearLayout.LayoutParams.WRAP_CONTENT);
+                        TextView mText = dialog.findViewById(R.id.confirm_title);
+
+                        dialog.findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                mRepository.deleteRunWorkout(mRunWorkouts.get(position));
+                                mRunWorkouts.remove(position);
+                                mRunAdapter.notifyDataSetChanged();
+                                dialog.dismiss();
+                            }
+                        });
+                        dialog.findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                dialog.dismiss();
+                            }
+                        });
+                        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                        dialog.show();
+                    }
+                })
+        );
+
+
+
 
         getDayData();
 

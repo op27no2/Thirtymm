@@ -16,6 +16,7 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
+import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -36,17 +37,21 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.android.gestures.MoveGestureDetector;
@@ -86,6 +91,7 @@ import org.json.JSONException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -96,6 +102,7 @@ import java.util.UUID;
 
 import op27no2.fitness.thirtymm.Database.AppDatabase;
 import op27no2.fitness.thirtymm.Database.Repository;
+import op27no2.fitness.thirtymm.FancyScrollView;
 import op27no2.fitness.thirtymm.MyAppWidgetProvider;
 import op27no2.fitness.thirtymm.R;
 import op27no2.fitness.thirtymm.ui.nutrition.NutritionDay;
@@ -104,26 +111,22 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import timber.log.Timber;
 
-import static android.graphics.Color.argb;
+import static com.mapbox.api.directions.v5.DirectionsCriteria.PROFILE_DRIVING;
 import static com.mapbox.core.constants.Constants.PRECISION_6;
 import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
-import static com.mapbox.mapboxsdk.style.expressions.Expression.eq;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.exponential;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.interpolate;
-import static com.mapbox.mapboxsdk.style.expressions.Expression.literal;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.stop;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.zoom;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionHeight;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionOpacity;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth;
-import static com.mapbox.api.directions.v5.DirectionsCriteria.PROFILE_DRIVING;
 
 
-public class RunFragment extends Fragment implements OnMapReadyCallback, PermissionsListener, TimerInterface {
+public class RunDetailFragment extends Fragment implements OnMapReadyCallback, PermissionsListener, TimerInterface {
     private String mapboxToken = "pk.eyJ1Ijoib3AyN25vMiIsImEiOiJjazJ0cmxvdGswejJ5M2NsN3g0ZzNucTMzIn0.SvSJkId0jesW0T3aM92q0Q";
     private MapView mapView;
     private PermissionsManager permissionsManager;
@@ -148,7 +151,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private boolean trackBearing = true;
     private int cameraY = 90;
     private MaterialFancyButton startButton;
-    private MaterialFancyButton stopButton;
+    private MaterialFancyButton lockWindowButton;
     private Boolean isPaused = false;
     private long secondHold = 0;
     private List<Feature> globalFeatureList = new ArrayList<Feature>();
@@ -157,8 +160,9 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private String formattedDate;
     private long finalTIme;
     private MapSnapshotter mapSnapshotter;
-    private FrameLayout mFrame;
 
+    private EditText mEditTitle;
+    private EditText mEditDescription;
     private EditText mEditDuration;
     private EditText mEditDistance;
     private EditText mEditPace;
@@ -174,6 +178,16 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private double holdZoom;
     private ImageView zoomBar;
     private ImageView zoom1;
+    private FancyScrollView scrollView;
+    private CardView mCardView;
+    private FrameLayout mFrame;
+    private RelativeLayout mRelative;
+
+    private TextView mText4;
+
+    private int runWorkoutID;
+    private RunWorkout mRunWorkout;
+    private int initialCals;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -182,16 +196,19 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
 
         Mapbox.getInstance(getActivity(), mapboxToken);
-        View view = inflater.inflate(R.layout.fragment_run, container, false);
+        View view = inflater.inflate(R.layout.fragment_rundetail, container, false);
         rabbit = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
         timerText = view.findViewById(R.id.counttime);
         distanceText = view.findViewById(R.id.distance);
         prefs = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
         globalFeatureList = getFeatureList();
-        mFrame = view.findViewById(R.id.frame);
         edt.putInt("fragtag",this.getId());
         edt.commit();
+
+        //get runworkout ID from Bundle
+        runWorkoutID = getArguments().getInt("uid");
+        System.out.println("id passed: "+runWorkoutID);
 
 
         mRepository = new Repository(getActivity());
@@ -210,46 +227,36 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
 
-
-        startButton = view.findViewById(R.id.start_run);
-        startButton.setOnClickListener(view1 -> {
-            System.out.println("start click");
-
-            //not started, start and set text to pausable
-            if(timerService == null){
-                startRun();
-                startButton.setText("Pause");
-            }else {
-                if(isPaused){
-                    timerService.resumeService();
-                    startButton.setText("Pause");
-                    isPaused = false;
-                }else{
-                    timerService.pauseService();
-                    startButton.setText("Resume");
-                    isPaused = true;
-                }
-            }
-
-        });
-
         zoomBar = view.findViewById(R.id.zoom_bar);
 
-        ImageView mFreeze = view.findViewById(R.id.freeze);
-        mFreeze.setOnClickListener(new View.OnClickListener() {
+
+        // TextView mText = holder.mView.findViewById(R.id.text_lift);
+        mText4 = view.findViewById(R.id.date);
+        mEditDuration = view.findViewById(R.id.duration_value);
+        mEditDistance = view.findViewById(R.id.distance_value);
+        mEditPace = view.findViewById(R.id.pace_value);
+        mEditCals = view.findViewById(R.id.cals_value);
+        mEditTitle = view.findViewById(R.id.workout_title);
+        mEditDescription = view.findViewById(R.id.workout_description);
+
+
+
+        lockWindowButton = view.findViewById(R.id.lock_window);
+        lockWindowButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                rabbit.vibrate(30);
-                addTrails();
+                if(lockWindowButton.getText().toString().equals("Unlock")){
+                    //LOCK THE WINDOW
+                    scrollView.setScrolling(false);
+                    lockWindowButton.setText("Lock");
+                }else{
+                    //UNLOCK THE WINDOW
+                    scrollView.setScrolling(true);
+                    lockWindowButton.setText("Unlock");
+                }
             }
         });
-        stopButton = view.findViewById(R.id.stop_run);
-        stopButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                  stopRun();
-            }
-        });
+
         ImageView mExtrude = view.findViewById(R.id.extrude_button);
         mExtrude.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -280,7 +287,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                 rabbit.vibrate(50);
                 trackBearing = true;
                 if (mapboxMap.getLocationComponent().getLastKnownLocation() != null) { // Check to ensure coordinates aren't null, probably a better way of doing this...
-                    mapboxMap.animateCamera(com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngZoom(new LatLng(mapboxMap.getLocationComponent().getLastKnownLocation().getLatitude(), mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude()), 16));
+                    mapboxMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mapboxMap.getLocationComponent().getLastKnownLocation().getLatitude(), mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude()), 16));
                 }
 
                 try {
@@ -323,6 +330,17 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             }
         });
 
+        ImageView saveButton = (ImageView) view.findViewById(R.id.save);
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                System.out.println("run detail save");
+
+                rabbit.vibrate(30);
+                startSnapShot();
+            }
+        });
+
         ImageView angle = view.findViewById(R.id.view_angle);
         angle.setOnTouchListener(handleTouch);
 
@@ -335,8 +353,12 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         zoom1 = view.findViewById(R.id.view_zoom);
         zoom1.setOnTouchListener(handleZoom);
 
-        getNutritionDayData();
+        scrollView = view.findViewById(R.id.scroll_view);
+        mCardView = view.findViewById(R.id.card_view);
 
+
+        getNutritionDayData();
+        getRunWorkoutData();
 
 
 
@@ -495,7 +517,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
     @Override
     public void onMapReady(@NonNull final MapboxMap mapboxMap) {
-        RunFragment.this.mapboxMap = mapboxMap;
+        RunDetailFragment.this.mapboxMap = mapboxMap;
 
 
         // mapboxMap.setStyle(new Style.Builder().fromUri("mapbox://styles/op27no2/ck2tujbra2ox21cqzxh4ql48y"),new Style.OnStyleLoaded() {
@@ -599,7 +621,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                     //set to location
                     if (mapboxMap.getLocationComponent().getLastKnownLocation() != null) { // Check to ensure coordinates aren't null, probably a better way of doing this...
                         System.out.println("set location");
-                        mapboxMap.animateCamera(com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngZoom(new LatLng(mapboxMap.getLocationComponent().getLastKnownLocation().getLatitude(), mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude()), 16));
+                        mapboxMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mapboxMap.getLocationComponent().getLastKnownLocation().getLatitude(), mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude()), 16));
                     }                }
             }, 200);
 
@@ -644,7 +666,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                                     //set to location
                                     if (mapboxMap.getLocationComponent().getLastKnownLocation() != null) { // Check to ensure coordinates aren't null, probably a better way of doing this...
                                         System.out.println("set location");
-                                        mapboxMap.animateCamera(com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngZoom(new LatLng(mapboxMap.getLocationComponent().getLastKnownLocation().getLatitude(), mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude()), 16));
+                                        mapboxMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mapboxMap.getLocationComponent().getLastKnownLocation().getLatitude(), mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude()), 16));
                                     }                }
                             }, 200);
 
@@ -752,7 +774,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             timerService = binder.getService();
             edt.putBoolean("bound", true);
             edt.commit();
-            timerService.registerCallBack(RunFragment.this); // register
+            timerService.registerCallBack(RunDetailFragment.this); // register
 
         }
 
@@ -1163,6 +1185,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
 
 
+
     private void extrudeRoute(){
 
         if (routeCoordinates.size() != 0 && routeCoordinates != null) {
@@ -1194,7 +1217,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
                         //adjust altitude data to min
                         //TODO futher adjust based on max too?
-                        double height = (routeCoordinates.get(i).altitude() - minalt) * 50;
+                       // double height = (routeCoordinates.get(i).altitude() - minalt) * 50;
+                        double height = (routeCoordinates.get(i).altitude() - minalt) * (22-mapboxMap.getCameraPosition().zoom)*(22-mapboxMap.getCameraPosition().zoom)*.1;
                         JsonObject heightObject = new JsonObject();
                         heightObject.addProperty("e", height);
                         System.out.println("coord values: " + routeCoordinates.get(i).altitude());
@@ -1344,12 +1368,12 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         TextView mTextDate = dialog.findViewById(R.id.date);
         mTextDate.setText(formattedDate);
 
-        EditText mEditDuration = dialog.findViewById(R.id.duration_value);
-        EditText mEditDistance = dialog.findViewById(R.id.distance_value);
-        EditText mEditPace = dialog.findViewById(R.id.pace_value);
-        EditText mEditCals = dialog.findViewById(R.id.cals_value);
-        EditText mEditTitle = dialog.findViewById(R.id.workout_title);
-        EditText mEditDescription = dialog.findViewById(R.id.workout_description);
+        mEditDuration = dialog.findViewById(R.id.duration_value);
+        mEditDistance = dialog.findViewById(R.id.distance_value);
+        mEditPace = dialog.findViewById(R.id.pace_value);
+        mEditCals = dialog.findViewById(R.id.cals_value);
+        mEditTitle = dialog.findViewById(R.id.workout_title);
+        mEditDescription = dialog.findViewById(R.id.workout_description);
         //set initial texts, can edit then save
         final float[] total = {0f};
         for (int i = 0; i < routeCoordinates.size() - 1; i++) {
@@ -1412,10 +1436,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                         myCalendar.get(Calendar.DAY_OF_MONTH)).show();
             }
         });
-
-
-
-
 
 
         dialog.findViewById(R.id.save).setOnClickListener(new View.OnClickListener() {
@@ -1496,18 +1516,16 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
 
     public void saveRun(Bitmap bMap){
-        RunWorkout mRunWorkout = new RunWorkout();
+
+        saveDate = mText4.getText().toString();
+        saveTime = getIntFromDuration(mEditDuration.getText().toString());
+        saveDistance = (int) Math.floor(Float.parseFloat(mEditDistance.getText().toString()) * 1609.34400);
+        saveCals = Integer.parseInt(mEditCals.getText().toString());
+        saveDescription = mEditDescription.getText().toString();
+        saveTitle = mEditTitle.getText().toString();
+
         mRunWorkout.setWorkoutDate(saveDate);
-
-   /*     float total = 0f;
-        for (int i = 0; i < routeCoordinates.size() - 1; i++) {
-            float[] distance = new float[2];
-            Location.distanceBetween(routeCoordinates.get(i).latitude(), routeCoordinates.get(i).longitude(), routeCoordinates.get(i + 1).latitude(), routeCoordinates.get(i + 1).longitude(), distance);
-            total = total + distance[0];
-        }*/
-
-
-        mRunWorkout.setDuration((int) saveTime);
+        mRunWorkout.setDuration(saveTime);
         mRunWorkout.setDistance((int) saveDistance);
         mRunWorkout.setCalories(saveCals);
         mRunWorkout.setDescription(saveDescription);
@@ -1515,22 +1533,21 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
 
         int cals = mNutritionDay.getValues().get(0);
-
         ArrayList<Integer> mvals = mNutritionDay.getValues();
-        cals = cals - saveCals;
+        cals = cals - (saveCals-initialCals);
         mvals.set(0, cals);
         mNutritionDay.setValues(mvals);
         mRepository.updateNutrition(mNutritionDay);
 
-        //store name of bitmap file to retrieve, file stored on system.
+
         String bmp = saveBitmap(bMap,UUID.randomUUID().toString());
         System.out.println("bmp string: "+bmp);
         String coords = saveCoordinates(routeCoordinates,UUID.randomUUID().toString());
         mRunWorkout.setImage(bmp);
         mRunWorkout.setCoordinates(coords);
 
-
-        mRepository.insertRunWorkout(mRunWorkout);
+        mRepository.updateRunWorkout(mRunWorkout);
+        Toast.makeText(getActivity(), "Workout Updated", Toast.LENGTH_LONG).show();
         updateWidgets();
     }
 
@@ -1572,18 +1589,29 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             return mypath.getAbsolutePath();
         }
 
-
-    //TODO STORE COORDS ELSEWHERE THIS IS KILLING THE GODDAMN APP BY SLOWING SHAREDPREFERENCES
     public String saveCoordinates(ArrayList<Point> coords, String uid){
             Gson gson = new Gson();
             String json = gson.toJson(coords);
-        System.out.println("SAVE COORDS JSON: " + json);
-
             edt.putString(uid, json);
             edt.commit();
             return uid;
-
     }
+
+    public ArrayList<Point> getCoordinates(String uid){
+        String json = prefs.getString(uid,"");
+        System.out.println("RETRIEVE COORDS JSON: " + json);
+
+        Gson gson = new Gson();
+        Type type = new TypeToken<ArrayList<Point>>() {}.getType();
+        ArrayList<Point> coords = gson.fromJson(json, type);
+        if(coords != null) {
+            System.out.println("RETRIEVE COORDS SIZE: " + coords.size());
+        }else{
+            System.out.println("RETRIEVE COORDS NULL: ");
+        }
+        return coords;
+    }
+
 
     private void moveToBounds(){
         if(routeCoordinates != null && routeCoordinates.size() >2) {
@@ -1662,6 +1690,35 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             }
         }.execute();
     }
+    @SuppressLint("StaticFieldLeak")
+    private void getRunWorkoutData() {
+        new AsyncTask<Void, Void, Void>() {
+            //Get today's workout => finishUI
+            //get today's workout, if it doesn't exist create it
+
+            protected void onPreExecute() {
+
+            }
+
+            protected Void doInBackground(Void... unused) {
+                //nutritionDay and formatted day change with selected day up top, used to edit values
+                mRunWorkout = AppDatabase.getAppDatabase(getActivity()).rwDAO().findById(runWorkoutID);
+
+
+                System.out.println("check run exec1");
+
+
+                return null;
+            }
+
+            protected void onPostExecute(Void unused) {
+                // Post Code
+                finishUI(mRunWorkout);
+
+            }
+        }.execute();
+    }
+
 
 
 
@@ -1693,6 +1750,48 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         } else {
             return((minutesDisplay + ":" + secondsDisplay));
         }
+    }
+
+
+
+    private void finishUI(RunWorkout mRunWorkout){
+        if(mRunWorkout != null) {
+            Integer duration = mRunWorkout.getDuration();
+            Integer distance = mRunWorkout.getDistance();
+
+            long pace = (long) (duration / (distance * 0.000621371192f));
+
+            mEditTitle.setText(mRunWorkout.getTitle());
+            mEditDistance.setText(getMiles(distance));
+            mEditDuration.setText(getDuration(duration));
+            mEditPace.setText(getDuration(pace) + " /mi");
+            mText4.setText(mRunWorkout.getWorkoutDate());
+            mEditCals.setText(Integer.toString(mRunWorkout.getCalories()));
+            initialCals = mRunWorkout.getCalories();
+            mEditDescription.setText(mRunWorkout.getDescription());
+
+            routeCoordinates = getCoordinates(mRunWorkout.getCoordinates());
+            System.out.println("cood uid"+mRunWorkout.getCoordinates());
+            System.out.println("retrieve coords"+routeCoordinates);
+
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        updateLine();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        System.out.println("line update error");
+                    }
+                }
+            }, 300);
+
+
+
+        }else{
+            System.out.println("run workout null");
+        }
+
     }
 
     private void updateWidgets(){

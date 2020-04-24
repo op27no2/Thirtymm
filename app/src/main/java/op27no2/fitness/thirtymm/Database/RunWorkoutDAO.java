@@ -31,6 +31,10 @@ public interface RunWorkoutDAO {
     @Query("SELECT * FROM run_workouts where date LIKE  :date")
     RunWorkout findByDate(String date);
 
+
+    @Query("SELECT * FROM run_workouts where uid LIKE  :id")
+    RunWorkout findById(int id);
+
     @Insert
     void insertAll(RunWorkout... lws);
 

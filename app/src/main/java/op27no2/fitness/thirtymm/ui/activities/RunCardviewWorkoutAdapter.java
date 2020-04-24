@@ -106,28 +106,33 @@ public class RunCardviewWorkoutAdapter extends RecyclerView.Adapter<RunCardviewW
         // - replace the contents of the view with that element
 
        // TextView mText = holder.mView.findViewById(R.id.text_lift);
+        TextView mText0 = holder.mView.findViewById(R.id.title);
         TextView mText1 = holder.mView.findViewById(R.id.distance_value);
         TextView mText2 = holder.mView.findViewById(R.id.duration_value);
         TextView mText3 = holder.mView.findViewById(R.id.pace_value);
         TextView mText4 = holder.mView.findViewById(R.id.date);
         TextView mText5 = holder.mView.findViewById(R.id.cals_value);
+        TextView mText6 = holder.mView.findViewById(R.id.description);
         ImageView mImage = holder.mView.findViewById(R.id.mapView);
 
-        Integer duration = mWorkouts.get(position).getDuration();
-        Integer distance = mWorkouts.get(position).getDistance();
+        Integer duration = mWorkouts.get(holder.getAdapterPosition()).getDuration();
+        Integer distance = mWorkouts.get(holder.getAdapterPosition()).getDistance();
+        System.out.println("duration: "+duration);
+        System.out.println("distance: "+distance);
 
         long pace = (long) (duration / (distance*0.000621371192f));
 
         mText1.setText(getMiles(distance));
         mText2.setText(getDuration(duration));
         mText3.setText(getDuration(pace)+" /mi");
-        mText4.setText(mWorkouts.get(position).getWorkoutDate());
-        mText5.setText(Integer.toString(mWorkouts.get(position).getCalories()));
-        if(mWorkouts.get(position).getImage() != null){
-            Glide.with(mContext).load(mWorkouts.get(position).getImage()).centerCrop().into(mImage);
+        mText4.setText(mWorkouts.get(holder.getAdapterPosition()).getWorkoutDate());
+        mText5.setText(Integer.toString(mWorkouts.get(holder.getAdapterPosition()).getCalories()));
+        if(mWorkouts.get(holder.getAdapterPosition()).getImage() != null){
+            Glide.with(mContext).load(mWorkouts.get(holder.getAdapterPosition()).getImage()).centerCrop().into(mImage);
         }
-        System.out.println("bitmaps: " +position+" " + mWorkouts.get(position).getImage());
-
+        System.out.println("bitmaps: " +position+" " + mWorkouts.get(holder.getAdapterPosition()).getImage());
+        mText0.setText(mWorkouts.get(holder.getAdapterPosition()).getTitle());
+        mText6.setText(mWorkouts.get(holder.getAdapterPosition()).getDescription());
 
         CardView mCard = holder.mView.findViewById(R.id.card_view);
         mCard.setOnLongClickListener(new View.OnLongClickListener() {

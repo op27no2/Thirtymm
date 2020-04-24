@@ -1,6 +1,7 @@
 package op27no2.fitness.thirtymm.ui;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -25,14 +26,23 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.prolificinteractive.materialcalendarview.CalendarDay;
+import com.prolificinteractive.materialcalendarview.DayViewDecorator;
+import com.prolificinteractive.materialcalendarview.DayViewFacade;
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
 import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
+import com.prolificinteractive.materialcalendarview.spans.DotSpan;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 
 import op27no2.fitness.thirtymm.Database.AppDatabase;
 import op27no2.fitness.thirtymm.Database.Repository;
+import op27no2.fitness.thirtymm.MyDecorator;
 import op27no2.fitness.thirtymm.R;
 import op27no2.fitness.thirtymm.ui.lifting.LiftMap;
 import op27no2.fitness.thirtymm.ui.lifting.MyDialogInterface;
@@ -40,6 +50,8 @@ import op27no2.fitness.thirtymm.ui.nutrition.CalendarDialogInterface;
 import op27no2.fitness.thirtymm.ui.volume.DialogVolumeMapnterface;
 import op27no2.fitness.thirtymm.ui.volume.MyDialogVolumeAdapter;
 import org.threeten.bp.LocalDate;
+
+import static com.prolificinteractive.materialcalendarview.MaterialCalendarView.SELECTION_MODE_RANGE;
 
 public class DialogCalendar extends Dialog  {
 
@@ -89,18 +101,35 @@ public class DialogCalendar extends Dialog  {
             }.execute();
 
         MaterialCalendarView mCal = findViewById(R.id.calendar_view);
+        mCal.setSelectionMode(SELECTION_MODE_RANGE);
+
         int year = fragCalendar.get(Calendar.YEAR);
         int month = fragCalendar.get(Calendar.MONTH);
         month = month+1;
         int day = fragCalendar.get(Calendar.DAY_OF_MONTH);
         mCal.setDateSelected(CalendarDay.from(year, month, day),true);
+        mCal.setDateSelected(CalendarDay.from(year, month, day-5),true);
+
+
+        mCal.addDecorator(new MyDecorator((Activity) mContext));
+
+        ArrayList<CalendarDay> days = new ArrayList<CalendarDay>();
+        days.add( CalendarDay.from(year, month, day));
+        days.add( CalendarDay.from(year, month, day-2));
+        days.add( CalendarDay.from(year, month, day-4));
+        mCal.addDecorator(new EventDecorator(Color.BLACK, days));
+        ArrayList<CalendarDay> days2 = new ArrayList<CalendarDay>();
+        days.add( CalendarDay.from(year, month, day));
+        mCal.addDecorator(new EventDecorator(Color.GREEN, days2));
+
+
         mCal.setCurrentDate(CalendarDay.from(year, month, day));
 
         mCal.setOnDateChangedListener(new OnDateSelectedListener() {
             @Override
             public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
                 mInterface.onDialogDismiss(date);
-                DialogCalendar.this.dismiss();
+            //    DialogCalendar.this.dismiss();
             }
         });
 
@@ -123,6 +152,25 @@ public class DialogCalendar extends Dialog  {
 
     }
 
+    public class EventDecorator implements DayViewDecorator {
 
+        private final int color;
+        private final HashSet<CalendarDay> dates;
+
+        public EventDecorator(int color, Collection<CalendarDay> dates) {
+            this.color = color;
+            this.dates = new HashSet<>(dates);
+        }
+
+        @Override
+        public boolean shouldDecorate(CalendarDay day) {
+            return dates.contains(day);
+        }
+
+        @Override
+        public void decorate(DayViewFacade view) {
+            view.addSpan(new DotSpan(5, color));
+        }
+    }
 
 }

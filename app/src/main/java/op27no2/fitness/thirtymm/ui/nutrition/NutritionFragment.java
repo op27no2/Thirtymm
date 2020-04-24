@@ -56,12 +56,13 @@ import op27no2.fitness.thirtymm.ui.DialogCalendar;
 import op27no2.fitness.thirtymm.ui.lifting.DialogLifts;
 import op27no2.fitness.thirtymm.ui.lifting.LiftingWorkout;
 import op27no2.fitness.thirtymm.ui.lifting.MyDialogInterface;
+import op27no2.fitness.thirtymm.ui.lifting.PickerDialogInterface;
 import op27no2.fitness.thirtymm.ui.volume.VolumeAdapter;
 
 import static java.lang.Integer.max;
 import static op27no2.fitness.thirtymm.Graphing.GraphViewStyle.*;
 
-public class NutritionFragment extends Fragment implements CalendarDialogInterface{
+public class NutritionFragment extends Fragment implements CalendarDialogInterface, PickerDialogInterface {
     private SharedPreferences prefs;
     private SharedPreferences.Editor edt;
 
@@ -72,7 +73,6 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
     private Repository mRepository;
     private NutritionDay mNutritionDay;
     private RecyclerView mRecyclerView;
-    private TextView dateTitle;
     private LinearLayoutManager mLayoutManager;
     private NutritionAdapter mAdapter;
     private ArrayList<String> mNames = new ArrayList<String>(2);
@@ -95,6 +95,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
     int checkThis = 0;
 
     private CalendarDialogInterface mInterface;
+    private PickerDialogInterface mPickerInterface;
     private int selectedPosition = 0;
 
 
@@ -108,6 +109,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         prefs = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
         mInterface = (CalendarDialogInterface) this;
+        mPickerInterface = this;
 
         //TODO just setting here to test grpah
         cals=-2200;
@@ -116,8 +118,6 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         rabbit = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
         layout = (LinearLayout) view.findViewById(R.id.graph1);
         layout2 = (LinearLayout) view.findViewById(R.id.graph2);
-
-        dateTitle = view.findViewById(R.id.toolbar_date);
 
         cal = Calendar.getInstance();
         Date c = cal.getTime();
@@ -134,7 +134,26 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         mLayoutManager = new LinearLayoutManager(getActivity());
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(mLayoutManager);
+        mRecyclerView.setNestedScrollingEnabled(false);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mRecyclerView.addOnItemTouchListener(
+                new RecyclerItemClickListener(getActivity(), mRecyclerView, new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        System.out.println("item clicked: " + position);
+                        selectedPosition = position;
+                        mAdapter.setSelected(selectedPosition);
+                        mAdapter.notifyDataSetChanged();
+                    }
 
+                    @Override
+                    public void onItemLongClick(View view, int position) {
+                        System.out.println("long click triggered??: ");
+                        Dialog dialog = new EditDialog(view.getContext(), position, mValues.get(position), mPickerInterface);
+                        dialog.show();
+                    }
+                })
+        );
 
         dateText = view.findViewById(R.id.toolbar_date);
         dateText.setText(formattedDate);
@@ -151,7 +170,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                 getDayData();
             }
         });
-        dateTitle.setOnClickListener(new View.OnClickListener() {
+        dateText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
               Dialog dialog = new DialogCalendar(view.getContext(), mInterface, cal);
@@ -339,7 +358,6 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
 
 
 
-        getDayData();
 
         System.out.println("check1");
 
@@ -468,6 +486,9 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
     public void onResume() {
      //   getDayData();
         super.onResume();
+        //TODO Update ON Resume because widget could change it!
+        getDayData();
+
 
     }
 
@@ -572,23 +593,11 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
 
         dateText.setText(formattedDate);
         //set data to recyclerview
-        mAdapter = new NutritionAdapter(mNames, mValues);
+        mAdapter = new NutritionAdapter(mNames, mValues, mPickerInterface);
         mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.setNestedScrollingEnabled(false);
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mRecyclerView.addOnItemTouchListener(
-                new RecyclerItemClickListener(getActivity(), mRecyclerView, new RecyclerItemClickListener.OnItemClickListener() {
-                    @Override public void onItemClick(View view, int position) {
-                        System.out.println("item clicked: "+position);
-                        selectedPosition = position;
-                        mAdapter.setSelected(selectedPosition);
-                        mAdapter.notifyDataSetChanged();
-                    }
-                    @Override
-                    public void onItemLongClick(View view, int position) {
-                    }
-                })
-        );
+
+
+
         System.out.println("nutrition days size:" +mNutritionDays.size());
 
     }
@@ -726,7 +735,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
 
 
 
-        private void updateWidgets(){
+    private void updateWidgets(){
         Intent intent = new Intent(getActivity(), MyAppWidgetProvider.class);
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
         // Use an array and EXTRA_APPWIDGET_IDS instead of AppWidgetManager.EXTRA_APPWIDGET_ID,
@@ -821,4 +830,14 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
 
     }
 
+    @Override
+    public void onPickerDialogDismiss(int weight, int position) {
+        System.out.println("test interface: "+position+" : "+weight);
+        mValues.set(position,weight);
+        mNutritionDay.setValues(mValues);
+        mRepository.updateNutrition(mNutritionDay);
+        updateWidgets();
+        mAdapter.notifyDataSetChanged();
+        updateGraphView(formattedDate, weight, selectedPosition);
+    }
 }
