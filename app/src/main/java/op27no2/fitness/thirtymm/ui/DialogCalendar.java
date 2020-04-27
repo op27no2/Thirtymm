@@ -58,6 +58,7 @@ public class DialogCalendar extends Dialog  {
         public Context mContext;
         private CalendarDialogInterface mInterface;
         private Calendar fragCalendar;
+        private Repository mRepository;
 
     public DialogCalendar(@NonNull Context context, CalendarDialogInterface dialogInterface, Calendar cal) {
         super(context);
@@ -102,6 +103,7 @@ public class DialogCalendar extends Dialog  {
 
         MaterialCalendarView mCal = findViewById(R.id.calendar_view);
         mCal.setSelectionMode(SELECTION_MODE_RANGE);
+        mCal.setAllowClickDaysOutsideCurrentMonth(true);
 
         int year = fragCalendar.get(Calendar.YEAR);
         int month = fragCalendar.get(Calendar.MONTH);
@@ -111,20 +113,25 @@ public class DialogCalendar extends Dialog  {
         mCal.setDateSelected(CalendarDay.from(year, month, day-5),true);
 
 
-        mCal.addDecorator(new MyDecorator((Activity) mContext));
-
         ArrayList<CalendarDay> days = new ArrayList<CalendarDay>();
         days.add( CalendarDay.from(year, month, day));
         days.add( CalendarDay.from(year, month, day-2));
         days.add( CalendarDay.from(year, month, day-4));
-        mCal.addDecorator(new EventDecorator(Color.BLACK, days));
-        ArrayList<CalendarDay> days2 = new ArrayList<CalendarDay>();
-        days.add( CalendarDay.from(year, month, day));
-        mCal.addDecorator(new EventDecorator(Color.GREEN, days2));
 
+        ArrayList<CalendarDay> days2 = new ArrayList<CalendarDay>();
+        days2.add( CalendarDay.from(year, month, day-3));
+
+        ArrayList<CalendarDay> days3 = new ArrayList<CalendarDay>();
+        days3.add( CalendarDay.from(year, month, day-5));
+
+
+        mCal.addDecorator(new EventDecorator(Color.BLACK, days));
+        mCal.addDecorators(new EventDecorator(Color.GREEN, days2));
+        mCal.addDecorator(new MyDecorator(mContext, true,true,days));
+        mCal.addDecorators(new MyDecorator(mContext, true,false,days2));
+        mCal.addDecorators(new MyDecorator(mContext, false,true,days3));
 
         mCal.setCurrentDate(CalendarDay.from(year, month, day));
-
         mCal.setOnDateChangedListener(new OnDateSelectedListener() {
             @Override
             public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
