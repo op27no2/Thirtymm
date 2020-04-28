@@ -438,5 +438,10 @@
         <item>Female</item>
     </string-array>
 
+    <string-array name="workout_types">
+        <item>Run</item>
+        <item>Row</item>
+        <item>Olypmic Eagle Tackling</item>
+    </string-array>
 
 </resources>
