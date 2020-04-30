@@ -261,6 +261,11 @@ public class DialogVolumeMap extends Dialog  {
                         public void onItemClick(View view, int position) {
                             System.out.println("item clicked: "+position);
                             selected = mAdapter.getRealPosition(position);
+
+                            //This code will collapse/expand the headers on click
+                            //I've decided we don't need this at the moment
+
+/*
                             if(mAdapter.getLine(position).equals("Arms")){
                                 for(int i=12; i>0; i--){
                                     mAdapter.toggleVisibilty(i);
@@ -286,6 +291,7 @@ public class DialogVolumeMap extends Dialog  {
                                     mAdapter.toggleVisibilty(i);
                                 }
                             }
+*/
 
                             mAdapter.setSelected(position);
                             mAdapter.notifyDataSetChanged();

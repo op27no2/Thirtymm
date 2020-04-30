@@ -41,6 +41,11 @@
         android:label="Preferences"
          />
     <fragment
+        android:id="@+id/navigation_runsettings"
+        android:name="op27no2.fitness.thirtymm.ui.run.RunSettings"
+        android:label="Preferences"
+        />
+    <fragment
         android:id="@+id/navigation_rundetail"
         android:name="op27no2.fitness.thirtymm.ui.run.RunDetailFragment"
         android:label="RunDetail"

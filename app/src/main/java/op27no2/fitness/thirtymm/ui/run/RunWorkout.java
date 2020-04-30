@@ -22,6 +22,9 @@ public class RunWorkout {
     @ColumnInfo(name = "date")
     private String workoutDate;
 
+    @ColumnInfo(name = "type")
+    private String workoutType;
+
     @ColumnInfo(name = "duration")
     private Integer duration;
 
@@ -74,6 +77,14 @@ public class RunWorkout {
 
     public void setTitle(String tit) {
         this.title = tit;
+    }
+
+    public String getWorkoutType() {
+        return workoutType;
+    }
+
+    public void setWorkoutType(String typ) {
+        this.workoutType = typ;
     }
 
     //we just store a uid reference to the coordinates stored in sharedprefs as json object

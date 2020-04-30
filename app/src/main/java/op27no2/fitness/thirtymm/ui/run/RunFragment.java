@@ -96,6 +96,7 @@ import java.util.UUID;
 
 import op27no2.fitness.thirtymm.Database.AppDatabase;
 import op27no2.fitness.thirtymm.Database.Repository;
+import op27no2.fitness.thirtymm.MainActivity;
 import op27no2.fitness.thirtymm.MyAppWidgetProvider;
 import op27no2.fitness.thirtymm.R;
 import op27no2.fitness.thirtymm.ui.nutrition.NutritionDay;
@@ -175,6 +176,9 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private ImageView zoomBar;
     private ImageView zoom1;
 
+    private ImageView settingsButton;
+
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -204,6 +208,14 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
         // saveDate is the edittext field in the save dialog, start it initially as formattedDate. User can change. Formatted date used as todays date elsewhere.
         saveDate = formattedDate;
+
+        settingsButton = (ImageView) view.findViewById(R.id.settings);
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((MainActivity)getActivity()).goToRunSettings();
+            }
+        });
 
 
         mapView = view.findViewById(R.id.mapView);

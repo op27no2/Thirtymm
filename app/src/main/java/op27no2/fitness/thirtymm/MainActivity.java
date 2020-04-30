@@ -53,12 +53,14 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     }
 
     public void goToSettings(){
-
         NavController navController = Navigation.findNavController(this, nav_host_fragment);
         navController.navigate(R.id.navigation_settings);
-
     }
 
+    public void goToRunSettings(){
+        NavController navController = Navigation.findNavController(this, nav_host_fragment);
+        navController.navigate(R.id.navigation_runsettings);
+    }
 
     public void goToRunDetail(int id){
         /*ConfirmationAction action =  SpecifyAmountFragmentDirections.confirmationAction();
