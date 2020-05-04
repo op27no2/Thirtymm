@@ -7,47 +7,47 @@
 
     <fragment
         android:id="@+id/navigation_lift"
-        android:name="op27no2.fitness.thirtymm.ui.lifting.LiftFragment"
+        android:name="op27no2.fitness.Centurion.ui.lifting.LiftFragment"
         android:label="@string/title_home"
         tools:layout="@layout/fragment_lift" />
 
     <fragment
         android:id="@+id/navigation_track"
-        android:name="op27no2.fitness.thirtymm.ui.nutrition.NutritionFragment"
+        android:name="op27no2.fitness.Centurion.ui.nutrition.NutritionFragment"
         android:label="@string/title_track"
         tools:layout="@layout/fragment_nutrition" />
 
     <fragment
         android:id="@+id/navigation_history"
-        android:name="op27no2.fitness.thirtymm.ui.activities.ActivityFragment"
+        android:name="op27no2.fitness.Centurion.ui.activities.ActivityFragment"
         android:label="@string/title_history"
         tools:layout="@layout/fragment_activity" />
 
     <fragment
         android:id="@+id/navigation_run"
-        android:name="op27no2.fitness.thirtymm.ui.run.RunFragment"
+        android:name="op27no2.fitness.Centurion.ui.run.RunFragment"
         android:label="@string/title_run"
         tools:layout="@layout/fragment_run" />
 
     <fragment
         android:id="@+id/navigation_volume"
-        android:name="op27no2.fitness.thirtymm.ui.volume.VolumeFragment"
+        android:name="op27no2.fitness.Centurion.ui.volume.VolumeFragment"
         android:label="@string/title_volume"
         tools:layout="@layout/fragment_volume" />
 
     <fragment
         android:id="@+id/navigation_settings"
-        android:name="op27no2.fitness.thirtymm.MyPreferenceFragment"
+        android:name="op27no2.fitness.Centurion.MyPreferenceFragment"
         android:label="Preferences"
          />
     <fragment
         android:id="@+id/navigation_runsettings"
-        android:name="op27no2.fitness.thirtymm.ui.run.RunSettings"
+        android:name="op27no2.fitness.Centurion.ui.run.RunSettings"
         android:label="Preferences"
         />
     <fragment
         android:id="@+id/navigation_rundetail"
-        android:name="op27no2.fitness.thirtymm.ui.run.RunDetailFragment"
+        android:name="op27no2.fitness.Centurion.ui.run.RunDetailFragment"
         android:label="RunDetail"
         />
 

@@ -37,7 +37,7 @@
 
     </RelativeLayout>
 
-    <op27no2.fitness.thirtymm.FancyScrollView
+    <op27no2.fitness.Centurion.FancyScrollView
         android:id="@+id/scroll_view"
         android:layout_below="@+id/toolbar"
         android:layout_width="match_parent"
@@ -508,5 +508,5 @@
 
 
 </RelativeLayout>
-</op27no2.fitness.thirtymm.FancyScrollView>
+</op27no2.fitness.Centurion.FancyScrollView>
 </RelativeLayout>

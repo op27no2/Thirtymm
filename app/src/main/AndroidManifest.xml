@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="op27no2.fitness.thirtymm">
+    package="op27no2.fitness.Centurion">
 
     <!-- TODO ...CHANGE BACKUP TO TRUE -->
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -16,7 +16,7 @@
 
 
     <application
-     android:name="op27no2.fitness.thirtymm.MyApplication"
+     android:name="op27no2.fitness.Centurion.MyApplication"
     android:allowBackup="false"
     android:icon="@mipmap/ic_launcher"
     android:label="@string/app_name"
@@ -24,7 +24,7 @@
     android:supportsRtl="true"
     android:theme="@style/AppTheme">
     <activity
-        android:name=".MainActivity"
+        android:name="op27no2.fitness.Centurion.MainActivity"
         android:label="@string/app_name">
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
@@ -32,17 +32,17 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
     </activity>
-    <activity android:name=".AppWidgetConfigure">
+    <activity android:name="op27no2.fitness.Centurion.AppWidgetConfigure">
         <intent-filter>
             <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
         </intent-filter>
     </activity>
-    <service android:name=".ui.run.TimerService"
+    <service android:name="op27no2.fitness.Centurion.ui.run.TimerService"
         android:foregroundServiceType="location"/>
 
 
 
-    <receiver android:name="MyAppWidgetProvider" >
+    <receiver android:name="op27no2.fitness.Centurion.MyAppWidgetProvider" >
         <intent-filter>
             <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
         </intent-filter>

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Thirtymm</string>
+    <string name="app_name">Centurion</string>
     <string name="title_home">Lift</string>
     <string name="title_track">Track</string>
     <string name="title_history">History</string>
@@ -443,5 +443,22 @@
         <item>Row</item>
         <item>Olypmic Eagle Tackling</item>
     </string-array>
+
+    <string-array name="workout_paces">
+        <item>Minutes/Mile</item>
+        <item>Minutes/km</item>
+        <item>Minutes/500m</item>
+        <item>Minutes/100m</item>
+        <item>Miles Per Hour</item>
+    </string-array>
+
+    <string-array name="calorie_burn_type">
+        <item>Per Minute</item>
+        <item>Per Mile</item>
+        <item>Per Kilometer</item>
+        <item>Per Hour</item>
+    </string-array>
+
+
 
 </resources>
