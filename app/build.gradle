@@ -87,7 +87,9 @@ dependencies {
     //preferences
     implementation 'androidx.preference:preference:1.1.0'
 
-    
+    //tcx
+    implementation 'com.sweetzpot.tcxzpot:lib:0.2.0'
+
 
 
 

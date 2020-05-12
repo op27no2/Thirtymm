@@ -7,6 +7,8 @@ import java.io.IOException;
 
 public class MyApplication extends android.app.Application {
     private static Context context;
+    private static MyApplication sInstance = null;
+
 
     public MyApplication() {
     }
@@ -15,6 +17,8 @@ public class MyApplication extends android.app.Application {
     public void onCreate() {
         super.onCreate();
         MyApplication.context = op27no2.fitness.Centurion.MyApplication.getAppContext();
+        sInstance = this;
+
         System.out.println("APPLICATION CALLED");
 
         int pid = android.os.Process.myPid();
@@ -28,7 +32,12 @@ public class MyApplication extends android.app.Application {
         }
 
     }
+
+
     public static Context getAppContext() {
         return MyApplication.context;
+    }
+    public static MyApplication getInstance() {
+        return sInstance ;
     }
 }

@@ -10,11 +10,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.AudioAttributes;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.TypedValue;
+import android.view.HapticFeedbackConstants;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
@@ -142,11 +145,11 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
         i.putExtra("frgToLoad", "Nutrition");
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(i);
-        rabbit.vibrate(20);
-        rabbit.vibrate(20);
-    }else{
-        rabbit.vibrate(30);
+        vib(40);
 
+    }else if(intent.getAction().equals("PLUS_BUTTON") || intent.getAction().equals("MINUS_BUTTON") || intent.getAction().equals("PLUS_BUTTON_SMALL")|| intent.getAction().equals("MINUS_BUTTON_SMALL")){
+
+        vib(30);
         prefs = context.getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = context.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
 
@@ -327,6 +330,19 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
         return lo;
     }
 
+    private void vib(int duration){
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .build();
+            VibrationEffect ve = null;
+            ve = VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE);
+            rabbit.vibrate(ve, audioAttributes);
+        }else{
+            rabbit.vibrate(duration);
+        }
+    }
 
 
 }
