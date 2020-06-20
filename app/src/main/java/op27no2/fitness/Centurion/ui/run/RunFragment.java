@@ -1,6 +1,7 @@
 package op27no2.fitness.Centurion.ui.run;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.appwidget.AppWidgetManager;
@@ -16,6 +17,7 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -80,6 +82,15 @@ import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.mapboxsdk.utils.ColorUtils;
 import com.rilixtech.materialfancybutton.MaterialFancyButton;
+import com.sweetzpot.stravazpot.authenticaton.api.AuthenticationAPI;
+import com.sweetzpot.stravazpot.authenticaton.model.AppCredentials;
+import com.sweetzpot.stravazpot.authenticaton.model.LoginResult;
+import com.sweetzpot.stravazpot.common.api.AuthenticationConfig;
+import com.sweetzpot.stravazpot.common.api.StravaConfig;
+import com.sweetzpot.stravazpot.upload.api.UploadAPI;
+import com.sweetzpot.stravazpot.upload.model.DataType;
+import com.sweetzpot.stravazpot.upload.model.UploadActivityType;
+import com.sweetzpot.stravazpot.upload.model.UploadStatus;
 
 import org.json.JSONException;
 
@@ -100,28 +111,25 @@ import op27no2.fitness.Centurion.MainActivity;
 import op27no2.fitness.Centurion.MyAppWidgetProvider;
 import op27no2.fitness.Centurion.R;
 import op27no2.fitness.Centurion.ui.nutrition.NutritionDay;
+import op27no2.fitness.Centurion.upload.TcxHelper;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import timber.log.Timber;
 
-import static android.graphics.Color.argb;
+import static com.mapbox.api.directions.v5.DirectionsCriteria.PROFILE_DRIVING;
 import static com.mapbox.core.constants.Constants.PRECISION_6;
 import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
-import static com.mapbox.mapboxsdk.style.expressions.Expression.eq;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.exponential;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.interpolate;
-import static com.mapbox.mapboxsdk.style.expressions.Expression.literal;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.stop;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.zoom;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionHeight;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionOpacity;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth;
-import static com.mapbox.api.directions.v5.DirectionsCriteria.PROFILE_DRIVING;
 
 
 public class RunFragment extends Fragment implements OnMapReadyCallback, PermissionsListener, TimerInterface {
@@ -131,6 +139,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private MapboxMap mapboxMap;
     private Vibrator rabbit;
     private ArrayList<Point> routeCoordinates = new ArrayList<Point>();
+    private ArrayList<TrackedPoint> mPoints = new ArrayList<TrackedPoint>();
     private double maxalt;
     private double minalt;
     private NutritionDay mNutritionDay;
@@ -141,7 +150,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private ImageView edit;
     private long startTime;
     private TimerService timerService;
-    private Intent notifyMeIntent;
+    private Intent timerIntent;
     private SharedPreferences prefs;
     private SharedPreferences.Editor edt;
     private int locationRequestCode = 1000;
@@ -175,8 +184,12 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private double holdZoom;
     private ImageView zoomBar;
     private ImageView zoom1;
+    private ImageView loadOverlay;
 
     private ImageView settingsButton;
+
+    private static final int RQ_LOGIN = 1001;
+    private static final String REDIRECT_URI = "http://op27no2.fitness/callback/";
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -275,6 +288,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             @Override
             public void onClick(View view) {
                 routeCoordinates.clear();
+                mPoints.clear();
                 clearExtrusion();
                 try {
                     updateLine();
@@ -347,6 +361,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         zoom1 = view.findViewById(R.id.view_zoom);
         zoom1.setOnTouchListener(handleZoom);
 
+        loadOverlay = view.findViewById(R.id.load_overlay);
+
         getNutritionDayData();
 
 
@@ -404,15 +420,15 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         startTime = System.currentTimeMillis();
 
         //start timer service
-        notifyMeIntent = new Intent(getActivity(), TimerService.class);
+        timerIntent = new Intent(getActivity(), TimerService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             System.out.println("start foreground service (act)");
-            getActivity().startForegroundService(notifyMeIntent);
+            getActivity().startForegroundService(timerIntent);
         } else {
             System.out.println("start service (act)");
-            getActivity().startService(notifyMeIntent);
+            getActivity().startService(timerIntent);
         }
-        getActivity().bindService(notifyMeIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+        getActivity().bindService(timerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
 
     }
 
@@ -508,7 +524,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     @Override
     public void onMapReady(@NonNull final MapboxMap mapboxMap) {
         RunFragment.this.mapboxMap = mapboxMap;
-
+        loadOverlay.setVisibility(View.GONE);
 
         // mapboxMap.setStyle(new Style.Builder().fromUri("mapbox://styles/op27no2/ck2tujbra2ox21cqzxh4ql48y"),new Style.OnStyleLoaded() {
         //  mapboxMap.setStyle(Style.OUTDOORS, new Style.OnStyleLoaded() {
@@ -697,32 +713,41 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     public void onStart() {
         super.onStart();
         mapView.onStart();
-    }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        if(prefs.getBoolean("service_running", false) == true){
-            bindTimerService();
-        }
-
-        mapView.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if(prefs.getBoolean("service_running", false) == true){
-            unbindTimerService();
-        }
-        mapView.onPause();
     }
 
     @Override
     public void onStop() {
         super.onStop();
+        System.out.println("run fragment stopped");
+
         mapView.onStop();
     }
+
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        System.out.println("run fragment onResume");
+        if(isMyServiceRunning(TimerService.class)){
+            bindTimerService();
+        }
+    }
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        System.out.println("run fragment paused");
+        loadOverlay.setVisibility(View.VISIBLE);
+
+        if(isMyServiceRunning(TimerService.class)){
+            unbindTimerService();
+        }
+        mapView.onPause();
+    }
+
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -732,11 +757,15 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
     @Override
     public void onDestroy() {
+        System.out.println("run fragment onDestroy");
         super.onDestroy();
+
     }
 
     public void onDestroyView() {
-        //handler.removeCallbacks(runnable);
+        //handler.removeCallbacks(runnable);'
+        System.out.println("run fragment onDestroyviewed");
+
         mapView.onDestroy();
 
         super.onDestroyView();
@@ -793,14 +822,15 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     }
 
     private void bindTimerService() {
-        notifyMeIntent = new Intent(getActivity(), TimerService.class);
-        getActivity().bindService(notifyMeIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+        timerIntent = new Intent(getActivity(), TimerService.class);
+        getActivity().bindService(timerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
 
     @Override
-    public void getData(long elapsedTime, ArrayList<Point> rCoordinates, double min, double max) {
+    public void getData(long timestamp, long elapsedTime, ArrayList<Point> rCoordinates, double min, double max, ArrayList<TrackedPoint> points) {
         System.out.println("elapsedTime:" + elapsedTime);
+
         finalTIme = elapsedTime;
         long micro = elapsedTime / 100000;
         long elapsedSeconds = elapsedTime / 1000;
@@ -825,6 +855,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
         //  distanceText.setText(Float.toString(total));
         routeCoordinates = rCoordinates;
+        mPoints = points;
 
         try {
             updateLine();
@@ -1541,6 +1572,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         mRunWorkout.setImage(bmp);
         mRunWorkout.setCoordinates(coords);
 
+        //TODO add checkbox for social upload
+        uploadToStrava();
 
         mRepository.insertRunWorkout(mRunWorkout);
         updateWidgets();
@@ -1718,6 +1751,127 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         getActivity().sendBroadcast(intent);
     }
 
+
+    public void uploadToStrava(){
+        System.out.println("trackedpoints size1 "+mPoints.size());
+
+        if(!prefs.getBoolean("strava8", false)) {
+            Uri intentUri = Uri.parse("https://www.strava.com/oauth/mobile/authorize")
+                    .buildUpon()
+                    .appendQueryParameter("client_id", "43815")
+                    .appendQueryParameter("redirect_uri", REDIRECT_URI)
+                    .appendQueryParameter("response_type", "code")
+                    .appendQueryParameter("approval_prompt", "auto")
+                    .appendQueryParameter("scope", "activity:write,read")
+                    .build();
+            edt.putString("upload_fragment", "Run");
+            edt.commit();
+            Intent intent = new Intent(Intent.ACTION_VIEW, intentUri);
+            intent.putExtra("key", 999);
+            startActivityForResult(intent, RQ_LOGIN);
+        }else{
+            finishStrava();
+        }
+
+    }
+
+    public void finishStrava() {
+        System.out.println("trackedpoints size2 "+mPoints.size());
+
+        new AsyncTask<Void, Void, Void>() {
+
+            protected void onPreExecute() {
+            }
+
+            protected Void doInBackground(Void... unused) {
+                //nutritionDay and formatted day change with selected day up top, used to edit values
+                AuthenticationConfig config = AuthenticationConfig.create()
+                        .debug()
+                        .build();
+                AuthenticationAPI api = new AuthenticationAPI(config);
+                String mToken = null;
+                String mToken2 = null;
+
+                if(prefs.getBoolean("first_refresh", true) == true) {
+                    LoginResult result = api.getTokenForApp(AppCredentials.with(43815, "87571a766af016d9949d28929316f894bbc57938"))
+                            .withCode(prefs.getString("code", "")) //original response token placed here as well.
+                            .execute();
+                    mToken = result.getAccessToken();
+                    mToken2 = result.getRefreshToken();
+                    edt.putBoolean("first_refresh",false );
+                    edt.putString("refresh_token",mToken2 );
+                    edt.apply();
+                }else {
+                    AuthenticationConfig config2 = AuthenticationConfig.create()
+                            .debug()
+                            .build();
+                    AuthenticationAPI api2 = new AuthenticationAPI(config);
+                    LoginResult loginResult = api2.refreshTokenForApp(AppCredentials.with(43815, "87571a766af016d9949d28929316f894bbc57938"))
+                            .withRefreshToken(prefs.getString("refresh_token", ""))
+                            .refreshToken();
+                    mToken = loginResult.getAccessToken();
+                    mToken2 = loginResult.getRefreshToken();
+                    edt.putString("refresh_token", mToken2);
+                    edt.apply();
+                }
+
+                StravaConfig sconfig = StravaConfig.withToken(mToken)
+                        .debug()
+                        .build();
+
+               /* ActivityAPI activityAPI = new ActivityAPI(sconfig);
+                Activity activity = activityAPI.createActivity("test upload")
+                        .ofType(ActivityType.RUN)
+                        .startingOn(Calendar.getInstance().getTime())
+                        .withElapsedTime(Time.seconds(333))
+                        .withDescription("test description")
+                        .withDistance(Distance.meters((int) 33333))
+                        .isPrivate(true)
+                        .withTrainer(true)
+                        .withCommute(false)
+                        .execute();*/
+
+                TcxHelper mHelper = new TcxHelper();
+                String mPath = mHelper.createTCX("testfile"+System.currentTimeMillis(), mPoints, (int) saveDistance, saveCals, saveTime);
+
+                UploadAPI uploadAPI = new UploadAPI(sconfig);
+                UploadStatus uploadStatus = uploadAPI.uploadFile(new File(mPath))
+                        .withDataType(DataType.TCX)
+                        .withActivityType(UploadActivityType.RUN)
+                        .withName(saveTitle)
+                        .withDescription(saveDescription)
+                        .isPrivate(false)
+                        .hasTrainer(false)
+                        .isCommute(false)
+                        .withExternalID("test4")
+                        .execute();
+
+
+
+
+                return null;
+            }
+
+            protected void onPostExecute(Void unused) {
+                // Post Code
+            }
+        }.execute();
+
+
+
+    }
+
+
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 
 }

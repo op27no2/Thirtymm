@@ -472,7 +472,10 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         super.onResume();
         //TODO Update ON Resume because widget could change it!
         getDayData();
-
+        if(mAdapter !=null) {
+            mAdapter.setSelected(selectedPosition);
+            mAdapter.notifyDataSetChanged();
+        }
 
     }
 
@@ -823,5 +826,6 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         updateWidgets();
         mAdapter.notifyDataSetChanged();
         updateGraphView(formattedDate, weight, selectedPosition);
+
     }
 }

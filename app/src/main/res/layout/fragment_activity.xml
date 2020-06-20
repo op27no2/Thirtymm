@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:animateLayoutChanges="false"
+    xmlns:fancy="http://schemas.android.com/apk/res-auto"
+    xmlns:easytabs="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/lightgrey"
+    android:animateLayoutChanges="true"
     android:layout_height="match_parent">
 
     <RelativeLayout
@@ -24,10 +27,32 @@
             android:layout_centerVertical="true"
             />
 
-
-
     </RelativeLayout>
+
+    <com.google.android.material.tabs.TabLayout
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        app:tabIndicatorHeight="6dp"
+        android:layout_below="@+id/toolbar"
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
+        app:tabTextColor="@color/lightgrey"
+        app:tabSelectedTextColor="@color/white"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary">
+    </com.google.android.material.tabs.TabLayout>
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/viewPager"
+        android:layout_below="@+id/tabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout_editor_absoluteX="8dp" />
+
+<!--
+
     <RelativeLayout
+        android:animateLayoutChanges="true"
+        android:id="@+id/activity_layout"
         android:layout_below="@+id/toolbar"
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -41,7 +66,91 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:animateLayoutChanges="true"
+        android:id="@+id/progress_layout"
+        android:layout_below="@+id/toolbar"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/test"
+            android:layout_marginLeft="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="HEY HEY YOU YOU"
+            android:textSize="20sp"
+            android:textColor="@color/colorPrimary"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/my_recycler_view2"
+            android:fastScrollEnabled="false"
+            android:layout_marginTop="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
 
     </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_alignParentBottom="true"
+        android:id="@+id/bottom_bar"
+        android:background="@color/white"
+        android:elevation="7dp"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <com.rilixtech.materialfancybutton.MaterialFancyButton
+            android:id="@+id/activities"
+            android:layout_alignParentBottom="true"
+            android:layout_width="0dp"
+            android:layout_weight="0.5"
+            android:layout_height="50dp"
+            android:paddingBottom="5dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="5dp"
+            android:elevation="7dp"
+            fancy:mfb_borderColor="@color/black"
+            fancy:mfb_borderWidth="1dp"
+            fancy:mfb_defaultColor="@color/white"
+            fancy:mfb_focusColor="@color/colorPrimaryDark"
+            fancy:mfb_iconFont="fontawesome.ttf"
+            fancy:mfb_iconPosition="left"
+            fancy:mfb_radius="1dp"
+            fancy:mfb_textSize="18sp"
+            fancy:mfb_text="Activities"
+            fancy:mfb_textColor="@color/black" />
+        <com.rilixtech.materialfancybutton.MaterialFancyButton
+            android:id="@+id/progress"
+            android:layout_alignParentBottom="true"
+            android:layout_toRightOf="@+id/activities"
+            android:layout_width="0dp"
+            android:layout_weight="0.5"
+            android:layout_height="50dp"
+            android:paddingBottom="5dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="5dp"
+            android:elevation="7dp"
+            fancy:mfb_borderColor="@color/black"
+            fancy:mfb_borderWidth="1dp"
+            fancy:mfb_defaultColor="@color/white"
+            fancy:mfb_focusColor="@color/colorPrimaryDark"
+            fancy:mfb_iconFont="fontawesome.ttf"
+            fancy:mfb_iconPosition="left"
+            fancy:mfb_radius="1dp"
+            fancy:mfb_textSize="18sp"
+            fancy:mfb_text="Progress"
+            fancy:mfb_textColor="@color/black" />
+        </LinearLayout>
+    </RelativeLayout>-->
 
 </RelativeLayout>

@@ -27,8 +27,6 @@
         android:foreground="?android:attr/selectableItemBackground"
         >
 
-
-
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -131,6 +129,9 @@
             </LinearLayout>
         </RelativeLayout>
 
+
     </androidx.cardview.widget.CardView>
+
+
 
 </LinearLayout>

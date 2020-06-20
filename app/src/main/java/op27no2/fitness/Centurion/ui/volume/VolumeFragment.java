@@ -9,7 +9,6 @@ import android.graphics.BlendMode;
 import android.graphics.BlendModeColorFilter;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -87,7 +86,7 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
     private TextView dateText2;
     private TextView dateText1;
     private CalendarDialogInterface mCalendarInterface;
-    private String gender = "Male";
+    private String gender = "Prometheus";
 
 
     @SuppressLint("StaticFieldLeak")
@@ -167,8 +166,8 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
         //not currently used?
         allMuscles = new ArrayList(Arrays.asList((getResources().getStringArray(R.array.full_muscle_list))));
 
-        gender = prefs.getString("gender","Male");
-        if(gender.equals("Male")) {
+        gender = prefs.getString("gender","Prometheus");
+        if(gender.equals("Prometheus")) {
             diagramSetup(0);
         }else{
             diagramSetup(1);
@@ -278,7 +277,7 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
 
     public void setColors() {
         System.out.println("set colors");
-        if(prefs.getString("gender","Male").equals("Male")) {
+        if(prefs.getString("gender","Prometheus").equals("Prometheus")) {
             for (int i = 0; i < darray.length; i++) {
                 if (muscleVolumes.get(topMuscleList.get(0).get(i)) != null) {
                     double vol = muscleVolumes.get(topMuscleList.get(0).get(i)) * 5;
@@ -338,7 +337,7 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
                     }
                 }
             }
-        }else if(prefs.getString("gender","Male").equals("Female")){
+        }else if(prefs.getString("gender","Prometheus").equals("Artemis")){
             for (int i = 0; i < darray.length; i++) {
                 if (muscleVolumes.get(topMuscleList.get(2).get(i)) != null) {
                     double vol = muscleVolumes.get(topMuscleList.get(2).get(i)) * 5;
@@ -403,6 +402,7 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
 
     public void diagramSetup(int type) {
         System.out.println("TYPE:" + type);
+        //TODO just put this in XML and load asynchronously inflate
 
         //set my frame with correct backgroundimage
         ImageView myFrame = (ImageView) view.findViewById(R.id.my_frame1);
@@ -441,10 +441,6 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
             darray2[i] = imgs2.getDrawable(i);
         }
 
-        // create layer drawable from drawable array
-        LayerDrawable layer = new LayerDrawable(darray);
-        LayerDrawable layer2 = new LayerDrawable(darray2);
-
         for(int i=0; i<darray.length; i++){
             ImageView mImage = new ImageView(getActivity());
             Glide.with(this).load(darray[i]).centerCrop().into(mImage);
@@ -459,13 +455,6 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
             frame2.addView(mImage);
         }
 
-
-        //add layers to overlaym
-      //  Glide.with(this).load(layer).into(overLay1);
-     //   Glide.with(this).load(layer2).into(overLay2);
-
-/*        overLay1.setImageDrawable(layer);
-        overLay2.setImageDrawable(layer2);*/
     }
 
     @SuppressLint("StaticFieldLeak")

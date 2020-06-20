@@ -130,9 +130,11 @@ public class MyRepAdapter extends RecyclerView.Adapter<MyRepAdapter.ViewHolder>{
                         rabbit.vibrate(15);
                         System.out.println("top half");
                         mLiftingWorkout.getMyLifts().get(parentPosition).plusRep(position);
+
                     }
+
                     edt.putInt("default_reps"+mLiftingWorkout.getMyLifts().get(parentPosition).getName(), mLiftingWorkout.getMyLifts().get(parentPosition).getRepNumber(position));
-                    edt.commit();
+                    edt.apply();
                     mLiftingWorkout.getMyLifts().get(parentPosition).setRepWeight(position, mLiftingWorkout.getMyLifts().get(parentPosition).getWeight());
                     mRepository.updateWorkout(mLiftingWorkout);
                     notifyDataSetChanged();

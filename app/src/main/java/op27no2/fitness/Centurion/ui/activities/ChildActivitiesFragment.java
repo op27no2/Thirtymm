@@ -1,21 +1,25 @@
 package op27no2.fitness.Centurion.ui.activities;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager.widget.ViewPager;
-
-import com.google.android.material.tabs.TabLayout;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,11 +28,13 @@ import java.util.Date;
 
 import op27no2.fitness.Centurion.Database.AppDatabase;
 import op27no2.fitness.Centurion.Database.Repository;
-import op27no2.fitness.Centurion.MyAdapter;
+import op27no2.fitness.Centurion.MainActivity;
 import op27no2.fitness.Centurion.R;
+import op27no2.fitness.Centurion.RecyclerItemClickListener;
 import op27no2.fitness.Centurion.ui.run.RunWorkout;
 
-public class ActivityFragment extends Fragment {
+
+public class ChildActivitiesFragment extends Fragment {
     private SharedPreferences prefs;
     private SharedPreferences.Editor edt;
     private RecyclerView mRecyclerView;
@@ -41,50 +47,16 @@ public class ActivityFragment extends Fragment {
     private Bundle mState;
     private Repository mRepository;
 
-    private TabLayout tabLayout;
-    private ViewPager viewPager;
 
+    public ChildActivitiesFragment() {
+        // Required empty public constructor
+    }
 
-
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-
-        View view = inflater.inflate(R.layout.fragment_activity, container, false);
-
-
-        tabLayout=(TabLayout) view.findViewById(R.id.tabLayout);
-        viewPager=(ViewPager) view.findViewById(R.id.viewPager);
-
-        tabLayout.addTab(tabLayout.newTab().setText("Progress"));
-        tabLayout.addTab(tabLayout.newTab().setText("Activities"));
-        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
-
-        final MyAdapter adapter = new MyAdapter(getActivity(),getChildFragmentManager(), tabLayout.getTabCount());
-        viewPager.setAdapter(adapter);
-
-        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-
-        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                viewPager.setCurrentItem(tab.getPosition());
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });
-
-
-
-
-
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.fragment_activity_child1, container, false);
 
 
         prefs = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
@@ -102,43 +74,7 @@ public class ActivityFragment extends Fragment {
         System.out.println("fomratted time => " + df.format(time));
 
         mState = savedInstanceState;
-/*
-        RelativeLayout activityLayout = view.findViewById(R.id.activity_layout);
-        RelativeLayout progressLayout = view.findViewById(R.id.progress_layout);
-        MaterialFancyButton activityButton = view.findViewById(R.id.activities);
-        MaterialFancyButton progressButton = view.findViewById(R.id.progress);
 
-        if(prefs.getInt("activity_selected",0) == 0) {
-            activityButton.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.white));
-            progressButton.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.white));
-        }else if(prefs.getInt("activity_selected",0) == 1){
-            progressButton.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.white));
-            activityButton.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.white));
-        }
-
-
-        activityButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                activityLayout.setVisibility(View.VISIBLE);
-                progressLayout.setVisibility(View.GONE);
-                activityButton.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.white));
-                progressButton.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.white));
-                edt.putInt("activity_selected",0);
-                edt.apply();
-            }
-        });
-        progressButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                progressLayout.setVisibility(View.VISIBLE);
-                activityLayout.setVisibility(View.GONE);
-                progressButton.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.white));
-                activityButton.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.white));
-                edt.putInt("activity_selected",1);
-                edt.apply();
-            }
-        });
 
 
         //recyclerview and layoutmanager
@@ -197,14 +133,7 @@ public class ActivityFragment extends Fragment {
         );
 
 
-
-
-        getDayData();*/
-
-
-
-
-
+        getDayData();
 
         return view;
     }
@@ -234,7 +163,7 @@ public class ActivityFragment extends Fragment {
     }
 
     private void finishUI(){
-     //   dateText.setText(formattedDate);
+        //   dateText.setText(formattedDate);
 
         //set lift data to recyclerview
         mRunAdapter = new RunCardviewWorkoutAdapter(mRunWorkouts, getActivity());
@@ -243,5 +172,7 @@ public class ActivityFragment extends Fragment {
 
 
 
-}
 
+
+
+}

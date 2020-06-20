@@ -40,7 +40,9 @@ public class TimerService extends Service  {
     private long pausedTime;
     private long startTime;
     private long startPause;
+    private float totalDistance = 0;
     private ArrayList<Point> routeCoordinates = new ArrayList<Point>();
+    private ArrayList<TrackedPoint> trackPoints = new ArrayList<TrackedPoint>();
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
@@ -184,10 +186,20 @@ public class TimerService extends Service  {
             }
 
             routeCoordinates.add(Point.fromLngLat(lon, lat, alt));
+            if(routeCoordinates.size()>1){
+                float[] distance = new float[2];
+                Location.distanceBetween(routeCoordinates.get(routeCoordinates.size()-2).latitude(), routeCoordinates.get(routeCoordinates.size()-2).longitude(), routeCoordinates.get(routeCoordinates.size()-1).latitude(), routeCoordinates.get(routeCoordinates.size()-1).longitude(), distance);
+                totalDistance = totalDistance+ distance[0];
+            }
+            System.out.println("total Distance: "+ totalDistance);
+
+
+            //trackpoints same but with time, switching over in order to upload TCX???
+            trackPoints.add(new TrackedPoint(System.currentTimeMillis(),Point.fromLngLat(lon, lat, alt), totalDistance));
             long elapsedTime = System.currentTimeMillis() - startTime - pausedTime;
 
             if (myCallback != null) {
-                myCallback.getData(elapsedTime, routeCoordinates, minalt, maxalt);
+                myCallback.getData(System.currentTimeMillis(),elapsedTime, routeCoordinates, minalt, maxalt, trackPoints);
             }
         }
 

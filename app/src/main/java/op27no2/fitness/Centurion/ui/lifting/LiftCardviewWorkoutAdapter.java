@@ -42,7 +42,7 @@ public class LiftCardviewWorkoutAdapter extends RecyclerView.Adapter<LiftCardvie
     private Boolean direction = true;
     private Vibrator rabbit;
     private PickerDialogInterface passThisInterface;
-
+    private static final int FOOTER_VIEW = 1;
 
     @Override
     public void onDialogDismiss() {
@@ -92,6 +92,26 @@ public class LiftCardviewWorkoutAdapter extends RecyclerView.Adapter<LiftCardvie
         ViewHolder vh = new ViewHolder(v);
         return vh;
     }
+
+    // Define a ViewHolder for Footer view
+    public class FooterViewHolder extends ViewHolder {
+        public FooterViewHolder(View itemView) {
+            super(itemView);
+
+            
+        }
+    }
+
+    // Now define the ViewHolder for Normal list item
+    public class NormalViewHolder extends ViewHolder {
+        public NormalViewHolder(View itemView) {
+            super(itemView);
+
+
+
+        }
+    }
+
 
     // Replace the contents of a view (invoked by the layout manager)
     @Override
@@ -198,9 +218,10 @@ public class LiftCardviewWorkoutAdapter extends RecyclerView.Adapter<LiftCardvie
                 mWeightText.setText(Integer.toString(weight));
 
 
-              /*  edt.putInt("last_weight"+mLiftingWorkout.getMyLifts().get(position).getName() , weight);
-                edt.commit();*/
+                edt.putInt("last_weight"+mLiftingWorkout.getMyLifts().get(position).getName() , weight);
+                edt.apply();
 
+                //TODO move repository updates to onPause so this isn't so slow??
                 mLiftingWorkout.getMyLifts().get(position).setWeight(weight);
                 mRepository.updateWorkout(mLiftingWorkout);
                 mWeightText.setText(Integer.toString(weight));
@@ -215,7 +236,7 @@ public class LiftCardviewWorkoutAdapter extends RecyclerView.Adapter<LiftCardvie
                 int weight = mLiftingWorkout.getMyLifts().get(position).getWeight();
                 weight = weight-5;
                 edt.putInt("last_weight"+mLiftingWorkout.getMyLifts().get(position).getName() , weight);
-                edt.commit();
+                edt.apply();
                 mLiftingWorkout.getMyLifts().get(position).setWeight(weight);
                 mRepository.updateWorkout(mLiftingWorkout);
                 mWeightText.setText(Integer.toString(weight));
@@ -270,15 +291,26 @@ public class LiftCardviewWorkoutAdapter extends RecyclerView.Adapter<LiftCardvie
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return mLiftingWorkout.getMyLifts().size();
+        return mLiftingWorkout.getMyLifts().size()+1;
     }
 
+    // Now define getItemViewType of your own.
+
+    @Override
+    public int getItemViewType(int position) {
+        if (position == mLiftingWorkout.getMyLifts().size()) {
+            // This is where we'll add footer.
+            return FOOTER_VIEW;
+        }
+
+        return super.getItemViewType(position);
+    }
 
     @Override
     public void onPickerDialogDismiss(int weight, int position) {
 
         edt.putInt("last_weight"+mLiftingWorkout.getMyLifts().get(position).getName() , weight);
-        edt.commit();
+        edt.apply();
         mLiftingWorkout.getMyLifts().get(position).setWeight(weight);
         mRepository.updateWorkout(mLiftingWorkout);
         notifyDataSetChanged();

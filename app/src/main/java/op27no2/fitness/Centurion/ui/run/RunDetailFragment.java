@@ -805,9 +805,9 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         getActivity().bindService(notifyMeIntent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
-
     @Override
-    public void getData(long elapsedTime, ArrayList<Point> rCoordinates, double min, double max) {
+    public void getData(long timestamp, long elapsedTime, ArrayList<Point> rCoordinates, double min, double max, ArrayList<TrackedPoint> mPoints) {
+
         System.out.println("elapsedTime:" + elapsedTime);
         finalTIme = elapsedTime;
         long micro = elapsedTime / 100000;
@@ -1802,6 +1802,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
         getActivity().sendBroadcast(intent);
     }
+
 
 
 

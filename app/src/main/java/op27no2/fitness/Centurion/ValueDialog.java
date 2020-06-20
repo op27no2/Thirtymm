@@ -1,13 +1,13 @@
-package op27no2.fitness.Centurion.ui.nutrition;
+package op27no2.fitness.Centurion;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.Window;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
@@ -15,14 +15,11 @@ import androidx.annotation.NonNull;
 
 import com.rilixtech.materialfancybutton.MaterialFancyButton;
 
-import op27no2.fitness.Centurion.R;
-import op27no2.fitness.Centurion.ui.lifting.PickerDialogInterface;
-
-public class EditDialog extends Dialog  {
+public class ValueDialog extends Dialog  {
 
         public Context c;
 
-        private PickerDialogInterface mInterface;
+        private ValueDialogInterface mInterface;
         private Context mContext;
         private EditText mEdit;
         //passed from lift fragment adapter, keep track to  to correct row
@@ -32,7 +29,7 @@ public class EditDialog extends Dialog  {
 
 
 
-    public EditDialog(@NonNull Context context,int pos, float mValue, PickerDialogInterface dialogInterface) {
+    public ValueDialog(@NonNull Context context, int pos, float mValue, ValueDialogInterface dialogInterface) {
         super(context);
         c = context;
         mInterface = dialogInterface;
@@ -50,18 +47,25 @@ public class EditDialog extends Dialog  {
             requestWindowFeature(Window.FEATURE_NO_TITLE);
             setContentView(R.layout.dialog_edittext);
             mEdit = (EditText) findViewById(R.id.value);
-            mEdit.setText(Float.toString(value));
+            if(position != 5) {
+                mEdit.setText(Integer.toString((int) value));
+            }else{
+                mEdit.setText(Float.toString(value));
+            }
             mEdit.requestFocus();
-            mEdit.setText("500");
             mEdit.selectAll();
 
-
-            InputMethodManager inputMethodManager = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-            if(inputMethodManager.isAcceptingText()) {
-                inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+            //if protein, accept decimals 0.6
+            if(position == 5){
+                mEdit.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
             }
 
-        MaterialFancyButton mButton = findViewById(R.id.save);
+         //   InputMethodManager inputMethodManager = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+         //   inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+
+
+
+            MaterialFancyButton mButton = findViewById(R.id.save);
             mButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -73,17 +77,31 @@ public class EditDialog extends Dialog  {
             int width = metrics.widthPixels;
             getWindow().setLayout((7 * width) / 11, LinearLayout.LayoutParams.WRAP_CONTENT);
 
+
+
+
         }
+
+
 
 
     @Override
     protected void onStop(){
-        mInterface.onPickerDialogDismiss(Integer.parseInt(mEdit.getText().toString()) , position);
+        if(position!=5) {
+            mInterface.onValueDialogDismiss(Integer.parseInt(mEdit.getText().toString()), position);
+        }else{
+            mInterface.onValueDialogDismiss(Float.parseFloat(mEdit.getText().toString()), position);
+        }
+
     }
 
     @Override
     public void onBackPressed(){
-        mInterface.onPickerDialogDismiss( Integer.parseInt(mEdit.getText().toString()),position);
+        if(position!=5) {
+            mInterface.onValueDialogDismiss(Integer.parseInt(mEdit.getText().toString()), position);
+        }else{
+            mInterface.onValueDialogDismiss(Float.parseFloat(mEdit.getText().toString()), position);
+        }
         dismiss();
     }
 

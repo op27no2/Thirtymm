@@ -1,4 +1,4 @@
-package op27no2.fitness.Centurion.ui.nutrition;
+package op27no2.fitness.Centurion;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.Window;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
@@ -15,10 +14,9 @@ import androidx.annotation.NonNull;
 
 import com.rilixtech.materialfancybutton.MaterialFancyButton;
 
-import op27no2.fitness.Centurion.R;
 import op27no2.fitness.Centurion.ui.lifting.PickerDialogInterface;
 
-public class EditDialog extends Dialog  {
+public class IntroValueDialog extends Dialog  {
 
         public Context c;
 
@@ -26,13 +24,13 @@ public class EditDialog extends Dialog  {
         private Context mContext;
         private EditText mEdit;
         //passed from lift fragment adapter, keep track to  to correct row
-        private float value;
+        private int value;
         private int position;
 
 
 
 
-    public EditDialog(@NonNull Context context,int pos, float mValue, PickerDialogInterface dialogInterface) {
+    public IntroValueDialog(@NonNull Context context, int pos, int mValue, PickerDialogInterface dialogInterface) {
         super(context);
         c = context;
         mInterface = dialogInterface;
@@ -50,18 +48,9 @@ public class EditDialog extends Dialog  {
             requestWindowFeature(Window.FEATURE_NO_TITLE);
             setContentView(R.layout.dialog_edittext);
             mEdit = (EditText) findViewById(R.id.value);
-            mEdit.setText(Float.toString(value));
-            mEdit.requestFocus();
-            mEdit.setText("500");
-            mEdit.selectAll();
+            mEdit.setText(Integer.toString(value));
 
-
-            InputMethodManager inputMethodManager = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-            if(inputMethodManager.isAcceptingText()) {
-                inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-            }
-
-        MaterialFancyButton mButton = findViewById(R.id.save);
+            MaterialFancyButton mButton = findViewById(R.id.save);
             mButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -73,7 +62,12 @@ public class EditDialog extends Dialog  {
             int width = metrics.widthPixels;
             getWindow().setLayout((7 * width) / 11, LinearLayout.LayoutParams.WRAP_CONTENT);
 
+
+
+
         }
+
+
 
 
     @Override

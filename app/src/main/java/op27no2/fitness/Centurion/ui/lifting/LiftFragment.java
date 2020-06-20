@@ -3,9 +3,11 @@ package op27no2.fitness.Centurion.ui.lifting;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -31,11 +33,21 @@ import com.google.android.flexbox.FlexDirection;
 import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.flexbox.JustifyContent;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
+import com.sweetzpot.stravazpot.activity.api.ActivityAPI;
+import com.sweetzpot.stravazpot.activity.model.Activity;
+import com.sweetzpot.stravazpot.activity.model.ActivityType;
+import com.sweetzpot.stravazpot.authenticaton.api.AuthenticationAPI;
+import com.sweetzpot.stravazpot.authenticaton.model.AppCredentials;
+import com.sweetzpot.stravazpot.authenticaton.model.LoginResult;
+import com.sweetzpot.stravazpot.common.api.AuthenticationConfig;
+import com.sweetzpot.stravazpot.common.api.StravaConfig;
+import com.sweetzpot.stravazpot.common.model.Time;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 
 import op27no2.fitness.Centurion.Database.AppDatabase;
@@ -65,6 +77,9 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
     private ArrayList<NamedWorkout> mNamedWorkouts = new ArrayList<NamedWorkout>();
     private ArrayList<String> allMuscles = new ArrayList<String>();
     private ArrayList<Integer> allRatios = new ArrayList<Integer>();
+
+    private static final int RQ_LOGIN = 1001;
+    private static final String REDIRECT_URI = "http://op27no2.fitness/callback/";
 
 
 
@@ -96,6 +111,7 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
         ImageView arrowLeft = (ImageView) view.findViewById(R.id.arrow_left);
         ImageView arrowRight = (ImageView) view.findViewById(R.id.arrow_right);
         ImageView saveButton = (ImageView) view.findViewById(R.id.save);
+        ImageView uploadButton = (ImageView) view.findViewById(R.id.upload);
 
         arrowLeft.setAlpha(0.8f);
         arrowRight.setAlpha(0.8f);
@@ -132,6 +148,14 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
             public void onClick(View view) {
                 rabbit.vibrate(25);
                 saveWorkoutDialog();
+            }
+        });
+
+        uploadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                rabbit.vibrate(25);
+                uploadToStrava();
             }
         });
 
@@ -409,6 +433,145 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
         mRecyclerView.smoothScrollToPosition(mLiftAdapter.getItemCount() - 1);
 
 
+    }
+
+    public void uploadToStrava(){
+
+        if(!prefs.getBoolean("strava2", false)) {
+            Uri intentUri = Uri.parse("https://www.strava.com/oauth/mobile/authorize")
+                    .buildUpon()
+                    .appendQueryParameter("client_id", "43815")
+                    .appendQueryParameter("redirect_uri", REDIRECT_URI)
+                    .appendQueryParameter("response_type", "code")
+                    .appendQueryParameter("approval_prompt", "auto")
+                    .appendQueryParameter("scope", "activity:write,read")
+                    .build();
+            edt.putString("upload_fragment", "Run");
+            edt.commit();
+            Intent intent = new Intent(Intent.ACTION_VIEW, intentUri);
+            intent.putExtra("key", 999);
+            startActivityForResult(intent, RQ_LOGIN);
+        }else{
+            finishStrava();
+        }
+    }
+
+    public void finishStrava() {
+        new AsyncTask<Void, Void, Void>() {
+
+            protected void onPreExecute() {
+            }
+
+            protected Void doInBackground(Void... unused) {
+
+
+                AuthenticationConfig config = AuthenticationConfig.create()
+                        .debug()
+                        .build();
+                AuthenticationAPI api = new AuthenticationAPI(config);
+                String mToken = null;
+                String mToken2 = null;
+
+                if(prefs.getBoolean("first_refresh", true) == true) {
+                    LoginResult result = api.getTokenForApp(AppCredentials.with(43815, "87571a766af016d9949d28929316f894bbc57938"))
+                            .withCode(prefs.getString("code", "")) //original response token placed here as well.
+                            .execute();
+                    mToken = result.getAccessToken();
+                    mToken2 = result.getRefreshToken();
+                    edt.putBoolean("first_refresh",false );
+                    edt.putString("refresh_token",mToken2 );
+                    edt.apply();
+                }else {
+                    AuthenticationConfig config2 = AuthenticationConfig.create()
+                            .debug()
+                            .build();
+                    AuthenticationAPI api2 = new AuthenticationAPI(config);
+                    LoginResult loginResult = api2.refreshTokenForApp(AppCredentials.with(43815, "87571a766af016d9949d28929316f894bbc57938"))
+                            .withRefreshToken(prefs.getString("refresh_token", ""))
+                            .refreshToken();
+                    mToken = loginResult.getAccessToken();
+                    mToken2 = loginResult.getRefreshToken();
+                    edt.putString("refresh_token", mToken2);
+                    edt.apply();
+                }
+
+
+
+
+                StravaConfig sconfig = StravaConfig.withToken(mToken)
+                        .debug()
+                        .build();
+
+
+                String title = "Morning Lift";
+                Calendar cal = Calendar.getInstance();
+                int time = cal.get(Calendar.HOUR_OF_DAY);
+                if(time>21 || time<3){
+                    title = "Night Lift";
+                }else if(time>17){
+                    title = "Evening Lift";
+                }else if(time>12){
+                    title = "Morning Lift";
+                }
+
+
+                ActivityAPI activityAPI = new ActivityAPI(sconfig);
+                Activity activity = activityAPI.createActivity(title)
+                        .ofType(ActivityType.WEIGHT_TRAINING)
+                        .startingOn(Calendar.getInstance().getTime())
+                        .withElapsedTime(Time.seconds(3600))
+                        .withDescription(getDescription())
+                        .isPrivate(true)
+                        .withTrainer(true)
+                        .withCommute(false)
+                        .execute();
+
+                return null;
+            }
+
+            protected void onPostExecute(Void unused) {
+                // Post Code
+            }
+        }.execute();
+
+
+
+    }
+
+
+
+    private String getDescription(){
+
+        String description = getTotalWeight() +" Pounds Lifted\n";
+        ArrayList<Lift> mLifts = mLiftingWorkout.getMyLifts();
+        for(int i=0; i<mLifts.size(); i++){
+            ArrayList<Integer> sortedReps = mLifts.get(i).getReps();
+            Collections.sort(sortedReps);
+            ArrayList<Integer> sortedWeights  = mLifts.get(i).getRepWeights();
+            Collections.sort(sortedWeights);
+
+            description = description + mLifts.get(i).getName()+": "+mLifts.get(i).getReps().size()+ " sets, " ;
+            description = description + sortedWeights.get(0)+"-"+sortedWeights.get(sortedWeights.size()-1)+" lbs, ";
+            description = description + sortedReps.get(0)+"-"+sortedReps.get(sortedReps.size()-1)+"reps\n";
+        }
+
+
+        return description;
+    }
+
+    private int getTotalWeight(){
+
+        int total = 0;
+        ArrayList<Lift> mLifts = mLiftingWorkout.getMyLifts();
+        for(int i=0; i<mLifts.size(); i++){
+            ArrayList<Integer> weights  = mLifts.get(i).getRepWeights();
+            for(int j=0; j<weights.size();j++){
+                total = total + weights.get(j);
+            }
+        }
+
+
+        return total;
     }
 
 

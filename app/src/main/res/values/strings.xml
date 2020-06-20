@@ -5,6 +5,23 @@
     <string name="title_history">History</string>
     <string name="title_run">Run</string>
     <string name="title_volume">Volume</string>
+    <string name="welcome">Welcome!</string>
+    <string name="intro_text">Please Select Your Fitness Goal:</string>
+    <string name="cut">Cut</string>
+    <string name="recomp">Maintain</string>
+    <string name="bulk">Bulk</string>
+    <string name="imperial">Imperial</string>
+    <string name="metric">Metric</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="preferences">Preferences:</string>
+    <string name="weight">Weight:\n180 lbs</string>
+    <string name="protein">Protein:\n 0.6g per lb</string>
+    <string name="goalsurplus">Surplus Goal:\n300+ Calories</string>
+    <string name="goaldeficit">Deficit Goal:\n-500 Calories</string>
+    <string name="goalrecomp">Maintenance Goal:\nNet Calories +/- 100</string>
+    <string name="goalsets">Volume Goal\n(Sets/Muscle/Week):\n15</string>
+    <string name="done">Proceed</string>
 
 
     <string-array name = "images_male_bb_front">
@@ -430,12 +447,12 @@
     <string name="gender_title">Avatar</string>
 
     <string-array name = "entries_gender">
-        <item>Male</item>
-        <item>Female</item>
+        <item>Prometheus</item>
+        <item>Artemis</item>
     </string-array>
     <string-array name = "values_gender">
-        <item>Male</item>
-        <item>Female</item>
+        <item>Prometheus</item>
+        <item>Artemis</item>
     </string-array>
 
     <string-array name="workout_types">
