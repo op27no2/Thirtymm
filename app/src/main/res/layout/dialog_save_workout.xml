@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:textSize="18sp"
-        android:text="Name Workout:"
+        android:text="Template Name:"
         android:textColor="@color/colorPrimary"
         android:layout_marginTop="14dp"
         android:layout_marginBottom="14dp"

@@ -42,7 +42,7 @@ import op27no2.fitness.Centurion.Database.AppDatabase;
 import op27no2.fitness.Centurion.Database.Repository;
 import op27no2.fitness.Centurion.MainActivity;
 import op27no2.fitness.Centurion.R;
-import op27no2.fitness.Centurion.ui.DialogCalendar;
+import op27no2.fitness.Centurion.DialogCalendar;
 import op27no2.fitness.Centurion.ui.lifting.Lift;
 import op27no2.fitness.Centurion.ui.lifting.LiftMap;
 import op27no2.fitness.Centurion.ui.lifting.LiftingWorkout;
@@ -280,16 +280,27 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
         if(prefs.getString("gender","Prometheus").equals("Prometheus")) {
             for (int i = 0; i < darray.length; i++) {
                 if (muscleVolumes.get(topMuscleList.get(0).get(i)) != null) {
-                    double vol = muscleVolumes.get(topMuscleList.get(0).get(i)) * 5;
+                    //get set goals per week and convert to scale of 100;
+                    double sets = (double) prefs.getInt("volume", 20);
+                    double factor = 100/sets;
+                    double vol = muscleVolumes.get(topMuscleList.get(0).get(i)) * factor;
                     if (vol > 100) {
                         vol = 100;
                     }
-
-                    if (vol >= 75) {
+                    if (vol == 100) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             imageViews.get(i).setColorFilter(new BlendModeColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), BlendMode.SRC_ATOP));
                         } else {
                             imageViews.get(i).setColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+                        }
+                        //  imgg.setColorFilter(argb(125 + (int) Math.floor((progress - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (progress - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+
+                    }
+                    if (vol >= 75 && vol < 100) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            imageViews.get(i).setColorFilter(new BlendModeColorFilter(argb(125 + (int) Math.floor((vol - 75) * 3), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 1.85)), 0), BlendMode.SRC_ATOP));
+                        } else {
+                            imageViews.get(i).setColorFilter(argb(125 + (int) Math.floor((vol - 75) * 3), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 1.85)), 0), PorterDuff.Mode.SRC_ATOP);
                         }
                         //  imgg.setColorFilter(argb(125 + (int) Math.floor((progress - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (progress - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
 
@@ -310,15 +321,26 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
             }
             for (int i = 0; i < darray2.length; i++) {
                 if (muscleVolumes.get(topMuscleList.get(1).get(i)) != null) {
-                    double vol = muscleVolumes.get(topMuscleList.get(1).get(i)) * 5;
+                    double sets = (double) prefs.getInt("volume", 20);
+                    double factor = 100/sets;
+                    double vol = muscleVolumes.get(topMuscleList.get(1).get(i)) * factor;
                     if (vol > 100) {
                         vol = 100;
                     }
-                    if (vol >= 75) {
+                    if (vol == 100) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             imageViews2.get(i).setColorFilter(new BlendModeColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), BlendMode.SRC_ATOP));
                         } else {
                             imageViews2.get(i).setColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+                        }
+                        //  imgg.setColorFilter(argb(125 + (int) Math.floor((progress - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (progress - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+
+                    }
+                    if (vol >= 75 && vol < 100) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            imageViews2.get(i).setColorFilter(new BlendModeColorFilter(argb(125 + (int) Math.floor((vol - 75) * 3), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 1.85)), 0), BlendMode.SRC_ATOP));
+                        } else {
+                            imageViews2.get(i).setColorFilter(argb(125 + (int) Math.floor((vol - 75) * 3), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 1.85)), 0), PorterDuff.Mode.SRC_ATOP);
                         }
                         //  imgg.setColorFilter(argb(125 + (int) Math.floor((progress - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (progress - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
 
@@ -340,16 +362,27 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
         }else if(prefs.getString("gender","Prometheus").equals("Artemis")){
             for (int i = 0; i < darray.length; i++) {
                 if (muscleVolumes.get(topMuscleList.get(2).get(i)) != null) {
-                    double vol = muscleVolumes.get(topMuscleList.get(2).get(i)) * 5;
+                    double sets = (double) prefs.getInt("volume", 20);
+                    double factor = 100/sets;
+                    double vol = muscleVolumes.get(topMuscleList.get(2).get(i)) * factor;
                     if (vol > 100) {
                         vol = 100;
                     }
 
-                    if (vol >= 75) {
+                    if (vol == 100) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             imageViews.get(i).setColorFilter(new BlendModeColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), BlendMode.SRC_ATOP));
                         } else {
                             imageViews.get(i).setColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+                        }
+                        //  imgg.setColorFilter(argb(125 + (int) Math.floor((progress - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (progress - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+
+                    }
+                    if (vol >= 75 && vol < 100) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            imageViews.get(i).setColorFilter(new BlendModeColorFilter(argb(125 + (int) Math.floor((vol - 75) * 3), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 1.85)), 0), BlendMode.SRC_ATOP));
+                        } else {
+                            imageViews.get(i).setColorFilter(argb(125 + (int) Math.floor((vol - 75) * 3), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 1.85)), 0), PorterDuff.Mode.SRC_ATOP);
                         }
                         //  imgg.setColorFilter(argb(125 + (int) Math.floor((progress - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (progress - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
 
@@ -370,15 +403,26 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
             }
             for (int i = 0; i < darray2.length; i++) {
                 if (muscleVolumes.get(topMuscleList.get(3).get(i)) != null) {
-                    double vol = muscleVolumes.get(topMuscleList.get(3).get(i)) * 5;
+                    double sets = (double) prefs.getInt("volume", 20);
+                    double factor = 100/sets;
+                    double vol = muscleVolumes.get(topMuscleList.get(3).get(i)) * factor;
                     if (vol > 100) {
                         vol = 100;
                     }
-                    if (vol >= 75) {
+                    if (vol == 100) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             imageViews2.get(i).setColorFilter(new BlendModeColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), BlendMode.SRC_ATOP));
                         } else {
                             imageViews2.get(i).setColorFilter(argb(125 + (int) Math.floor((vol - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+                        }
+                        //  imgg.setColorFilter(argb(125 + (int) Math.floor((progress - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (progress - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
+
+                    }
+                    if (vol >= 75 && vol < 100) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            imageViews2.get(i).setColorFilter(new BlendModeColorFilter(argb(125 + (int) Math.floor((vol - 75) * 3), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 1.85)), 0), BlendMode.SRC_ATOP));
+                        } else {
+                            imageViews2.get(i).setColorFilter(argb(125 + (int) Math.floor((vol - 75) * 3), 255, (255 - (int) Math.floor(2.5 * (vol - 50) * 1.85)), 0), PorterDuff.Mode.SRC_ATOP);
                         }
                         //  imgg.setColorFilter(argb(125 + (int) Math.floor((progress - 75) * 4), 255, (255 - (int) Math.floor(2.5 * (progress - 50) * 2)), 0), PorterDuff.Mode.SRC_ATOP);
 

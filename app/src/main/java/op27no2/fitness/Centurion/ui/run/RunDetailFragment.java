@@ -992,26 +992,42 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     }
 
     private ArrayList<Double[]> getBox(Point mPoint) {
+        double zoom = mapboxMap.getCameraPosition().zoom;
+        double offset = 0.0001;
+        if(zoom < 12){
+            offset = 0.0005;
+        }
+        if(zoom < 10){
+            offset = 0.001;
+        }
+        if(zoom < 8){
+            offset = 0.005;
+        }
+        if(zoom <4){
+            offset = 0.01;
+        }
+
+
         ArrayList<Double[]> mArray = new ArrayList<Double[]>();
         Double[] mBox = new Double[2];
-        mBox[0] = mPoint.longitude() + .0001;
-        mBox[1] = mPoint.latitude() + .0001;
+        mBox[0] = mPoint.longitude() + offset;
+        mBox[1] = mPoint.latitude() + offset;
         mArray.add(mBox);
         Double[] mBox2 = new Double[2];
-        mBox2[0] = mPoint.longitude() + .0001;
-        mBox2[1] = mPoint.latitude() - .0001;
+        mBox2[0] = mPoint.longitude() + offset;
+        mBox2[1] = mPoint.latitude() - offset;
         mArray.add(mBox2);
         Double[] mBox3 = new Double[2];
-        mBox3[0] = mPoint.longitude() - .0001;
-        mBox3[1] = mPoint.latitude() - .0001;
+        mBox3[0] = mPoint.longitude() - offset;
+        mBox3[1] = mPoint.latitude() - offset;
         mArray.add(mBox3);
         Double[] mBox4 = new Double[2];
-        mBox4[0] = mPoint.longitude() - .0001;
-        mBox4[1] = mPoint.latitude() + .0001;
+        mBox4[0] = mPoint.longitude() - offset;
+        mBox4[1] = mPoint.latitude() + offset;
         mArray.add(mBox4);
         Double[] mBox5 = new Double[2];
-        mBox5[0] = mPoint.longitude() + .0001;
-        mBox5[1] = mPoint.latitude() + .0001;
+        mBox5[0] = mPoint.longitude() + offset;
+        mBox5[1] = mPoint.latitude() + offset;
         mArray.add(mBox5);
 
         return mArray;
@@ -1188,7 +1204,17 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
         if (routeCoordinates.size() != 0 && routeCoordinates != null) {
 
-            //add Json objects for extrusion, move to
+            //get min alt
+            minalt = 1000000;
+            for (int i = 0; i < routeCoordinates.size(); i++) {
+                if(routeCoordinates.get(i).altitude() < minalt) {
+                    if(routeCoordinates.get(i).altitude() >0) {
+                        minalt = routeCoordinates.get(i).altitude();
+                    }
+                }
+            }
+
+                //add Json objects for extrusion, move to
             JsonObject totalObject = new JsonObject();
             totalObject.addProperty("type", "FeatureCollection");
             JsonArray ja = new JsonArray();
@@ -1215,8 +1241,10 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
                         //adjust altitude data to min
                         //TODO futher adjust based on max too?
-                       // double height = (routeCoordinates.get(i).altitude() - minalt) * 50;
-                        double height = (routeCoordinates.get(i).altitude() - minalt) * (22-mapboxMap.getCameraPosition().zoom)*(22-mapboxMap.getCameraPosition().zoom)*.1;
+                        //double height = (routeCoordinates.get(i).altitude() - minalt) * 50;
+
+                        double factor = ((((22-mapboxMap.getCameraPosition().zoom)*(22-mapboxMap.getCameraPosition().zoom)*(22-mapboxMap.getCameraPosition().zoom)*30)/22)*0.06);
+                        double height = (routeCoordinates.get(i).altitude() - minalt) * factor;
                         JsonObject heightObject = new JsonObject();
                         heightObject.addProperty("e", height);
                         System.out.println("coord values: " + routeCoordinates.get(i).altitude());

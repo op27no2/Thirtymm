@@ -38,14 +38,27 @@
                 app:mcv_selectionColor="@color/colorPrimary"
                 />
 
-  <!--          <LinearLayout
+
+            <RelativeLayout
+                android:layout_margin="5dp"
                 android:layout_below="@+id/calendar_view"
                 android:layout_centerHorizontal="true"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-            <com.rilixtech.materialfancybutton.MaterialFancyButton
-                android:id="@+id/volume_dialog_dismiss"
+
+                <TextView
+                    android:id="@+id/text_miles"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="20sp"
+                    android:text = ""/>
+
+                <com.rilixtech.materialfancybutton.MaterialFancyButton
+                android:id="@+id/volume_dialog_save"
+                android:layout_toRightOf="@+id/start_run"
+                android:layout_alignParentRight="true"
                 android:layout_width="100dp"
                 android:layout_height="50dp"
                 android:layout_margin="10dp"
@@ -64,32 +77,10 @@
                 fancy:mfb_textSize="18sp"
                 fancy:mfb_text="Dismiss"
                 fancy:mfb_textColor="@color/black" />
-
-            <com.rilixtech.materialfancybutton.MaterialFancyButton
-                android:id="@+id/volume_dialog_save"
-                android:layout_toRightOf="@+id/start_run"
-                android:layout_width="100dp"
-                android:layout_height="50dp"
-                android:layout_margin="10dp"
-                android:paddingBottom="5dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:paddingTop="5dp"
-                android:elevation="5dp"
-                fancy:mfb_borderColor="@color/black"
-                fancy:mfb_borderWidth="1dp"
-                fancy:mfb_defaultColor="@color/white"
-                fancy:mfb_focusColor="@color/colorPrimaryDark"
-                fancy:mfb_iconFont="fontawesome.ttf"
-                fancy:mfb_iconPosition="left"
-                fancy:mfb_radius="1dp"
-                fancy:mfb_textSize="18sp"
-                fancy:mfb_text="Save"
-                fancy:mfb_textColor="@color/black" />
-            </LinearLayout>
+            </RelativeLayout>
 
 
--->
+
         </RelativeLayout>
 
     </androidx.cardview.widget.CardView>

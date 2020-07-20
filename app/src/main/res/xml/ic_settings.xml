@@ -16,6 +16,14 @@
             android:inputType="number"
             android:title="Base Daily Calorie Burn" />
 
+        <EditTextPreference
+            app:iconSpaceReserved="false"
+            android:defaultValue="20"
+            android:key="volumes"
+            android:summary=""
+            android:inputType="number"
+            android:title="Goal: Sets Per Week" />
+
 <!--        <CheckBoxPreference
             android:defaultValue="true"
             android:key="@string/key_upload_over_wifi"

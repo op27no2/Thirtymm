@@ -56,7 +56,7 @@ public class ChildActivitiesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_activity_child1, container, false);
+        View view = inflater.inflate(R.layout.fragment_activity_child_workouts, container, false);
 
 
         prefs = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE);

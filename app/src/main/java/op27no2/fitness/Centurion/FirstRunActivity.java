@@ -79,7 +79,7 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
         buttonSurplus.setText("Surplus Goal:\n"+Integer.toString(prefs.getInt("bulk",2100))+"+ Calories");
         buttonVolume.setText("Volume Goal:\n(Sets/Muscle/Week):\n"+Integer.toString(prefs.getInt("volume",15)));
         buttonWeight.setText("Weight:\n"+Integer.toString(prefs.getInt("weight",180))+" lbs");
-        buttonProtein.setText("Protein:\n"+Float.toString(prefs.getFloat("proteins",0.6f))+"g per lb");
+        buttonProtein.setText("Protein:\n"+Float.toString(prefs.getFloat("protein",0.6f))+"g per lb");
 
 
         //PROGRAM GOAL CUT VS RECOMP VS BULK
@@ -201,7 +201,7 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
         buttonProtein.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Dialog dialog = new ValueDialog(view.getContext(), 5, prefs.getInt("protein", 120), mInterface);
+                Dialog dialog = new ValueDialog(view.getContext(), 5, prefs.getFloat("protein", 0.6f), mInterface);
                 dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
                 dialog.show();
             }
@@ -311,7 +311,7 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
         System.out.println("dialog position: "+position+" value: "+weight);
         switch(position){
             case 0:
-                buttonDeficit.setText("Deficit Goal\n"+"-"+Integer.toString((int) weight)+" Calories");
+                buttonDeficit.setText("Deficit Goal\n"+Integer.toString((int) weight)+" Calories");
                 edt.putInt("deficit",(int) weight);
                 edt.apply();
                 break;
@@ -337,7 +337,7 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
                 break;
             case 5:
                 buttonProtein.setText("Protein:\n"+Float.toString(weight)+"g per lb");
-                edt.putFloat("proteins", weight);
+                edt.putFloat("protein", weight);
                 edt.apply();
                 break;
             default:

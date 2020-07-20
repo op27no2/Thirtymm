@@ -33,6 +33,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -180,6 +181,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private String saveDescription;
     private String saveTitle;
     private String saveDate;
+    private Boolean stravaCheckBox;
+    private Boolean mapCheckBox;
 
     private double holdZoom;
     private ImageView zoomBar;
@@ -190,7 +193,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
     private static final int RQ_LOGIN = 1001;
     private static final String REDIRECT_URI = "http://op27no2.fitness/callback/";
-
+    private Boolean mapReady = false;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -525,6 +528,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     public void onMapReady(@NonNull final MapboxMap mapboxMap) {
         RunFragment.this.mapboxMap = mapboxMap;
         loadOverlay.setVisibility(View.GONE);
+        mapReady = true;
 
         // mapboxMap.setStyle(new Style.Builder().fromUri("mapbox://styles/op27no2/ck2tujbra2ox21cqzxh4ql48y"),new Style.OnStyleLoaded() {
         //  mapboxMap.setStyle(Style.OUTDOORS, new Style.OnStyleLoaded() {
@@ -732,6 +736,9 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         System.out.println("run fragment onResume");
         if(isMyServiceRunning(TimerService.class)){
             bindTimerService();
+        }
+        if(mapReady){
+            loadOverlay.setVisibility(View.VISIBLE);
         }
     }
 
@@ -1393,6 +1400,10 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         EditText mEditCals = dialog.findViewById(R.id.cals_value);
         EditText mEditTitle = dialog.findViewById(R.id.workout_title);
         EditText mEditDescription = dialog.findViewById(R.id.workout_description);
+        CheckBox mStravaCheck = (CheckBox) dialog.findViewById(R.id.strava_checkbox);
+        CheckBox mMapCheck = (CheckBox) dialog.findViewById(R.id.map_checkbox);
+
+
         //set initial texts, can edit then save
         final float[] total = {0f};
         for (int i = 0; i < routeCoordinates.size() - 1; i++) {
@@ -1490,6 +1501,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                     saveTime = getIntFromDuration(mEditDuration.getText().toString());
                     saveDescription = mEditDescription.getText().toString();
                     saveTitle = mEditTitle.getText().toString();
+                    stravaCheckBox = mStravaCheck.isChecked();
+                    mapCheckBox = mMapCheck.isChecked();
 
                     //starts save process, gets image then callback finishes and calls saveRun(bitmap)
                     moveToBounds();
@@ -1573,7 +1586,9 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         mRunWorkout.setCoordinates(coords);
 
         //TODO add checkbox for social upload
-        uploadToStrava();
+        if(stravaCheckBox) {
+            uploadToStrava();
+        }
 
         mRepository.insertRunWorkout(mRunWorkout);
         updateWidgets();
@@ -1586,7 +1601,9 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         MapboxMap.SnapshotReadyCallback snapCallback = new MapboxMap.SnapshotReadyCallback() {
             @Override
             public void onSnapshotReady(@NonNull Bitmap snapshot) {
+//
                 saveRun(snapshot);
+                //
             }
         };
         mapboxMap.snapshot(snapCallback);

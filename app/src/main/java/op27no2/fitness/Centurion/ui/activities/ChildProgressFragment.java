@@ -3,12 +3,16 @@ package op27no2.fitness.Centurion.ui.activities;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridView;
+import android.widget.TextView;
 
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -40,6 +44,11 @@ public class ChildProgressFragment extends Fragment {
     private ArrayList<Float> setWeekData = new ArrayList<Float>();
     private ArrayList<Integer> calWeekData = new ArrayList<Integer>();
     private ArrayList<Integer> proteinWeekData = new ArrayList<Integer>();
+    private ArrayList<String> calendarWeeks = new ArrayList<String>();
+    private TextView volumeText;
+    private TextView calorieText;
+    private TextView proteinText;
+    private Context mContext;
 
     public ChildProgressFragment() {
         // Required empty public constructor
@@ -49,10 +58,36 @@ public class ChildProgressFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_activity_child2, container, false);
+        View view = inflater.inflate(R.layout.fragment_activity_child_progress, container, false);
         prefs = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
         mRepository = new Repository(getActivity());
+        mContext = getActivity();
+
+        Resources res = mContext.getResources();
+        ResourcesCompat.getColor(res, R.color.colorPrimary, null);
+
+        GridView grid = view.findViewById(R.id.grid_view);
+        ArrayList<Double> headerGrid = new ArrayList<Double>();
+
+        headerGrid.add((double) prefs.getInt("volume",0));
+        headerGrid.add((double) prefs.getInt("deficit", 0));
+        double x = ((double) prefs.getInt("weight", 0))*((double) prefs.getFloat("protein", 0));
+        double xx = (double) Math.floor(x);
+        headerGrid.add(xx);
+        MyGridAdapter gridAdapter = new MyGridAdapter(mContext, headerGrid, res);
+        grid.setNumColumns(headerGrid.size());
+        grid.setAdapter(gridAdapter);
+
+/*
+        //Header (switch to recyclerview at some point)
+        volumeText = view.findViewById(R.id.volume_text);
+        volumeText.setText("Volume:\n"+ Integer.toString(prefs.getInt("volume",15))+" sets");
+        calorieText = view.findViewById(R.id.calorie_text);
+        calorieText.setText("Calories:\n"+Integer.toString(prefs.getInt("deficit",-3500)));
+        proteinText = view.findViewById(R.id.protein_text);
+        proteinText.setText("Protein:\n"+(int) Math.floor(prefs.getInt("weight",0)*(prefs.getFloat("protein",120)))+"g");
+*/
 
 
         //recyclerview and layoutmanager
@@ -60,8 +95,8 @@ public class ChildProgressFragment extends Fragment {
         mRecyclerView.setHasFixedSize(true);
         mLayoutManager = new LinearLayoutManager(getActivity());
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        mLayoutManager.setReverseLayout(true);
-        mLayoutManager.setStackFromEnd(true);
+       // mLayoutManager.setReverseLayout(true);
+       // mLayoutManager.setStackFromEnd(true);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setNestedScrollingEnabled(false);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -69,27 +104,19 @@ public class ChildProgressFragment extends Fragment {
                 new RecyclerItemClickListener(getActivity(), mRecyclerView, new RecyclerItemClickListener.OnItemClickListener() {
                     @Override public void onItemClick(View view, int position) {
                         System.out.println("item clicked: "+position);
-
                        // ((MainActivity)getActivity()).goToRunDetail(mRunWorkouts.get(position).getUid());
-
-
                     }
-
                     @Override
                     public void onItemLongClick(View view, int position) {
                         System.out.println("item long clicked: "+position);
-
                     }
                 })
         );
 
-
-        mProgressAdapter = new ProgressAdapter(setWeekData, calWeekData, proteinWeekData, getActivity());
+        mProgressAdapter = new ProgressAdapter(setWeekData, calWeekData, proteinWeekData,calendarWeeks, getActivity());
         mRecyclerView.setAdapter(mProgressAdapter);
 
-
         getDayData();
-
 
         return view;
     }
@@ -107,6 +134,7 @@ public class ChildProgressFragment extends Fragment {
             }
             protected Void doInBackground(Void... unused) {
             SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, ''yy");
+            SimpleDateFormat shortFormat = new SimpleDateFormat("M/d");
 
              mDays = (ArrayList<NutritionDay>) AppDatabase.getAppDatabase(getActivity()).ntDAO().getAll();
              //this block should return oldest day from mDays
@@ -168,10 +196,16 @@ public class ChildProgressFragment extends Fragment {
             Boolean loopStarted = false;
 
             while(dateZero.before(mCal.getTime())){
-
+                //loop backwards one day at a time from today
 
                 int day = mCal.get(Calendar.DAY_OF_WEEK);
-                //Loop backwards and start collecting weeks on end week day == Sunday default
+
+                if(day == Calendar.MONDAY) {
+                   // System.out.println("day formatting" +df.format(mCal.getTime()));
+                    calendarWeeks.add(shortFormat.format(mCal.getTime()));
+                }
+
+                    //Loop backwards and start collecting weeks on end week day == Sunday default
                 if(day == Calendar.SUNDAY) {
                     //if sunday save previous week and reset looping totals
                     if(loopStarted) {
@@ -205,8 +239,6 @@ public class ChildProgressFragment extends Fragment {
                     }
                 }
 
-
-                //i starts at 0 but we want to subtract even after 1st loop, so i+1
                 mCal.add(Calendar.DATE, -1);
 
             }
@@ -219,6 +251,11 @@ public class ChildProgressFragment extends Fragment {
                 for(int i=0; i<calWeekData.size();i++){
                     System.out.println("grid data cals:" +calWeekData.get(i));
                 }
+                for(int i=0; i<proteinWeekData.size();i++){
+                    System.out.println("grid data protein:" +proteinWeekData.get(i));
+                }
+
+
                 finishUI();
             }
         }.execute();
@@ -226,6 +263,8 @@ public class ChildProgressFragment extends Fragment {
     }
 
     private void finishUI(){
+
+
 
     }
 

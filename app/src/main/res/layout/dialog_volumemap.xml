@@ -38,7 +38,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/my_title2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="22sp"
+                    android:textColor="@color/colorPrimary"
+                    android:text="Volume Ratios:"
+                    />
                 <TextView
                  android:id="@+id/my_title"
                  android:layout_width="wrap_content"
@@ -47,14 +55,7 @@
                  android:textColor="@color/colorPrimary"
                  android:text="Lift Name"
                  />
-                <TextView
-                android:id="@+id/my_title2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="22sp"
-                android:textColor="@color/colorPrimary"
-                android:text=" - Volume Ratios"
-                />
+
             </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView

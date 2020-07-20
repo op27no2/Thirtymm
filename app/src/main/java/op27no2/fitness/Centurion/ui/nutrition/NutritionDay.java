@@ -33,6 +33,9 @@ public class NutritionDay {
     @ColumnInfo(name = "values")
     private ArrayList<Integer> mValues = new ArrayList<Integer>();
 
+    @ColumnInfo(name = "flags")
+    private ArrayList<Integer> mFlags = new ArrayList<Integer>();
+
 
     public int getUid() {
         return uid;
@@ -63,6 +66,12 @@ public class NutritionDay {
         return mValues;
     }
 
+    public void setFlags(ArrayList<Integer> flags){
+        mFlags = flags;
+    }
+    public ArrayList<Integer> getFlags(){
+        return mFlags;
+    }
 
 
     public Integer getCals(){

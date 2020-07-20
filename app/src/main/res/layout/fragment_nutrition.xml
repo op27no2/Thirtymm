@@ -90,21 +90,115 @@
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:id="@+id/graph2" />
-
     </RelativeLayout>
 
+
     <LinearLayout
-        android:id="@+id/buttons"
-        android:gravity="center"
+        android:id="@+id/flags"
+        android:layout_toLeftOf="@+id/buttons"
+        android:gravity="left"
+        android:layout_margin="5dp"
         android:layout_below="@+id/bottom_graph"
         android:layout_width="match_parent"
+        android:layout_height="50dp"
+        >
+    <ImageView
+        android:id="@+id/flag_1"
+        android:layout_gravity="center"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="50dp"
+        android:src="@drawable/ic_flag"/>
+    <ImageView
+        android:id="@+id/flag_2"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="50dp"
+        android:src="@drawable/ic_flag"/>
+    <ImageView
+        android:id="@+id/flag_3"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="50dp"
+        android:src="@drawable/ic_flag"/>
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/buttons"
+        android:layout_alignParentRight="true"
+        android:layout_margin="5dp"
+        android:layout_below="@+id/bottom_graph"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content">
+
+        <com.rilixtech.materialfancybutton.MaterialFancyButton
+            android:id="@+id/button_minus"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            fancy:mfb_borderColor="@color/black"
+            fancy:mfb_iconResource="@drawable/ic_remove"
+            fancy:mfb_borderWidth="1dp"
+            fancy:mfb_defaultColor="@color/white"
+            fancy:mfb_focusColor="@color/colorPrimaryDark"
+            fancy:mfb_radius="1dp"
+            />
+        <com.rilixtech.materialfancybutton.MaterialFancyButton
+            android:id="@+id/button_minus_small"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:padding="8dp"
+            fancy:mfb_borderColor="@color/black"
+            fancy:mfb_iconResource="@drawable/ic_remove"
+            fancy:mfb_borderWidth="1dp"
+            fancy:mfb_defaultColor="@color/white"
+            fancy:mfb_focusColor="@color/colorPrimaryDark"
+            fancy:mfb_radius="1dp"
+        />
+
+        <com.rilixtech.materialfancybutton.MaterialFancyButton
+            android:id="@+id/button_plus_small"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:padding="8dp"
+            fancy:mfb_borderColor="@color/black"
+            fancy:mfb_iconResource="@drawable/ic_add"
+            fancy:mfb_borderWidth="1dp"
+            fancy:mfb_defaultColor="@color/white"
+            fancy:mfb_focusColor="@color/colorPrimaryDark"
+            fancy:mfb_radius="1dp"
+            />
+        <com.rilixtech.materialfancybutton.MaterialFancyButton
+            android:id="@+id/button_plus"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:padding="3dp"
+            fancy:mfb_borderColor="@color/black"
+            fancy:mfb_iconResource="@drawable/ic_add"
+            fancy:mfb_borderWidth="1dp"
+            fancy:mfb_defaultColor="@color/white"
+            fancy:mfb_focusColor="@color/colorPrimaryDark"
+            fancy:mfb_radius="1dp"
+            />
         <com.rilixtech.materialfancybutton.MaterialFancyButton
             android:id="@+id/monday"
-            android:padding="10dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:elevation="5dp"
+            fancy:mfb_borderColor="@color/black"
+            fancy:mfb_borderWidth="1dp"
+            fancy:mfb_defaultColor="@color/white"
+            fancy:mfb_focusColor="@color/colorPrimaryDark"
+            fancy:mfb_radius="1dp"
+            fancy:mfb_textSize="18sp"
+            fancy:mfb_text="M"
+            fancy:mfb_textColor="@color/black" />
+        <com.rilixtech.materialfancybutton.MaterialFancyButton
+            android:id="@+id/seven"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:paddingBottom="5dp"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
@@ -116,11 +210,10 @@
             fancy:mfb_focusColor="@color/colorPrimaryDark"
             fancy:mfb_radius="1dp"
             fancy:mfb_textSize="18sp"
-            fancy:mfb_text="M"
+            fancy:mfb_text="7"
             fancy:mfb_textColor="@color/black" />
-
-        <ImageView
-            android:id="@+id/button_minus"
+<!--        <ImageView
+            android:id="@+id/button_minus2"
             android:padding="10dp"
             android:layout_centerVertical="true"
             android:layout_gravity="center"
@@ -128,7 +221,7 @@
             android:layout_height="56dp"
             android:src="@drawable/ic_remove"/>
         <ImageView
-            android:id="@+id/button_minus_small"
+            android:id="@+id/button_minus_small2"
             android:padding="15dp"
             android:layout_below="@+id/button_minus"
             android:layout_centerVertical="true"
@@ -153,26 +246,8 @@
             android:layout_gravity="center"
             android:layout_width="56dp"
             android:layout_height="56dp"
-            android:src="@drawable/ic_add"/>
-        <com.rilixtech.materialfancybutton.MaterialFancyButton
-            android:id="@+id/seven"
-            android:padding="10dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:paddingBottom="5dp"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:paddingTop="5dp"
-            android:elevation="5dp"
-            fancy:mfb_borderColor="@color/black"
-            fancy:mfb_borderWidth="1dp"
-            fancy:mfb_defaultColor="@color/white"
-            fancy:mfb_focusColor="@color/colorPrimaryDark"
-            fancy:mfb_radius="1dp"
-            fancy:mfb_textSize="18sp"
-            fancy:mfb_text="7"
-            fancy:mfb_textColor="@color/black" />
+            android:src="@drawable/ic_add"/>-->
+
 
     </LinearLayout>
 

@@ -6,6 +6,7 @@ import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -38,6 +39,7 @@ public class ProgressAdapter extends RecyclerView.Adapter<ProgressAdapter.ViewHo
     ArrayList<Float> setWeekData = new ArrayList<Float>();
     ArrayList<Integer> calWeekData = new ArrayList<Integer>();
     ArrayList<Integer> proteinWeekData = new ArrayList<Integer>();
+    ArrayList<String> calendarWeekData = new ArrayList<String>();
 
     @Override
     public void onDialogDismiss() {
@@ -59,10 +61,11 @@ public class ProgressAdapter extends RecyclerView.Adapter<ProgressAdapter.ViewHo
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public ProgressAdapter(ArrayList<Float> sets, ArrayList<Integer> cals, ArrayList<Integer> protein, Context context) {
+    public ProgressAdapter(ArrayList<Float> sets, ArrayList<Integer> cals, ArrayList<Integer> protein, ArrayList<String> weeks, Context context) {
         setWeekData = sets;
         calWeekData = cals;
         proteinWeekData = protein;
+        calendarWeekData = weeks;
         mContext = context;
 
     }
@@ -98,32 +101,46 @@ public class ProgressAdapter extends RecyclerView.Adapter<ProgressAdapter.ViewHo
         ResourcesCompat.getColor(res, R.color.colorPrimary, null);
 
         TextView mText = holder.mView.findViewById(R.id.week_text);
-        ImageView image1 = holder.mView.findViewById(R.id.column1);
+        GridView grid = holder.mView.findViewById(R.id.grid_view);
+        ArrayList<Double> gridCol = new ArrayList<Double>();
+
+        int pos = holder.getAdapterPosition();
+        gridCol.add(calWeekData.get(pos) / (double) prefs.getInt("volume",0));
+        gridCol.add(calWeekData.get(pos) / (double) prefs.getInt("deficit", 0));
+        gridCol.add(proteinWeekData.get(pos) /    ((double) prefs.getInt("weight", 0))*((double) prefs.getFloat("protein", 0))   );
+        System.out.println("data: "+gridCol.get(0) + " "+gridCol.get(1)+" "+gridCol.get(2));
+        MyGridAdapter gridAdapter = new MyGridAdapter(mContext, gridCol, res);
+        grid.setNumColumns(gridCol.size());
+        grid.setAdapter(gridAdapter);
+
+        mText.setText(calendarWeekData.get(holder.getAdapterPosition()));
+
+
+
+      /*  ImageView image1 = holder.mView.findViewById(R.id.column1);
         ImageView image2 = holder.mView.findViewById(R.id.column2);
         ImageView image3 = holder.mView.findViewById(R.id.column3);
-        ImageView image4 = holder.mView.findViewById(R.id.column4);
+        ImageView image4 = holder.mView.findViewById(R.id.column4);*/
 
-
-
-        mText.setText("Week of 5/22");
-
-        if(holder.getAdapterPosition()<setWeekData.size() && setWeekData.get(holder.getAdapterPosition()) > prefs.getFloat("weekly_sets",20f)){
+/*
+        if(holder.getAdapterPosition()<setWeekData.size() && setWeekData.get(holder.getAdapterPosition()) > prefs.getFloat("volume",0f)){
             image1.setBackgroundColor(ResourcesCompat.getColor(res, R.color.green, null));
             }else{
             image1.setBackgroundColor(ResourcesCompat.getColor(res, R.color.orange, null));
         }
-        if(holder.getAdapterPosition()<calWeekData.size() && calWeekData.get(holder.getAdapterPosition()) < prefs.getInt("weekly_deficit", -3500)) {
+        if(holder.getAdapterPosition()<calWeekData.size() && calWeekData.get(holder.getAdapterPosition()) < prefs.getInt("deficit", 0)) {
             image2.setBackgroundColor(ResourcesCompat.getColor(res, R.color.green, null));
             }else{
             image2.setBackgroundColor(ResourcesCompat.getColor(res, R.color.yellow, null));
         }
-        if(holder.getAdapterPosition()<proteinWeekData.size() && proteinWeekData.get(holder.getAdapterPosition()) > prefs.getInt("weekly_protein", 120)) {
+        if(holder.getAdapterPosition()<proteinWeekData.size() && proteinWeekData.get(holder.getAdapterPosition()) > prefs.getFloat("protein", 0)) {
             image3.setBackgroundColor(ResourcesCompat.getColor(res, R.color.green, null));
             }else{
             image3.setBackgroundColor(ResourcesCompat.getColor(res, R.color.orange, null));
         }
-
         image4.setBackgroundColor(ResourcesCompat.getColor(res, R.color.colorPrimaryDark, null));
+*/
+
 
         //holder.getAdapterPosition()
 

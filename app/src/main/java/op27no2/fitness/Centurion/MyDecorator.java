@@ -10,16 +10,16 @@ import com.prolificinteractive.materialcalendarview.DayViewFacade;
 import java.util.Collection;
 import java.util.HashSet;
 
-import static android.graphics.Color.argb;
-
 
 public class MyDecorator implements DayViewDecorator {
 
     private final Drawable draw1;
     private final Drawable draw2;
     private final HashSet<CalendarDay> dates;
+    private Context mContext;
 
     public MyDecorator(Context context, boolean lift, boolean run, Collection<CalendarDay> dates) {
+        mContext = context;
         Drawable drawable1 = null;
         Drawable drawable2 = null;
         if(lift) {
@@ -47,6 +47,9 @@ public class MyDecorator implements DayViewDecorator {
 
     @Override
     public void decorate(DayViewFacade view) {
+     /*   CustomCalendarSpan test = new CustomCalendarSpan("23", mContext);
+        view.addSpan(test);*/
+       // view.addSpan(new ForegroundColorSpan(Color.TRANSPARENT));
         view.setBackgroundDrawable(draw1);
         view.setSelectionDrawable(draw2);
     }

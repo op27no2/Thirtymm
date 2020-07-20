@@ -28,10 +28,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.flexbox.AlignItems;
-import com.google.android.flexbox.FlexDirection;
 import com.google.android.flexbox.FlexboxLayoutManager;
-import com.google.android.flexbox.JustifyContent;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.sweetzpot.stravazpot.activity.api.ActivityAPI;
 import com.sweetzpot.stravazpot.activity.model.Activity;
@@ -53,7 +50,7 @@ import java.util.Date;
 import op27no2.fitness.Centurion.Database.AppDatabase;
 import op27no2.fitness.Centurion.Database.Repository;
 import op27no2.fitness.Centurion.R;
-import op27no2.fitness.Centurion.ui.DialogCalendar;
+import op27no2.fitness.Centurion.DialogCalendar;
 import op27no2.fitness.Centurion.ui.nutrition.CalendarDialogInterface;
 
 public class LiftFragment extends Fragment implements CalendarDialogInterface, NamedWorkoutInterface{
@@ -97,6 +94,16 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
         for(int i=0; i<allMuscles.size(); i++){
             allRatios.add(0);
         }
+        //add liftmap for bench on firstrun
+        if(prefs.getBoolean("first_open", false) == false) {
+            LiftMap mLiftMap = new LiftMap("Bench Press");
+            mLiftMap.setMuscles(allMuscles);
+            mLiftMap.setRatios(allRatios);
+            mRepository.insertLiftMap(mLiftMap);
+            edt.putBoolean("first_open",true);
+            edt.apply();
+        }
+
 
         cal = Calendar.getInstance();
         Date c = cal.getTime();
@@ -160,7 +167,8 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
         });
 
 
-        addCard = view.findViewById(R.id.card_view);
+            //MOVED BACK TO CARDVIEW
+/*        addCard = view.findViewById(R.id.card_view);
         addCard.setOnClickListener(new View.OnClickListener() {
             @Override
 
@@ -170,13 +178,6 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
                 mLift.setRepNumber(0, prefs.getInt("default_reps" + "Bench Press", 0));
                 System.out.println("lift  click");
 
-                //if dialog has not been open you need to add the bench press lift map too
-                if(prefs.getBoolean("dialog_opened", false) == false) {
-                    LiftMap mLiftMap = new LiftMap("Bench Press");
-                    mLiftMap.setMuscles(allMuscles);
-                    mLiftMap.setRatios(allRatios);
-                    mRepository.insertLiftMap(mLiftMap);
-                }
 
 
                 mLiftingWorkout.addLift(mLift);
@@ -184,7 +185,7 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
                 mLiftAdapter.notifyItemInserted(mLiftAdapter.getItemCount());
                 mRecyclerView.smoothScrollToPosition(mLiftAdapter.getItemCount() - 1);
         }
-        });
+        });*/
 
 
         //recyclerview and layoutmanager
@@ -200,7 +201,9 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
 
 
         //recyclerview and layoutmanager
-        mRecyclerView2 = view.findViewById(R.id.named_workouts);
+
+        //moved back to CARDVIEW
+   /*     mRecyclerView2 = view.findViewById(R.id.named_workouts);
         mRecyclerView2.setHasFixedSize(true);
         mLayoutManager2 = new FlexboxLayoutManager(view.getContext());
         mLayoutManager2.setFlexDirection(FlexDirection.ROW);
@@ -208,7 +211,7 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
         mLayoutManager2.setAlignItems(AlignItems.FLEX_START);
         mRecyclerView2.setLayoutManager(mLayoutManager2);
 
-
+*/
 
 
 /*        new AsyncTask<Void, Void, Void>() {
@@ -289,14 +292,15 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
         dateText.setText(formattedDate);
 
         //set lift data to recyclerview
-        mLiftAdapter = new LiftCardviewWorkoutAdapter(mLiftingWorkout, mRepository);
+        mLiftAdapter = new LiftCardviewWorkoutAdapter(mLiftingWorkout, mNamedWorkouts, mRepository, LiftFragment.this.getActivity());
         mRecyclerView.setAdapter(mLiftAdapter);
 
         //set named lift data to recyclerview
-        mNamedWorkoutAdapter = new NamedWorkoutAdapter(mDialogInterface, mLiftingWorkout, mNamedWorkouts, mRepository);
+        //MOVED BACK TO CARDVIEW
+      /*  mNamedWorkoutAdapter = new NamedWorkoutAdapter(mDialogInterface, mLiftingWorkout, mNamedWorkouts, mRepository);
         mRecyclerView2.setAdapter(mNamedWorkoutAdapter);
         mRecyclerView2.setItemAnimator(new DefaultItemAnimator());
-
+*/
 
         //recyclerview on touch events
    /*     mRecyclerView.addOnItemTouchListener(
@@ -374,7 +378,7 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
             }
             protected void onPostExecute(Void unused) {
                 // Post Code
-                mNamedWorkoutAdapter.notifyDataSetChanged();
+                mLiftAdapter.notifyDataSetChanged();
             }
         }.execute();
     }
@@ -437,24 +441,47 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
 
     public void uploadToStrava(){
 
-        if(!prefs.getBoolean("strava2", false)) {
-            Uri intentUri = Uri.parse("https://www.strava.com/oauth/mobile/authorize")
-                    .buildUpon()
-                    .appendQueryParameter("client_id", "43815")
-                    .appendQueryParameter("redirect_uri", REDIRECT_URI)
-                    .appendQueryParameter("response_type", "code")
-                    .appendQueryParameter("approval_prompt", "auto")
-                    .appendQueryParameter("scope", "activity:write,read")
-                    .build();
-            edt.putString("upload_fragment", "Run");
-            edt.commit();
-            Intent intent = new Intent(Intent.ACTION_VIEW, intentUri);
-            intent.putExtra("key", 999);
-            startActivityForResult(intent, RQ_LOGIN);
-        }else{
-            finishStrava();
-        }
+            final Dialog dialog = new Dialog(getActivity());
+
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            dialog.setContentView(R.layout.dialog_upload_lift);
+
+            DisplayMetrics metrics = getResources().getDisplayMetrics();
+            int width = metrics.widthPixels;
+
+            EditText mEditDescription = dialog.findViewById(R.id.workout_description);
+            mEditDescription.setText(getDescription());
+
+            dialog.getWindow().setLayout((8 * width) / 9, LinearLayout.LayoutParams.WRAP_CONTENT);
+            dialog.findViewById(R.id.save).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(!prefs.getBoolean("strava2", false)) {
+                        Uri intentUri = Uri.parse("https://www.strava.com/oauth/mobile/authorize")
+                                .buildUpon()
+                                .appendQueryParameter("client_id", "43815")
+                                .appendQueryParameter("redirect_uri", REDIRECT_URI)
+                                .appendQueryParameter("response_type", "code")
+                                .appendQueryParameter("approval_prompt", "auto")
+                                .appendQueryParameter("scope", "activity:write,read")
+                                .build();
+                        edt.putString("upload_fragment", "Run");
+                        edt.commit();
+                        Intent intent = new Intent(Intent.ACTION_VIEW, intentUri);
+                        intent.putExtra("key", 999);
+                        startActivityForResult(intent, RQ_LOGIN);
+                    }else{
+                        finishStrava();
+                    }
+
+                }
+            });
+
+
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.show();
     }
+
 
     public void finishStrava() {
         new AsyncTask<Void, Void, Void>() {
@@ -511,7 +538,7 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
                 }else if(time>17){
                     title = "Evening Lift";
                 }else if(time>12){
-                    title = "Morning Lift";
+                    title = "Afternoon Lift";
                 }
 
 
@@ -565,8 +592,9 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
         ArrayList<Lift> mLifts = mLiftingWorkout.getMyLifts();
         for(int i=0; i<mLifts.size(); i++){
             ArrayList<Integer> weights  = mLifts.get(i).getRepWeights();
+            ArrayList<Integer> reps  = mLifts.get(i).getReps();
             for(int j=0; j<weights.size();j++){
-                total = total + weights.get(j);
+                total = total + (weights.get(j)*reps.get(j));
             }
         }
 

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -43,8 +44,10 @@ import op27no2.fitness.Centurion.Graphing.LineGraphView;
 import op27no2.fitness.Centurion.MyAppWidgetProvider;
 import op27no2.fitness.Centurion.R;
 import op27no2.fitness.Centurion.RecyclerItemClickListener;
-import op27no2.fitness.Centurion.ui.DialogCalendar;
+import op27no2.fitness.Centurion.DialogCalendar;
 import op27no2.fitness.Centurion.ui.lifting.PickerDialogInterface;
+
+import static android.graphics.Color.argb;
 
 public class NutritionFragment extends Fragment implements CalendarDialogInterface, PickerDialogInterface {
     private SharedPreferences prefs;
@@ -82,6 +85,13 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
     private PickerDialogInterface mPickerInterface;
     private int selectedPosition = 0;
 
+    private Boolean flag1True = false;
+    private Boolean flag2True = false;
+    private Boolean flag3True = false;
+
+    ImageView flag1;
+    ImageView flag2;
+    ImageView flag3;
 
     //TODO need to fix for future values
 
@@ -157,6 +167,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         dateText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                System.out.println("pre dialog date: "+cal.get(Calendar.DAY_OF_MONTH));
               Dialog dialog = new DialogCalendar(view.getContext(), mInterface, cal);
               dialog.show();
               //mRepository.deleteAllNutrition();
@@ -173,12 +184,15 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
             }
         });
 
-        ImageView buttonPlus = (ImageView) view.findViewById(R.id.button_plus);
-        ImageView buttonMinus = (ImageView) view.findViewById(R.id.button_minus);
-        ImageView buttonPlusSmall = (ImageView) view.findViewById(R.id.button_plus_small);
-        ImageView buttonMinusSmall = (ImageView) view.findViewById(R.id.button_minus_small);
+        MaterialFancyButton buttonPlus = (MaterialFancyButton) view.findViewById(R.id.button_plus);
+        MaterialFancyButton buttonMinus = (MaterialFancyButton) view.findViewById(R.id.button_minus);
+        MaterialFancyButton buttonPlusSmall = (MaterialFancyButton) view.findViewById(R.id.button_plus_small);
+        MaterialFancyButton buttonMinusSmall = (MaterialFancyButton) view.findViewById(R.id.button_minus_small);
         MaterialFancyButton monday = (MaterialFancyButton) view.findViewById(R.id.monday);
         MaterialFancyButton seven = (MaterialFancyButton) view.findViewById(R.id.seven);
+        flag1 = (ImageView) view.findViewById(R.id.flag_1);
+        flag2 = (ImageView) view.findViewById(R.id.flag_2);
+        flag3 = (ImageView) view.findViewById(R.id.flag_3);
 
         buttonPlus.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -339,6 +353,81 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                 exampleSeries2.resetData(data2);
             }
         });
+
+
+        flag1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ArrayList<Integer> valueHold = new ArrayList<Integer>();
+                valueHold.add(0);
+                valueHold.add(0);
+                valueHold.add(0);
+                if(mNutritionDay.getFlags() != null) {
+                    valueHold = mNutritionDay.getFlags();
+                }
+                if(flag1True){
+                    flag1True = false;
+                    valueHold.set(0,0);
+                    flag1.setColorFilter(argb(255, 0, 0, 0), PorterDuff.Mode.SRC_ATOP);
+                }else{
+                    flag1True = true;
+                    valueHold.set(0,1);
+                    flag1.setColorFilter(argb(255, 255, 165, 0), PorterDuff.Mode.SRC_ATOP);
+                }
+                mNutritionDay.setFlags(valueHold);
+                mRepository.updateNutrition(mNutritionDay);
+
+            }
+        });
+        flag2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ArrayList<Integer> valueHold = new ArrayList<Integer>();
+                valueHold.add(0);
+                valueHold.add(0);
+                valueHold.add(0);
+                if(mNutritionDay.getFlags() != null) {
+                    valueHold = mNutritionDay.getFlags();
+                }
+                if(flag2True){
+                    flag2True = false;
+                    valueHold.set(1,0);
+                    flag2.setColorFilter(argb(255, 0, 0, 0), PorterDuff.Mode.SRC_ATOP);
+                }else{
+                    flag2True = true;
+                    valueHold.set(1,1);
+                    flag2.setColorFilter(argb(255, 0, 255, 0), PorterDuff.Mode.SRC_ATOP);
+                }
+                mNutritionDay.setFlags(valueHold);
+                mRepository.updateNutrition(mNutritionDay);
+            }
+        });
+        flag3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //TODO can probably just use the class variables instead of fetching things here
+                ArrayList<Integer> valueHold = new ArrayList<Integer>();
+                valueHold.add(0);
+                valueHold.add(0);
+                valueHold.add(0);
+                if(mNutritionDay.getFlags() != null) {
+                    valueHold = mNutritionDay.getFlags();
+                }
+                if(flag3True){
+                    flag3True = false;
+                    valueHold.set(2,0);
+                    flag3.setColorFilter(argb(255, 0, 0, 0), PorterDuff.Mode.SRC_ATOP);
+                }else{
+                    flag3True = true;
+                    valueHold.set(2,1);
+                    flag3.setColorFilter(argb(255, 255, 0, 0), PorterDuff.Mode.SRC_ATOP);
+                }
+                mNutritionDay.setFlags(valueHold);
+                mRepository.updateNutrition(mNutritionDay);
+            }
+        });
+
+
 
 
 
@@ -583,6 +672,41 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         mAdapter = new NutritionAdapter(mNames, mValues, mPickerInterface);
         mRecyclerView.setAdapter(mAdapter);
 
+        ArrayList<Integer> setFlags = new ArrayList<Integer>();
+        setFlags.add(0);
+        setFlags.add(0);
+        setFlags.add(0);
+
+    if(mNutritionDay.getFlags() != null && mNutritionDay.getFlags().size() != 0) {
+            setFlags = mNutritionDay.getFlags();
+            if(setFlags.get(0) ==1){
+                flag1True = true;
+            }
+            if(setFlags.get(1) ==1){
+                flag2True = true;
+            }
+            if(setFlags.get(2) ==1){
+                flag3True = true;
+            }
+        }
+        if(setFlags.get(0)==1) {
+            flag1.setColorFilter(argb(255, 255, 165, 0), PorterDuff.Mode.SRC_ATOP);
+        }else{
+            flag1.setColorFilter(argb(255, 0, 0, 0), PorterDuff.Mode.SRC_ATOP);
+        }
+
+        if(setFlags.get(1)==1) {
+            flag2.setColorFilter(argb(255, 0,255 , 0), PorterDuff.Mode.SRC_ATOP);
+        }else{
+            flag2.setColorFilter(argb(255, 0, 0, 0), PorterDuff.Mode.SRC_ATOP);
+        }
+
+        if(setFlags.get(2)==1) {
+            flag3.setColorFilter(argb(255, 255, 0, 0), PorterDuff.Mode.SRC_ATOP);
+        }else{
+            flag3.setColorFilter(argb(255, 0, 0, 0), PorterDuff.Mode.SRC_ATOP);
+        }
+
 
 
         System.out.println("nutrition days size:" +mNutritionDays.size());
@@ -806,9 +930,9 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
 
     @Override
     public void onDialogDismiss(CalendarDay m) {
-        Calendar c = Calendar.getInstance();
-        c.set(m.getYear(), m.getMonth() - 1, m.getDay());
-        Date d = c.getTime();
+
+        cal.set(m.getYear(), m.getMonth() - 1, m.getDay());
+        Date d = cal.getTime();
         SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, ''yy");
         formattedDate = df.format(d);
         System.out.println("formdate:" + formattedDate);
