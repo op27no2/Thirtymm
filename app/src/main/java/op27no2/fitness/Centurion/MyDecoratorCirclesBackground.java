@@ -11,14 +11,14 @@ import java.util.Collection;
 import java.util.HashSet;
 
 
-public class MyDecorator implements DayViewDecorator {
+public class MyDecoratorCirclesBackground implements DayViewDecorator {
 
     private final Drawable draw1;
     private final Drawable draw2;
     private final HashSet<CalendarDay> dates;
     private Context mContext;
 
-    public MyDecorator(Context context, boolean lift, boolean run, Collection<CalendarDay> dates) {
+    public MyDecoratorCirclesBackground(Context context, boolean lift, boolean run, Collection<CalendarDay> dates) {
         mContext = context;
         Drawable drawable1 = null;
         Drawable drawable2 = null;

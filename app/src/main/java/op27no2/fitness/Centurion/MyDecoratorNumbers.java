@@ -12,13 +12,13 @@ import java.util.Collection;
 import java.util.HashSet;
 
 
-public class MyDecorator2 implements DayViewDecorator {
+public class MyDecoratorNumbers implements DayViewDecorator {
 
     private final HashSet<CalendarDay> dates;
     private Context mContext;
     private Double mDistance;
 
-    public MyDecorator2(Context context, Double distance, Collection<CalendarDay> dates) {
+    public MyDecoratorNumbers(Context context, Double distance, Collection<CalendarDay> dates) {
         mContext = context;
         mDistance = distance;
 

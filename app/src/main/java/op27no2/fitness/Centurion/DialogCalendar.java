@@ -234,19 +234,21 @@ public class DialogCalendar extends Dialog  {
         //  days3.add( CalendarDay.from(year, month, day-5));
 
 
-        mCal.addDecorator(new EventDecorator(Color.BLACK, flagOneDays));
+      //  mCal.addDecorator(new EventDecorator(Color.BLACK, flagOneDays));
+        mCal.addDecorator(new MyDecoratorDots(mContext,true,true,true, flagOneDays));
+
         mCal.addDecorators(new EventDecorator(Color.GREEN, flagTwoDays));
         mCal.addDecorator(new EventDecorator(Color.RED, flagThreeDays));
 
-        mCal.addDecorator(new MyDecorator(mContext, true,true, bothDays));
-        mCal.addDecorators(new MyDecorator(mContext, true,false,liftDays));
-        mCal.addDecorators(new MyDecorator(mContext, false,true,runDays));
+        mCal.addDecorator(new MyDecoratorCirclesBackground(mContext, true,true, bothDays));
+        mCal.addDecorators(new MyDecoratorCirclesBackground(mContext, true,false,liftDays));
+        mCal.addDecorators(new MyDecoratorCirclesBackground(mContext, false,true,runDays));
 
         for(int i=0; i<runDays.size(); i++) {
             //have to move just one to new arraylist because decorator constructor wasn't taking arraylist.get(i)
             ArrayList<CalendarDay> mList = new ArrayList<CalendarDay>();
             mList.add(runDays.get(i));
-            mCal.addDecorators(new MyDecorator2(mContext, round(runDistances.get(i),1), mList));
+            mCal.addDecorators(new MyDecoratorNumbers(mContext, round(runDistances.get(i),1), mList));
         }
 
 

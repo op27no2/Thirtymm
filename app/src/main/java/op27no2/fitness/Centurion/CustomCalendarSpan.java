@@ -6,6 +6,8 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.text.style.LineBackgroundSpan;
 
+import androidx.core.content.ContextCompat;
+
 public class CustomCalendarSpan implements LineBackgroundSpan {
 
     String text;
@@ -27,9 +29,9 @@ public class CustomCalendarSpan implements LineBackgroundSpan {
         int yPos = (int) ((canvas.getHeight() / 4) - ((mPaint.descent() + mPaint.ascent()) / 2))-10 ;
         //((textPaint.descent() + textPaint.ascent()) / 2) is the distance from the baseline to the center.
 
-        mPaint.setColor(mContext.getResources().getColor(R.color.darkgrey));
+        mPaint.setColor(ContextCompat.getColor(mContext, R.color.darkgrey));
         canvas.drawText("1", xPos, yPos-40, mPaint);
-        mPaint.setColor(mContext.getResources().getColor(R.color.colorAccent));
+        mPaint.setColor(ContextCompat.getColor(mContext, R.color.colorAccent));
         canvas.drawText(text, xPos, yPos, mPaint);
 
      //   c.drawText(String.valueOf(text), left+(right/2)-10, top+(bottom/2)-10, mPaint );

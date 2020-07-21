@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -37,6 +38,7 @@ import java.util.Date;
 
 import op27no2.fitness.Centurion.Database.AppDatabase;
 import op27no2.fitness.Centurion.Database.Repository;
+import op27no2.fitness.Centurion.DialogCalendar;
 import op27no2.fitness.Centurion.Graphing.GraphView;
 import op27no2.fitness.Centurion.Graphing.GraphViewSeries;
 import op27no2.fitness.Centurion.Graphing.GraphViewStyle;
@@ -44,10 +46,7 @@ import op27no2.fitness.Centurion.Graphing.LineGraphView;
 import op27no2.fitness.Centurion.MyAppWidgetProvider;
 import op27no2.fitness.Centurion.R;
 import op27no2.fitness.Centurion.RecyclerItemClickListener;
-import op27no2.fitness.Centurion.DialogCalendar;
 import op27no2.fitness.Centurion.ui.lifting.PickerDialogInterface;
-
-import static android.graphics.Color.argb;
 
 public class NutritionFragment extends Fragment implements CalendarDialogInterface, PickerDialogInterface {
     private SharedPreferences prefs;
@@ -368,11 +367,11 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                 if(flag1True){
                     flag1True = false;
                     valueHold.set(0,0);
-                    flag1.setColorFilter(argb(255, 0, 0, 0), PorterDuff.Mode.SRC_ATOP);
+                    flag1.setColorFilter(ContextCompat.getColor(getActivity(), R.color.black), PorterDuff.Mode.SRC_ATOP);
                 }else{
                     flag1True = true;
                     valueHold.set(0,1);
-                    flag1.setColorFilter(argb(255, 255, 165, 0), PorterDuff.Mode.SRC_ATOP);
+                    flag1.setColorFilter(ContextCompat.getColor(getActivity(), R.color.colorAccentLight), PorterDuff.Mode.SRC_ATOP);
                 }
                 mNutritionDay.setFlags(valueHold);
                 mRepository.updateNutrition(mNutritionDay);
@@ -392,11 +391,11 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                 if(flag2True){
                     flag2True = false;
                     valueHold.set(1,0);
-                    flag2.setColorFilter(argb(255, 0, 0, 0), PorterDuff.Mode.SRC_ATOP);
+                    flag2.setColorFilter(ContextCompat.getColor(getActivity(), R.color.black), PorterDuff.Mode.SRC_ATOP);
                 }else{
                     flag2True = true;
                     valueHold.set(1,1);
-                    flag2.setColorFilter(argb(255, 0, 255, 0), PorterDuff.Mode.SRC_ATOP);
+                    flag2.setColorFilter(ContextCompat.getColor(getActivity(), R.color.lightgreen), PorterDuff.Mode.SRC_ATOP);
                 }
                 mNutritionDay.setFlags(valueHold);
                 mRepository.updateNutrition(mNutritionDay);
@@ -416,11 +415,11 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                 if(flag3True){
                     flag3True = false;
                     valueHold.set(2,0);
-                    flag3.setColorFilter(argb(255, 0, 0, 0), PorterDuff.Mode.SRC_ATOP);
+                    flag3.setColorFilter(ContextCompat.getColor(getActivity(), R.color.black), PorterDuff.Mode.SRC_ATOP);
                 }else{
                     flag3True = true;
                     valueHold.set(2,1);
-                    flag3.setColorFilter(argb(255, 255, 0, 0), PorterDuff.Mode.SRC_ATOP);
+                    flag3.setColorFilter(ContextCompat.getColor(getActivity(), R.color.blue), PorterDuff.Mode.SRC_ATOP);
                 }
                 mNutritionDay.setFlags(valueHold);
                 mRepository.updateNutrition(mNutritionDay);
@@ -690,21 +689,21 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
             }
         }
         if(setFlags.get(0)==1) {
-            flag1.setColorFilter(argb(255, 255, 165, 0), PorterDuff.Mode.SRC_ATOP);
+            flag1.setColorFilter(ContextCompat.getColor(getActivity(), R.color.colorAccentLight), PorterDuff.Mode.SRC_ATOP);
         }else{
-            flag1.setColorFilter(argb(255, 0, 0, 0), PorterDuff.Mode.SRC_ATOP);
+            flag1.setColorFilter(ContextCompat.getColor(getActivity(), R.color.black), PorterDuff.Mode.SRC_ATOP);
         }
 
         if(setFlags.get(1)==1) {
-            flag2.setColorFilter(argb(255, 0,255 , 0), PorterDuff.Mode.SRC_ATOP);
+            flag2.setColorFilter(ContextCompat.getColor(getActivity(), R.color.lightgreen), PorterDuff.Mode.SRC_ATOP);
         }else{
-            flag2.setColorFilter(argb(255, 0, 0, 0), PorterDuff.Mode.SRC_ATOP);
+            flag2.setColorFilter(ContextCompat.getColor(getActivity(), R.color.black), PorterDuff.Mode.SRC_ATOP);
         }
 
         if(setFlags.get(2)==1) {
-            flag3.setColorFilter(argb(255, 255, 0, 0), PorterDuff.Mode.SRC_ATOP);
+            flag3.setColorFilter(ContextCompat.getColor(getActivity(), R.color.blue), PorterDuff.Mode.SRC_ATOP);
         }else{
-            flag3.setColorFilter(argb(255, 0, 0, 0), PorterDuff.Mode.SRC_ATOP);
+            flag3.setColorFilter(ContextCompat.getColor(getActivity(), R.color.black), PorterDuff.Mode.SRC_ATOP);
         }
 
 
