@@ -325,6 +325,7 @@
     0.13,16,25,29-42
     -->
 
+<!--    38 muscles total plus 5 headers-->
     <string-array name = "full_muscle_list">
         <item>Arms</item>
         <item>Front Deltoids</item>

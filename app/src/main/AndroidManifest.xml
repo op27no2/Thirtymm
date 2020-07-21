@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="op27no2.fitness.Centurion">
+    package="op27no2.fitness.Centurion2">
 
     <!-- TODO ...CHANGE BACKUP TO TRUE -->
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -16,7 +16,7 @@
 
 
     <application
-     android:name="op27no2.fitness.Centurion.MyApplication"
+     android:name="op27no2.fitness.Centurion2.MyApplication"
     android:allowBackup="false"
     android:icon="@mipmap/ic_launcher"
     android:label="@string/app_name"
@@ -24,7 +24,7 @@
     android:supportsRtl="true"
     android:theme="@style/AppTheme">
     <activity
-        android:name="op27no2.fitness.Centurion.MainActivity"
+        android:name="op27no2.fitness.Centurion2.MainActivity"
         android:label="@string/app_name">
         <intent-filter>
             <action android:name="android.intent.action.VIEW"/>
@@ -47,21 +47,21 @@
         </intent-filter>
     </activity>
     <activity
-        android:name="op27no2.fitness.Centurion.FirstRunActivity"
+        android:name="op27no2.fitness.Centurion2.FirstRunActivity"
     android:label="@string/app_name"></activity>
-    <activity android:name="op27no2.fitness.Centurion.AppWidgetConfigure">
+    <activity android:name="op27no2.fitness.Centurion2.AppWidgetConfigure">
         <intent-filter>
             <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
         </intent-filter>
     </activity>
-    <service android:name="op27no2.fitness.Centurion.ui.run.TimerService"
+    <service android:name="op27no2.fitness.Centurion2.fragments.run.TimerService"
         android:foregroundServiceType="location"/>
 
         <activity
             android:name="com.sweetzpot.stravazpot.authenticaton.ui.StravaLoginActivity"
             android:label="Strava Login" />
 
-    <receiver android:name="op27no2.fitness.Centurion.MyAppWidgetProvider" >
+    <receiver android:name="op27no2.fitness.Centurion2.MyAppWidgetProvider" >
         <intent-filter>
             <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
         </intent-filter>
