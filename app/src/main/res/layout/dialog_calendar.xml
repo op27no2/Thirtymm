@@ -54,6 +54,14 @@
                     android:textColor="@color/colorAccent"
                     android:textSize="20sp"
                     android:text = ""/>
+                <TextView
+                    android:id="@+id/text_sets"
+                    android:layout_below="@+id/text_miles"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="20sp"
+                    android:text = ""/>
 
                 <com.rilixtech.materialfancybutton.MaterialFancyButton
                 android:id="@+id/volume_dialog_save"

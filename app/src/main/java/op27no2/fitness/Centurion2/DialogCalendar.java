@@ -64,12 +64,14 @@ public class DialogCalendar extends Dialog  {
         private ArrayList<CalendarDay> flagThreeDays = new ArrayList<CalendarDay>();
         private int MONTHS_DISPLAYED = 3;
         private ArrayList<Double> milesList = new ArrayList<Double>();
+        private ArrayList<Double> setsList = new ArrayList<Double>();
         private int MONTH;
         private int MONTH_OFFSET=0;
 
         private MaterialCalendarView mCal;
         private Calendar copyCal;
         private TextView mileText;
+        private TextView setsText;
         private Double milesHold = 0.0;
         private Double setsHold = 0.0;
 
@@ -105,7 +107,7 @@ public class DialogCalendar extends Dialog  {
 
             mCal = findViewById(R.id.calendar_view);
             mileText = findViewById(R.id.text_miles);
-            mileText.setText("Test");
+            setsText = findViewById(R.id.text_sets);
 
             getData();
 
@@ -145,21 +147,22 @@ public class DialogCalendar extends Dialog  {
                         if (mLiftingWorkout != null && mLiftingWorkout.getMyLifts().size() != 0 && mRunWorkout != null && mRunWorkout.getDistance() != 0) {
                             bothDays.add(theDay);
                             liftVolumes.add(getAverageSets(mLiftingWorkout));
-
-                            runDistances.add(getMiles(mRunWorkout.getDistance()));
-
                             setsHold = setsHold + getAverageSets(mLiftingWorkout);
+                            System.out.println("setshold "+setsHold);
+                            runDistances.add(getMiles(mRunWorkout.getDistance()));
                             milesHold = milesHold + getMiles(mRunWorkout.getDistance());
 
                         } else {
                             if (mLiftingWorkout != null && mLiftingWorkout.getMyLifts().size() != 0) {
                                 liftDays.add(theDay);
                                 liftVolumes.add(getAverageSets(mLiftingWorkout));
+                                System.out.println("setshold "+setsHold);
+                                setsHold = setsHold + getAverageSets(mLiftingWorkout);
                             }
                             if (mRunWorkout != null && mRunWorkout.getDistance() != 0) {
                                 runDays.add(theDay);
                                 runDistances.add(getMiles(mRunWorkout.getDistance()));
-                                setsHold = setsHold + getAverageSets(mLiftingWorkout);
+
                                 milesHold = milesHold + getMiles(mRunWorkout.getDistance());
 
 
@@ -182,7 +185,9 @@ public class DialogCalendar extends Dialog  {
 
 
                     }
+                    System.out.println("setshold "+setsHold);
                     milesList.add(milesHold);
+                    setsList.add(setsHold);
                     copyCal.set(Calendar.DAY_OF_MONTH, 1);
                     copyCal.add(Calendar.MONTH, 1);
                     /*for(int z=0; z<milesList.size(); z++) {
@@ -216,7 +221,7 @@ public class DialogCalendar extends Dialog  {
         //set text to milesList
         System.out.println("loaded date finish ui: "+ fragCalendar.get(Calendar.DAY_OF_MONTH));
         mileText.setText(Double.toString(round(milesList.get(milesList.size()-1),1)));
-        setsText.setText(Double.toString(round(milesList.get(milesList.size()-1),1)));
+        setsText.setText(Double.toString(round(setsList.get(setsList.size()-1),1)));
 
         mCal = findViewById(R.id.calendar_view);
         mCal.setSelectionMode(MaterialCalendarView.SELECTION_MODE_SINGLE);
@@ -261,6 +266,12 @@ public class DialogCalendar extends Dialog  {
             mList.add(runDays.get(i));
             mCal.addDecorators(new MyDecoratorNumbers(mContext, round(runDistances.get(i),1), mList));
         }
+        for(int i=0; i<liftDays.size(); i++) {
+            //have to move just one to new arraylist because decorator constructor wasn't taking arraylist.get(i)
+            ArrayList<CalendarDay> mList = new ArrayList<CalendarDay>();
+            mList.add(liftDays.get(i));
+            mCal.addDecorators(new MyDecoratorNumbers(mContext, round(liftVolumes.get(i),1), mList));
+        }
 
 
         mCal.setOnDateChangedListener(new OnDateSelectedListener() {
@@ -287,6 +298,7 @@ public class DialogCalendar extends Dialog  {
                 //TODO to include months forward, if you want, must add milesList values forward. currently stops at current month at max arraylist place
                 if(-MONTH_OFFSET<milesList.size() && MONTH_OFFSET<=0) {
                     mileText.setText(Double.toString(round(milesList.get(milesList.size() - 1 + MONTH_OFFSET), 1)));
+                    setsText.setText(Double.toString(round(setsList.get(setsList.size() - 1 + MONTH_OFFSET), 1)));
                 }
 
          /*       System.out.println("on month changed");
@@ -345,6 +357,9 @@ public class DialogCalendar extends Dialog  {
 
 
     private double getAverageSets(LiftingWorkout mWorkout){
+        mVolume.clear();
+        muscleVolumes.clear();
+
         double avgsets = 0.0;
         if(mWorkout != null) {
             ArrayList<Lift> mLifts = mWorkout.getMyLifts();
@@ -362,9 +377,9 @@ public class DialogCalendar extends Dialog  {
             }
         }
 
-        for (Map.Entry<String, Integer> entry : mVolume.entrySet()) {
+        /*for (Map.Entry<String, Integer> entry : mVolume.entrySet()) {
             System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
-        }
+        }*/
         Set<Map.Entry<String, Integer>> entrySet = mVolume.entrySet();
         listOfEntry = new ArrayList<Map.Entry<String, Integer>>(entrySet);
 
@@ -396,17 +411,17 @@ public class DialogCalendar extends Dialog  {
         for (Double value : muscleVolumes.values()) {
             avgsets = avgsets+value;
         }
-        /*for (Map.Entry<String, Double> entry : muscleVolumes.entrySet()) {
+        for (Map.Entry<String, Double> entry : muscleVolumes.entrySet()) {
             Double value = entry.getValue();
             if(value != 0) {
                 String key = entry.getKey();
                 System.out.println("muscle: " + key);
-               System.out.println("volume sets: " + value);
+                System.out.println("volume sets: " + value);
             }
             // ...
-        }*/
-        System.out.println("total setmuscles: "+avgsets/38);
-        return avgsets/38;
+        }
+        System.out.println("total setmuscles: "+(avgsets/38));
+        return (avgsets/38);
 
     }
 
