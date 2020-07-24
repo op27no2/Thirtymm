@@ -17,11 +17,12 @@ public class MyDecoratorNumbers implements DayViewDecorator {
     private final HashSet<CalendarDay> dates;
     private Context mContext;
     private Double mDistance;
+    private Double mSets;
 
-    public MyDecoratorNumbers(Context context, Double distance, Collection<CalendarDay> dates) {
+    public MyDecoratorNumbers(Context context, Double distance, Double sets, Collection<CalendarDay> dates) {
         mContext = context;
         mDistance = distance;
-
+        mSets = sets;
         this.dates = new HashSet<>(dates);
 
     }
@@ -33,8 +34,24 @@ public class MyDecoratorNumbers implements DayViewDecorator {
 
     @Override
     public void decorate(DayViewFacade view) {
-        CustomCalendarSpan test = new CustomCalendarSpan(mDistance.toString(), mContext);
-        view.addSpan(test);
-        view.addSpan(new ForegroundColorSpan(Color.TRANSPARENT));
+        if(mDistance != null && mSets != null) {
+            CustomCalendarSpan test = new CustomCalendarSpan(mDistance.toString(), mSets.toString(), mContext);
+            view.addSpan(test);
+            view.addSpan(new ForegroundColorSpan(Color.TRANSPARENT));
+        }else if(mDistance != null) {
+            CustomCalendarSpan test = new CustomCalendarSpan(mDistance.toString(), null, mContext);
+            view.addSpan(test);
+            view.addSpan(new ForegroundColorSpan(Color.TRANSPARENT));
+        }else if(mSets != null) {
+            CustomCalendarSpan test = new CustomCalendarSpan(null, mSets.toString(), mContext);
+            view.addSpan(test);
+            view.addSpan(new ForegroundColorSpan(Color.TRANSPARENT));
+        }
+
+
+
+
+
+
     }
 }

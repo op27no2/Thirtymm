@@ -54,11 +54,15 @@ public class DialogCalendar extends Dialog  {
         private CalendarDialogInterface mInterface;
         private Calendar fragCalendar;
         private Repository mRepository;
+        private ArrayList<CalendarDay> bothDays = new ArrayList<CalendarDay>();
         private ArrayList<CalendarDay> liftDays = new ArrayList<CalendarDay>();
         private ArrayList<CalendarDay> runDays = new ArrayList<CalendarDay>();
+        private HashMap<CalendarDay, Double[]> bothDaysH = new HashMap<CalendarDay, Double[]>();
+        private HashMap<CalendarDay, Double> liftDaysH = new HashMap<CalendarDay, Double>();
+        private HashMap<CalendarDay, Double> runDaysH = new HashMap<CalendarDay, Double>();
+
         private ArrayList<Double> runDistances = new ArrayList<Double>();
         private ArrayList<Double> liftVolumes = new ArrayList<Double>();
-        private ArrayList<CalendarDay> bothDays = new ArrayList<CalendarDay>();
         private ArrayList<CalendarDay> flagOneDays = new ArrayList<CalendarDay>();
         private ArrayList<CalendarDay> flagTwoDays = new ArrayList<CalendarDay>();
         private ArrayList<CalendarDay> flagThreeDays = new ArrayList<CalendarDay>();
@@ -113,6 +117,7 @@ public class DialogCalendar extends Dialog  {
 
     }
 
+    //TODO maybe get all this data in the background on Nutrition fragment, flags the only thing to watch out for??
     @SuppressLint("StaticFieldLeak")
     private void getData(){
         new AsyncTask<Void, Void, Void>() {
@@ -145,27 +150,38 @@ public class DialogCalendar extends Dialog  {
                         NutritionDay mNutritionDay = AppDatabase.getAppDatabase(mContext).ntDAO().findByDate(formattedDate);
 
                         if (mLiftingWorkout != null && mLiftingWorkout.getMyLifts().size() != 0 && mRunWorkout != null && mRunWorkout.getDistance() != 0) {
+                            //araylist is for circles, hashmap for numbers
                             bothDays.add(theDay);
-                            liftVolumes.add(getAverageSets(mLiftingWorkout));
-                            setsHold = setsHold + getAverageSets(mLiftingWorkout);
+                          //  liftDays.add(theDay);
+                           // runDays.add(theDay);*/
+                            Double sets = getAverageSets(mLiftingWorkout);
+                            Double miles = getMiles(mRunWorkout.getDistance());
+                            Double[] bothVals = {sets, miles};
+                            bothDaysH.put(theDay,bothVals);
+                            //liftDaysH.put(theDay, sets);
+                            //runDaysH.put(theDay,miles);
+
+                           // liftVolumes.add(getAverageSets(mLiftingWorkout));
                             System.out.println("setshold "+setsHold);
-                            runDistances.add(getMiles(mRunWorkout.getDistance()));
+                           // runDistances.add(getMiles(mRunWorkout.getDistance()));
                             milesHold = milesHold + getMiles(mRunWorkout.getDistance());
+                            setsHold = setsHold + getAverageSets(mLiftingWorkout);
 
                         } else {
                             if (mLiftingWorkout != null && mLiftingWorkout.getMyLifts().size() != 0) {
                                 liftDays.add(theDay);
-                                liftVolumes.add(getAverageSets(mLiftingWorkout));
+                           //     liftVolumes.add(getAverageSets(mLiftingWorkout));
+                                liftDaysH.put(theDay, getAverageSets(mLiftingWorkout));
+
                                 System.out.println("setshold "+setsHold);
                                 setsHold = setsHold + getAverageSets(mLiftingWorkout);
                             }
                             if (mRunWorkout != null && mRunWorkout.getDistance() != 0) {
-                                runDays.add(theDay);
-                                runDistances.add(getMiles(mRunWorkout.getDistance()));
+                               runDays.add(theDay);
+                             //   runDistances.add(getMiles(mRunWorkout.getDistance()));
+                                runDaysH.put(theDay,getMiles(mRunWorkout.getDistance()));
 
                                 milesHold = milesHold + getMiles(mRunWorkout.getDistance());
-
-
                             }
                         }
                         if (mNutritionDay != null && mNutritionDay.getFlags() != null && mNutritionDay.getFlags().size() != 0) {
@@ -220,8 +236,8 @@ public class DialogCalendar extends Dialog  {
 
         //set text to milesList
         System.out.println("loaded date finish ui: "+ fragCalendar.get(Calendar.DAY_OF_MONTH));
-        mileText.setText(Double.toString(round(milesList.get(milesList.size()-1),1)));
-        setsText.setText(Double.toString(round(setsList.get(setsList.size()-1),1)));
+        mileText.setText("Miles: "+Double.toString(round(milesList.get(milesList.size()-1),1)));
+        setsText.setText("Sets/m: "+Double.toString(round(setsList.get(setsList.size()-1),1)));
 
         mCal = findViewById(R.id.calendar_view);
         mCal.setSelectionMode(MaterialCalendarView.SELECTION_MODE_SINGLE);
@@ -260,7 +276,8 @@ public class DialogCalendar extends Dialog  {
         mCal.addDecorators(new MyDecoratorCirclesBackground(mContext, true,false,liftDays));
         mCal.addDecorators(new MyDecoratorCirclesBackground(mContext, false,true,runDays));
 
-        for(int i=0; i<runDays.size(); i++) {
+        //migrated to hashmaps below
+ /*       for(int i=0; i<runDays.size(); i++) {
             //have to move just one to new arraylist because decorator constructor wasn't taking arraylist.get(i)
             ArrayList<CalendarDay> mList = new ArrayList<CalendarDay>();
             mList.add(runDays.get(i));
@@ -271,7 +288,30 @@ public class DialogCalendar extends Dialog  {
             ArrayList<CalendarDay> mList = new ArrayList<CalendarDay>();
             mList.add(liftDays.get(i));
             mCal.addDecorators(new MyDecoratorNumbers(mContext, round(liftVolumes.get(i),1), mList));
+        }*/
+
+        for (Map.Entry<CalendarDay, Double> entry : runDaysH.entrySet()) {
+            Double value = entry.getValue();
+            CalendarDay key = entry.getKey();
+            ArrayList<CalendarDay> mList = new ArrayList<CalendarDay>();
+            mList.add(key);
+            mCal.addDecorators(new MyDecoratorNumbers(mContext, round(value,1), null, mList));
         }
+        for (Map.Entry<CalendarDay, Double> entry : liftDaysH.entrySet()) {
+            Double value = entry.getValue();
+            CalendarDay key = entry.getKey();
+            ArrayList<CalendarDay> mList = new ArrayList<CalendarDay>();
+            mList.add(key);
+            mCal.addDecorators(new MyDecoratorNumbers(mContext,null, round(value,1), mList));
+        }
+        for (Map.Entry<CalendarDay, Double[]> entry : bothDaysH.entrySet()) {
+            Double[] values = entry.getValue();
+            CalendarDay key = entry.getKey();
+            ArrayList<CalendarDay> mList = new ArrayList<CalendarDay>();
+            mList.add(key);
+            mCal.addDecorators(new MyDecoratorNumbers(mContext, round(values[0],1), round(values[1],1), mList));
+        }
+
 
 
         mCal.setOnDateChangedListener(new OnDateSelectedListener() {
@@ -411,7 +451,8 @@ public class DialogCalendar extends Dialog  {
         for (Double value : muscleVolumes.values()) {
             avgsets = avgsets+value;
         }
-        for (Map.Entry<String, Double> entry : muscleVolumes.entrySet()) {
+        //just to print map for debugging
+ /*       for (Map.Entry<String, Double> entry : muscleVolumes.entrySet()) {
             Double value = entry.getValue();
             if(value != 0) {
                 String key = entry.getKey();
@@ -419,7 +460,7 @@ public class DialogCalendar extends Dialog  {
                 System.out.println("volume sets: " + value);
             }
             // ...
-        }
+        }*/
         System.out.println("total setmuscles: "+(avgsets/38));
         return (avgsets/38);
 
