@@ -199,8 +199,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                              ViewGroup container, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
-
         Mapbox.getInstance(getActivity(), mapboxToken);
         View view = inflater.inflate(R.layout.fragment_run, container, false);
         rabbit = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);

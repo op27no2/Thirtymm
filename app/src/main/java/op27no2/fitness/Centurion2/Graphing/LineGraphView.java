@@ -245,10 +245,10 @@ public class LineGraphView extends GraphView {
 
 				// draw data point
 		        Calendar c = Calendar.getInstance(); 
-		       // dayset = Integer.parseInt(prefs2.getString("tapnum2", "1"));
+		   //     dayset = Integer.parseInt(prefs.getString("tapnum2", "1"));
 
 				//find todays weekday, which is last displayed data point. Then subtract backwards as we move back from that data point xX are the X data points (e.g. 0 to 30?)
-				int weekday = c.get(7) - (listsize - (int) xX);
+				int weekday = c.get(Calendar.DAY_OF_WEEK) - (listsize - (int) xX);
 
 				//if
 				if(values.length < 10){
@@ -266,11 +266,11 @@ public class LineGraphView extends GraphView {
 
 				}
 				
-				int day = c.get(6) ;
-				c.set(6, day - (listsize - (int) xX)+1);
-				int dayofmonth = c.get(5);
-				int month = c.get(2);
-				int year = c.get(1);
+				int day = c.get(Calendar.DAY_OF_YEAR) ;
+				c.set(Calendar.DAY_OF_YEAR, day - (listsize - (int) xX)+2);
+				int dayofmonth = c.get(Calendar.DAY_OF_MONTH);
+				int month = c.get(Calendar.MONTH);
+				int year = c.get(Calendar.YEAR);
 
 		        listsize = prefs.getInt("datasize", 1);
 		        if (weekday < 0){
@@ -280,18 +280,20 @@ public class LineGraphView extends GraphView {
 			        dayset = (((int) Float.parseFloat(prefs.getString("tapnum2", "3"))));
 				}
 
-		        //Draw all the data points
+
+				//Draw all the data points
 				if (drawDataPoints) {
 					//fix: last value was not drawn. Draw here now the end values
 					canvas.drawCircle(endX, endY, dataPointsRadius, paint);
 
-					if(weekday == dayset){
+				//	if(weekday == dayset){
 						paint.setStrokeWidth(1);
 							double sign = 0;
-							if(values.length > 9){
-								for(int j=0; j<9; j++){
+							//TODO provide better algorithm to thin values during zoom out
+						if(values.length > 9) {
+						/*		for(int j=0; j<9; j++){
 									if(i+j < values.length){
-									sign = sign + values[(i+j)].getY();		
+									sign = sign + values[(i+j)].getY();
 									}
 									else{
 									sign = values[i].getY();
@@ -305,30 +307,51 @@ public class LineGraphView extends GraphView {
 								}
 								if(aTitle.equals("Grams")){
 									paint.setColor(style.color);
-								}
+								}*/
 
-								canvas.drawLine(endX, endY+15, endX,  graphheight+45, paint);
-								canvas.drawText(month+"-"+dayofmonth, endX, graphheight+80, paint);
+							Double divis = values.length / 7.0;
+
+							if (i % Math.floor(divis) == 0) {
+
+										sign = values[i].getY();
+										if (sign >= 0) {
+											paint.setColor(Color.rgb(0, 255, 0));
+										}
+										if (sign < 0) {
+											paint.setColor(Color.rgb(255, 0, 0));
+										}
+										if (aTitle.equals("Grams")) {
+											paint.setColor(style.color);
+										}
+										canvas.drawLine(endX, endY + 15, endX, graphheight + 45, paint);
+										canvas.drawText(month + "-" + dayofmonth, endX, graphheight + 80, paint);
 							}
-							if(values.length < 10){
-								sign = values[i].getY();
-								if(sign>=0){
-									paint.setColor(Color.rgb(0, 255, 0));
-								}
-								if(sign<0){
-									paint.setColor(Color.rgb(255, 0, 0));
-								}
-								if(aTitle.equals("Grams")){
-									paint.setColor(style.color);
-								}
 
-								canvas.drawLine(endX, endY+15, endX,  graphheight+45, paint);
-								canvas.drawText(month+"-"+dayofmonth, endX, graphheight+80, paint);
-							}	
-								
-							paint.setStrokeWidth(style.thickness);
 
-					}
+
+						}
+						//if values not > 9 just display all
+									if (values.length < 10) {
+										System.out.println("data under ten " + values.length);
+
+										sign = values[i].getY();
+										if (sign >= 0) {
+											paint.setColor(Color.rgb(0, 255, 0));
+										}
+										if (sign < 0) {
+											paint.setColor(Color.rgb(255, 0, 0));
+										}
+										if (aTitle.equals("Grams")) {
+											paint.setColor(style.color);
+										}
+
+										canvas.drawLine(endX, endY + 15, endX, graphheight + 45, paint);
+										canvas.drawText(month + "-" + dayofmonth, endX, graphheight + 80, paint);
+									}
+
+									paint.setStrokeWidth(style.thickness);
+
+				//	}
 				}
 
 				//

@@ -42,7 +42,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text=""
-            android:textSize="20sp"
+            android:textSize="16sp"
             android:textColor="#FFFFFF"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
@@ -58,28 +58,30 @@
             android:src="@drawable/ic_myarrow_right"/>
 
 
-
     </RelativeLayout>
-    <LinearLayout
+
+
+    <RelativeLayout
         android:id="@+id/graph"
         android:layout_below="@+id/toolbar"
-        android:layout_margin="5dp"
+        android:layout_marginTop="5dp"
         android:paddingLeft="5dp"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="200dip"
         android:background="@drawable/background_border">
         <LinearLayout
-            android:layout_below="@+id/toolbar"
-            android:orientation="vertical"
-            android:layout_width="fill_parent"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
             android:layout_height="200dip"
             android:id="@+id/graph1" />
-    </LinearLayout>
+
+    </RelativeLayout>
+
     <RelativeLayout
         android:id="@+id/bottom_graph"
         android:layout_below="@+id/graph"
-        android:layout_margin="5dp"
+        android:layout_marginTop="5dp"
         android:paddingLeft="5dp"
         android:orientation="horizontal"
         android:layout_width="fill_parent"
@@ -92,13 +94,20 @@
             android:id="@+id/graph2" />
     </RelativeLayout>
 
+    <RelativeLayout
+        android:id="@+id/nav_buttons"
+        android:layout_below="@+id/bottom_graph"
+        android:layout_margin="5dp"
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        >
 
     <LinearLayout
         android:id="@+id/flags"
         android:layout_toLeftOf="@+id/buttons"
+        android:layout_marginRight="5dp"
         android:gravity="left"
-        android:layout_margin="5dp"
-        android:layout_below="@+id/bottom_graph"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         >
@@ -128,9 +137,8 @@
     </LinearLayout>
     <LinearLayout
         android:id="@+id/buttons"
-        android:layout_alignParentRight="true"
-        android:layout_margin="5dp"
-        android:layout_below="@+id/bottom_graph"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
@@ -182,10 +190,20 @@
             fancy:mfb_focusColor="@color/colorPrimaryDark"
             fancy:mfb_radius="1dp"
             />
+    </LinearLayout>
+        <LinearLayout
+            android:id="@+id/buttons_graph"
+            android:gravity="center_horizontal"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="5dp"
+            android:layout_alignParentRight="true"
+            android:layout_toRightOf="@+id/buttons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
         <com.rilixtech.materialfancybutton.MaterialFancyButton
             android:id="@+id/monday"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:elevation="5dp"
             fancy:mfb_borderColor="@color/black"
             fancy:mfb_borderWidth="1dp"
@@ -197,12 +215,8 @@
             fancy:mfb_textColor="@color/black" />
         <com.rilixtech.materialfancybutton.MaterialFancyButton
             android:id="@+id/seven"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:paddingBottom="5dp"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:paddingTop="5dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:elevation="5dp"
             fancy:mfb_borderColor="@color/black"
             fancy:mfb_borderWidth="1dp"
@@ -212,54 +226,17 @@
             fancy:mfb_textSize="18sp"
             fancy:mfb_text="7"
             fancy:mfb_textColor="@color/black" />
-<!--        <ImageView
-            android:id="@+id/button_minus2"
-            android:padding="10dp"
-            android:layout_centerVertical="true"
-            android:layout_gravity="center"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:src="@drawable/ic_remove"/>
-        <ImageView
-            android:id="@+id/button_minus_small2"
-            android:padding="15dp"
-            android:layout_below="@+id/button_minus"
-            android:layout_centerVertical="true"
-            android:layout_gravity="center"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:src="@drawable/ic_remove"/>
-        <ImageView
-            android:id="@+id/button_plus_small"
-            android:padding="15dp"
-            android:layout_toRightOf="@+id/button_minus"
-            android:layout_below="@+id/button_plus"
-            android:layout_centerVertical="true"
-            android:layout_gravity="center"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:src="@drawable/ic_add"/>
-        <ImageView
-            android:id="@+id/button_plus"
-            android:padding="10dp"
-            android:layout_centerVertical="true"
-            android:layout_gravity="center"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:src="@drawable/ic_add"/>-->
-
-
     </LinearLayout>
+
+    </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/my_recycler_view"
-        android:layout_below="@+id/buttons"
+        android:layout_below="@+id/nav_buttons"
         android:layout_toLeftOf="@+id/right_content"
         android:fastScrollEnabled="false"
         android:layout_marginBottom="5dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
-
-
 
 </RelativeLayout>

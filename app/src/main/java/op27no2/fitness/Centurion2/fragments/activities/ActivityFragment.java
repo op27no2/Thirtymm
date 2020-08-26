@@ -50,7 +50,8 @@ public class ActivityFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_activity, container, false);
-
+        prefs = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
+        edt = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
 
         tabLayout=(TabLayout) view.findViewById(R.id.tabLayout);
         viewPager=(ViewPager) view.findViewById(R.id.viewPager);
@@ -63,11 +64,14 @@ public class ActivityFragment extends Fragment {
         viewPager.setAdapter(adapter);
 
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+        viewPager.setCurrentItem(prefs.getInt("tab_selected",0));
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 viewPager.setCurrentItem(tab.getPosition());
+                edt.putInt("tab_selected",tab.getPosition());
+                edt.apply();
             }
 
             @Override
@@ -86,9 +90,6 @@ public class ActivityFragment extends Fragment {
 
 
 
-
-        prefs = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
-        edt = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
         mRepository = new Repository(getActivity());
 
 

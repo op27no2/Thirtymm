@@ -31,6 +31,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.rilixtech.materialfancybutton.MaterialFancyButton;
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -122,6 +124,15 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         formattedDate = df.format(c);
         System.out.println("fomratted time => " + df.format(time));
 
+
+        Calendar cal2 = Calendar.getInstance();
+        DateFormat df2= new SimpleDateFormat("EEE, M/d");
+        Date c2 = cal2.getTime();
+        String day1 = df2.format(c2);
+        dateText = view.findViewById(R.id.toolbar_date);
+        dateText.setText(day1);
+
+
         mRecyclerView = view.findViewById(R.id.my_recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mLayoutManager = new LinearLayoutManager(getActivity());
@@ -148,8 +159,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                 })
         );
 
-        dateText = view.findViewById(R.id.toolbar_date);
-        dateText.setText(formattedDate);
+
         ImageView arrowLeft = (ImageView) view.findViewById(R.id.arrow_left);
         ImageView arrowRight = (ImageView) view.findViewById(R.id.arrow_right);
         arrowLeft.setAlpha(0.8f);
@@ -315,39 +325,54 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                 switch(day) {
                     case Calendar.MONDAY:
                         subtract= 1;
+                        graphView.setViewPort(data.length-1.5,1);
+                        graphView2.setViewPort(data.length-1.5,1);
                     break;
                     case Calendar.TUESDAY:
                         subtract= 2;
+                        graphView.setViewPort(data.length-subtract-0.25, subtract-0.5);
+                        graphView2.setViewPort(data.length-subtract-0.25,subtract-0.5);
                         break;
                     case Calendar.WEDNESDAY:
                         subtract= 3;
+                        graphView.setViewPort(data.length-subtract-0.25, subtract-0.5);
+                        graphView2.setViewPort(data.length-subtract-0.25,subtract-0.5);
                         break;
                     case Calendar.THURSDAY:
                         subtract= 4;
+                        graphView.setViewPort(data.length-subtract-0.25, subtract-0.5);
+                        graphView2.setViewPort(data.length-subtract-0.25,subtract-0.5);
                         break;
                     case Calendar.FRIDAY:
                         subtract= 5;
+                        graphView.setViewPort(data.length-subtract-0.25, subtract-0.5);
+                        graphView2.setViewPort(data.length-subtract-0.25,subtract-0.5);
                         break;
                     case Calendar.SATURDAY:
                         subtract= 6;
+                        graphView.setViewPort(data.length-subtract-0.25, subtract-0.5);
+                        graphView2.setViewPort(data.length-subtract-0.25,subtract-0.5);
                         break;
                     case Calendar.SUNDAY:
                         subtract= 7;
+                        graphView.setViewPort(data.length-subtract-0.25, subtract-0.5);
+                        graphView2.setViewPort(data.length-subtract-0.25,subtract-0.5);
                         break;
                 }
 
-                graphView.setViewPort(data.length-subtract,subtract-1);
-                graphView2.setViewPort(data.length-subtract,subtract-1);
+
                 exampleSeries.resetData(data);
                 exampleSeries2.resetData(data2);
+
+
             }
         });
 
         seven.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                graphView.setViewPort(data.length-7,6);
-                graphView2.setViewPort(data.length-7,6);
+                graphView.setViewPort(data.length-7.25,6+0.5);
+                graphView2.setViewPort(data.length-7.25,6+0.5);
                 exampleSeries.resetData(data);
                 exampleSeries2.resetData(data2);
             }
@@ -357,11 +382,11 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         flag1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ArrayList<Integer> valueHold = new ArrayList<Integer>();
+                ArrayList<Integer> valueHold = new ArrayList<Integer>(3);
                 valueHold.add(0);
                 valueHold.add(0);
                 valueHold.add(0);
-                if(mNutritionDay.getFlags() != null) {
+                if(mNutritionDay.getFlags() != null && mNutritionDay.getFlags().size()!=0) {
                     valueHold = mNutritionDay.getFlags();
                 }
                 if(flag1True){
@@ -448,10 +473,13 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         graphView = new LineGraphView(getActivity(),"", "Cals"); // context, "" // heading);
         graphView.setScrollable(true);
         graphView.setScalable(true);
+        graphView.setResolution(500, true,-1500,1500);
 
         graphView2 = new LineGraphView(getActivity(),"", "Grams"); // context, "" // heading);
         graphView2.setScrollable(true);
         graphView2.setScalable(true);
+        graphView2.setResolution(50, false,0,200);
+
 
         GraphViewStyle mstyle = graphView.getGraphViewStyle();
         mstyle.setTextSize(40);
@@ -534,6 +562,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         graphView2.setManualYAxisBounds(200,0);
 
 
+
         ((LineGraphView) graphView).setDrawBackground(true);
         ((LineGraphView) graphView).setDrawDataPoints(true);
         // ((LineGraphView) graphView).setBackgroundColor(Color.argb(55, 0, 255, 21));
@@ -546,10 +575,12 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         ((LineGraphView) graphView2).setDataPointsRadius(4f);
 
 
+
+
         layout.addView(graphView);
         layout2.addView(graphView2);
 
-        System.out.println("check4");
+
 
 
         return view;
@@ -621,6 +652,8 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                     mNames = mNutritionDay.getNames();
                     mValues = mNutritionDay.getValues();
                     cals = mValues.get(0);
+
+
                 }
 
                 //populate a list with all days up to current that shouldn't change like mNutritionDay and formattedDate, this async is called onResume and on date change
@@ -665,8 +698,16 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
 
     private void finishUI(){
         System.out.println("check finishui");
+        SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, ''yy");
+        DateFormat df2= new SimpleDateFormat("EEE, M/d");
+        try {
+            Date date = df.parse(formattedDate);
+            dateText.setText(df2.format(date));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
 
-        dateText.setText(formattedDate);
+
         //set data to recyclerview
         mAdapter = new NutritionAdapter(mNames, mValues, mPickerInterface);
         mRecyclerView.setAdapter(mAdapter);

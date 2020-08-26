@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.view.View;
 import android.view.Window;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -23,8 +24,7 @@ import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
 import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
 import com.prolificinteractive.materialcalendarview.OnMonthChangedListener;
 import com.prolificinteractive.materialcalendarview.spans.DotSpan;
-
-import org.threeten.bp.DayOfWeek;
+import com.rilixtech.materialfancybutton.MaterialFancyButton;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -63,10 +63,9 @@ public class DialogCalendar extends Dialog  {
 
         private ArrayList<Double> runDistances = new ArrayList<Double>();
         private ArrayList<Double> liftVolumes = new ArrayList<Double>();
-        private ArrayList<CalendarDay> flagOneDays = new ArrayList<CalendarDay>();
-        private ArrayList<CalendarDay> flagTwoDays = new ArrayList<CalendarDay>();
-        private ArrayList<CalendarDay> flagThreeDays = new ArrayList<CalendarDay>();
-        private int MONTHS_DISPLAYED = 3;
+        private HashMap<CalendarDay, Boolean[]> flagDaysH = new HashMap<CalendarDay, Boolean[]>();
+
+        private int MONTHS_DISPLAYED = 6;
         private ArrayList<Double> milesList = new ArrayList<Double>();
         private ArrayList<Double> setsList = new ArrayList<Double>();
         private int MONTH;
@@ -113,6 +112,14 @@ public class DialogCalendar extends Dialog  {
             mileText = findViewById(R.id.text_miles);
             setsText = findViewById(R.id.text_sets);
 
+            MaterialFancyButton mDismiss = findViewById(R.id.dismiss_button);
+            mDismiss.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    DialogCalendar.this.dismiss();
+                }
+            });
+
             getData();
 
     }
@@ -130,18 +137,21 @@ public class DialogCalendar extends Dialog  {
 
             }
             protected Void doInBackground(Void... unused) {
-                copyCal.add(Calendar.MONTH, -(MONTHS_DISPLAYED-1));
+                copyCal.add(Calendar.MONTH, -(MONTHS_DISPLAYED));
                 copyCal.set(Calendar.DAY_OF_MONTH, 1);
 
-                for(int j=0; j<MONTHS_DISPLAYED; j++) {
+                for(int j=0; j<MONTHS_DISPLAYED+1; j++) {
                     milesHold = 0.0;
                     setsHold = 0.0;
+                    int monthlength = copyCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+                    System.out.println("monthlength: "+monthlength);
 
-                    for (int i = 1; i < copyCal.getActualMaximum(Calendar.DAY_OF_MONTH)-1; i++) {
+                    for (int i = 1; i < monthlength +1; i++) {
 
                         Date c = copyCal.getTime();
                         DateFormat df = new SimpleDateFormat("EEE, MMM d, ''yy");
                         String formattedDate = df.format(c);
+                        System.out.println("caldates "+formattedDate);
 
                         CalendarDay theDay = CalendarDay.from(copyCal.get(Calendar.YEAR), copyCal.get(Calendar.MONTH) + 1, copyCal.get(Calendar.DAY_OF_MONTH));
 
@@ -156,6 +166,7 @@ public class DialogCalendar extends Dialog  {
                            // runDays.add(theDay);*/
                             Double sets = getAverageSets(mLiftingWorkout);
                             Double miles = getMiles(mRunWorkout.getDistance());
+                            System.out.println("distances "+miles);
                             Double[] bothVals = {sets, miles};
                             bothDaysH.put(theDay,bothVals);
                             //liftDaysH.put(theDay, sets);
@@ -173,27 +184,29 @@ public class DialogCalendar extends Dialog  {
                            //     liftVolumes.add(getAverageSets(mLiftingWorkout));
                                 liftDaysH.put(theDay, getAverageSets(mLiftingWorkout));
 
-                                System.out.println("setshold "+setsHold);
                                 setsHold = setsHold + getAverageSets(mLiftingWorkout);
                             }
                             if (mRunWorkout != null && mRunWorkout.getDistance() != 0) {
                                runDays.add(theDay);
                              //   runDistances.add(getMiles(mRunWorkout.getDistance()));
                                 runDaysH.put(theDay,getMiles(mRunWorkout.getDistance()));
+                                System.out.println("distances "+getMiles(mRunWorkout.getDistance()));
 
                                 milesHold = milesHold + getMiles(mRunWorkout.getDistance());
                             }
                         }
                         if (mNutritionDay != null && mNutritionDay.getFlags() != null && mNutritionDay.getFlags().size() != 0) {
+                            Boolean[] flags = {false,false,false};
                             if (mNutritionDay.getFlags().get(0) == 1) {
-                                flagOneDays.add(theDay);
+                                flags[0] = true;
                             }
                             if (mNutritionDay.getFlags().get(1) == 1) {
-                                flagTwoDays.add(theDay);
+                                flags[1] = true;
                             }
                             if (mNutritionDay.getFlags().get(2) == 1) {
-                                flagThreeDays.add(theDay);
+                                flags[2] = true;
                             }
+                            flagDaysH.put(theDay, flags);
 
                         }
 
@@ -204,8 +217,10 @@ public class DialogCalendar extends Dialog  {
                     System.out.println("setshold "+setsHold);
                     milesList.add(milesHold);
                     setsList.add(setsHold);
-                    copyCal.set(Calendar.DAY_OF_MONTH, 1);
-                    copyCal.add(Calendar.MONTH, 1);
+                 //   copyCal.add(Calendar.MONTH, 1);
+                  //  copyCal.set(Calendar.DAY_OF_MONTH, 1);
+
+
                     /*for(int z=0; z<milesList.size(); z++) {
                         System.out.println("miles: "+milesList.get(z));
                     }*/
@@ -237,12 +252,13 @@ public class DialogCalendar extends Dialog  {
         //set text to milesList
         System.out.println("loaded date finish ui: "+ fragCalendar.get(Calendar.DAY_OF_MONTH));
         mileText.setText("Miles: "+Double.toString(round(milesList.get(milesList.size()-1),1)));
-        setsText.setText("Sets/m: "+Double.toString(round(setsList.get(setsList.size()-1),1)));
+        setsText.setText("Sets/Muscle: "+Double.toString(round(setsList.get(setsList.size()-1),1)));
 
         mCal = findViewById(R.id.calendar_view);
         mCal.setSelectionMode(MaterialCalendarView.SELECTION_MODE_SINGLE);
+
         mCal.setAllowClickDaysOutsideCurrentMonth(true);
-        mCal.state().edit().setFirstDayOfWeek(DayOfWeek.MONDAY).commit();
+     //   mCal.state().edit().setFirstDayOfWeek(DayOfWeek.MONDAY).commit();
 
         int year = fragCalendar.get(Calendar.YEAR);
         int month = fragCalendar.get(Calendar.MONTH);
@@ -252,66 +268,42 @@ public class DialogCalendar extends Dialog  {
         System.out.println("setting date: "+year+" "+month+" "+day);
         mCal.setCurrentDate(CalendarDay.from(year, month+1, day));
 
-        ArrayList<CalendarDay> days = new ArrayList<CalendarDay>();
-        days.add( CalendarDay.from(year, month, day));
-        // days.add( CalendarDay.from(year, month, day-2));
-
-        //TODO THROWS ERROR at DAY 1 of MONTH
-        //days.add( CalendarDay.from(year, month, day-4));
-
-        ArrayList<CalendarDay> days2 = new ArrayList<CalendarDay>();
-        // days2.add( CalendarDay.from(year, month, day-3));
-
-        ArrayList<CalendarDay> days3 = new ArrayList<CalendarDay>();
-        //  days3.add( CalendarDay.from(year, month, day-5));
-
-
-      //  mCal.addDecorator(new EventDecorator(Color.BLACK, flagOneDays));
-        mCal.addDecorator(new MyDecoratorDots(mContext,true,true,true, flagOneDays));
-
-        mCal.addDecorators(new EventDecorator(Color.GREEN, flagTwoDays));
-        mCal.addDecorator(new EventDecorator(Color.RED, flagThreeDays));
 
         mCal.addDecorator(new MyDecoratorCirclesBackground(mContext, true,true, bothDays));
         mCal.addDecorators(new MyDecoratorCirclesBackground(mContext, true,false,liftDays));
         mCal.addDecorators(new MyDecoratorCirclesBackground(mContext, false,true,runDays));
-
-        //migrated to hashmaps below
- /*       for(int i=0; i<runDays.size(); i++) {
-            //have to move just one to new arraylist because decorator constructor wasn't taking arraylist.get(i)
-            ArrayList<CalendarDay> mList = new ArrayList<CalendarDay>();
-            mList.add(runDays.get(i));
-            mCal.addDecorators(new MyDecoratorNumbers(mContext, round(runDistances.get(i),1), mList));
-        }
-        for(int i=0; i<liftDays.size(); i++) {
-            //have to move just one to new arraylist because decorator constructor wasn't taking arraylist.get(i)
-            ArrayList<CalendarDay> mList = new ArrayList<CalendarDay>();
-            mList.add(liftDays.get(i));
-            mCal.addDecorators(new MyDecoratorNumbers(mContext, round(liftVolumes.get(i),1), mList));
-        }*/
 
         for (Map.Entry<CalendarDay, Double> entry : runDaysH.entrySet()) {
             Double value = entry.getValue();
             CalendarDay key = entry.getKey();
             ArrayList<CalendarDay> mList = new ArrayList<CalendarDay>();
             mList.add(key);
-            mCal.addDecorators(new MyDecoratorNumbers(mContext, round(value,1), null, mList));
+            mCal.addDecorators(new MyDecoratorNumbers(mContext, null, round(value,1) ,key.getDay(), mList));
         }
         for (Map.Entry<CalendarDay, Double> entry : liftDaysH.entrySet()) {
             Double value = entry.getValue();
             CalendarDay key = entry.getKey();
             ArrayList<CalendarDay> mList = new ArrayList<CalendarDay>();
             mList.add(key);
-            mCal.addDecorators(new MyDecoratorNumbers(mContext,null, round(value,1), mList));
+            mCal.addDecorators(new MyDecoratorNumbers(mContext,round(value,1),null , key.getDay(), mList));
         }
         for (Map.Entry<CalendarDay, Double[]> entry : bothDaysH.entrySet()) {
             Double[] values = entry.getValue();
             CalendarDay key = entry.getKey();
             ArrayList<CalendarDay> mList = new ArrayList<CalendarDay>();
             mList.add(key);
-            mCal.addDecorators(new MyDecoratorNumbers(mContext, round(values[0],1), round(values[1],1), mList));
+            mCal.addDecorators(new MyDecoratorNumbers(mContext, round(values[0],1), round(values[1],1),key.getDay(), mList));
         }
 
+
+        for (Map.Entry<CalendarDay, Boolean[]> entry : flagDaysH.entrySet()) {
+            Boolean[] values = entry.getValue();
+            CalendarDay key = entry.getKey();
+            ArrayList<CalendarDay> mList = new ArrayList<CalendarDay>();
+            mList.add(key);
+            mCal.addDecorator(new MyDecoratorDots(mContext,values[0],values[1],values[2], mList));
+
+        }
 
 
         mCal.setOnDateChangedListener(new OnDateSelectedListener() {
@@ -337,8 +329,8 @@ public class DialogCalendar extends Dialog  {
 
                 //TODO to include months forward, if you want, must add milesList values forward. currently stops at current month at max arraylist place
                 if(-MONTH_OFFSET<milesList.size() && MONTH_OFFSET<=0) {
-                    mileText.setText(Double.toString(round(milesList.get(milesList.size() - 1 + MONTH_OFFSET), 1)));
-                    setsText.setText(Double.toString(round(setsList.get(setsList.size() - 1 + MONTH_OFFSET), 1)));
+                    mileText.setText("Miles: "+Double.toString(round(milesList.get(milesList.size() - 1 + MONTH_OFFSET), 1)));
+                    setsText.setText("Sets/Muscle: "+ Double.toString(round(setsList.get(setsList.size() - 1 + MONTH_OFFSET), 1)));
                 }
 
          /*       System.out.println("on month changed");

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:mask="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FAFAFA"
-    >
+    android:background="#FAFAFA">
 
     <TextView
         android:id="@+id/confirm_title"
@@ -31,6 +32,7 @@
     <TextView
         android:id="@+id/date"
         android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
@@ -51,13 +53,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:paddingTop="10dp"
-            android:paddingRight="10dp"
+            android:paddingTop="5dp"
+            android:paddingRight="5dp"
             >
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="20sp"
+                android:textSize="22sp"
+                android:layout_marginRight="5dp"
                 android:text="Title:"
                 android:textColor="#000000"
                 />
@@ -65,7 +68,7 @@
                 android:id="@+id/workout_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="20sp"
+                android:textSize="22sp"
                 android:text="Daily Lift"
                 android:textColor="#000000"
                 />
@@ -74,19 +77,80 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginLeft="10dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        >
+        <TextView
+            android:id="@+id/duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:textSize="22sp"
+            android:text="Duration:"
+            android:textColor="#000000"
+            />
+        <EditText
+            android:inputType="number"
+            android:id="@+id/duration_hours"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:hint="0"
+            android:textColor="#000000"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:text=":"
+            android:textColor="#000000"
+            />
+        <EditText
+            android:inputType="number"
+            android:id="@+id/duration_minutes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:hint="00"
+            android:textColor="#000000"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:text=":"
+            android:textColor="#000000"
+            />
+        <EditText
+            android:inputType="numberDecimal"
+            android:id="@+id/duration_seconds"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:hint="00"
+            android:textColor="#000000"
+            />
+
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:orientation="horizontal"
-        android:paddingRight="10dp"
-        android:paddingBottom="10dp"
+        android:paddingRight="5dp"
+        android:paddingBottom="5dp"
         >
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16sp"
+            android:layout_marginRight="5dp"
             android:text="Description:"
             android:textColor="#000000"
             />
@@ -99,33 +163,7 @@
             android:textColor="#000000"
             />
     </LinearLayout>
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginLeft="10dp"
-        android:paddingTop="10dp"
-        android:paddingRight="10dp"
-        android:paddingBottom="10dp"
-        >
-        <TextView
-            android:id="@+id/duration"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="12sp"
-            android:text="Duration:"
-            android:textColor="#000000"
-            />
-        <EditText
-            android:inputType="time"
-            android:id="@+id/duration_value"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:text="0:00"
-            android:textColor="#000000"
-            />
-    </LinearLayout>
+
 
 
 

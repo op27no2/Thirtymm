@@ -15,9 +15,11 @@
 
     <path
         android:strokeColor="@color/colorPrimary"
+        android:strokeAlpha="0.3"
         android:fillColor="@color/colorPrimary"
-        android:strokeWidth="30"
-        android:pathData="M 250 400 A 150 150 0 0 0 250 100z M250 100 A 150 150 0 0 0 250 400">
+        android:fillAlpha="0.3"
+        android:strokeWidth="0"
+        android:pathData="M 250 430 A 150 150 0 0 0 250 70z M250 70 A 150 150 0 0 0 250 430">
     </path>
 
 </vector>

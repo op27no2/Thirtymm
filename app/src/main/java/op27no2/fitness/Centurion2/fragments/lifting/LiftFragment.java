@@ -1,6 +1,7 @@
 package op27no2.fitness.Centurion2.fragments.lifting;
 
 import android.annotation.SuppressLint;
+import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -11,11 +12,14 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -40,6 +44,8 @@ import com.sweetzpot.stravazpot.common.api.AuthenticationConfig;
 import com.sweetzpot.stravazpot.common.api.StravaConfig;
 import com.sweetzpot.stravazpot.common.model.Time;
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,8 +55,8 @@ import java.util.Date;
 
 import op27no2.fitness.Centurion2.Database.AppDatabase;
 import op27no2.fitness.Centurion2.Database.Repository;
-import op27no2.fitness.Centurion2.R;
 import op27no2.fitness.Centurion2.DialogCalendar;
+import op27no2.fitness.Centurion2.R;
 import op27no2.fitness.Centurion2.fragments.nutrition.CalendarDialogInterface;
 
 public class LiftFragment extends Fragment implements CalendarDialogInterface, NamedWorkoutInterface{
@@ -74,10 +80,9 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
     private ArrayList<NamedWorkout> mNamedWorkouts = new ArrayList<NamedWorkout>();
     private ArrayList<String> allMuscles = new ArrayList<String>();
     private ArrayList<Integer> allRatios = new ArrayList<Integer>();
-
     private static final int RQ_LOGIN = 1001;
     private static final String REDIRECT_URI = "http://op27no2.fitness/callback/";
-
+    private Date saveDate;
 
 
     @SuppressLint("StaticFieldLeak")
@@ -112,7 +117,7 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
         SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, ''yy");
         formattedDate = df.format(c);
         System.out.println("fomratted time => " + df.format(time));
-
+        saveDate = c;
 
         dateText = view.findViewById(R.id.toolbar_date);
         ImageView arrowLeft = (ImageView) view.findViewById(R.id.arrow_left);
@@ -289,7 +294,15 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
 
 
     private void finishUI() {
-        dateText.setText(formattedDate);
+        SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, ''yy");
+        DateFormat df2= new SimpleDateFormat("EEE, M/d");
+        try {
+            Date date = df.parse(formattedDate);
+            dateText.setText(df2.format(date));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
 
         //set lift data to recyclerview
         mLiftAdapter = new LiftCardviewWorkoutAdapter(mLiftingWorkout, mNamedWorkouts, mRepository, LiftFragment.this.getActivity());
@@ -449,6 +462,92 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
             DisplayMetrics metrics = getResources().getDisplayMetrics();
             int width = metrics.widthPixels;
 
+            TextView dText = dialog.findViewById(R.id.date);
+            dText.setText(formattedDate);
+            final Calendar myCalendar = Calendar.getInstance();
+            DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
+                @Override
+                public void onDateSet(DatePicker view, int year, int monthOfYear,
+                                      int dayOfMonth) {
+                    // TODO Auto-generated method stub
+                    myCalendar.set(Calendar.YEAR, year);
+                    myCalendar.set(Calendar.MONTH, monthOfYear);
+                    myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                    SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, ''yy");
+                    Date c = myCalendar.getTime();
+                    saveDate = c;
+                    dText.setText(df.format(c));
+                }
+
+            };
+            dText.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    System.out.println("test click");
+                    // TODO Auto-generated method stub
+                    new DatePickerDialog(getActivity(), date, myCalendar
+                            .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
+                            myCalendar.get(Calendar.DAY_OF_MONTH)).show();
+                }
+            });
+
+
+
+            EditText mEditTitle = dialog.findViewById(R.id.workout_title);
+            String title = "Morning Lift";
+            Calendar cal = Calendar.getInstance();
+            int time = cal.get(Calendar.HOUR_OF_DAY);
+            if(time>21 || time<3){
+                title = "Night Lift";
+            }else if(time>17){
+                title = "Evening Lift";
+            }else if(time>12){
+                title = "Afternoon Lift";
+            }
+            mEditTitle.setText(title);
+
+
+            EditText mEditTime1 = dialog.findViewById(R.id.duration_hours);
+            EditText mEditTime2 = dialog.findViewById(R.id.duration_minutes);
+            EditText mEditTime3 = dialog.findViewById(R.id.duration_seconds);
+
+            mEditTime1.addTextChangedListener(new TextWatcher(){
+                 @Override
+                 public void afterTextChanged(Editable s) {
+                    if(s.length()==1){
+                        mEditTime2.requestFocus();
+                    }
+                 }
+                 @Override
+                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                 @Override
+                 public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            });
+            mEditTime2.addTextChangedListener(new TextWatcher(){
+                @Override
+                public void afterTextChanged(Editable s) {
+                    if(s.length()==2){
+                        mEditTime3.requestFocus();
+                    }
+                }
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            });
+
+            mEditTime3.addTextChangedListener(new TextWatcher(){
+                @Override
+                public void afterTextChanged(Editable s) {
+                }
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            });
+
+
             EditText mEditDescription = dialog.findViewById(R.id.workout_description);
             mEditDescription.setText(getDescription());
 
@@ -456,6 +555,29 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
             dialog.findViewById(R.id.save).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    //get fields on save click
+                    String saveTitle = mEditTitle.getText().toString();
+                    String saveDescription = mEditDescription.getText().toString();
+
+
+
+
+                    //total minutes * 60 to turn into seconds plus remaining seconds
+                    int hours=0;
+                    if(!mEditTime1.getText().toString().equals("")){
+                        hours = Integer.parseInt(mEditTime1.getText().toString());
+                    }
+                    int minutes=0;
+                    if(!mEditTime2.getText().toString().equals("")){
+                        minutes = Integer.parseInt(mEditTime2.getText().toString());
+                    }
+                    Double seconds=0.0;
+                    if(!mEditTime3.getText().toString().equals("")){
+                        seconds = Double.parseDouble(mEditTime3.getText().toString());
+                    }
+
+                    int saveSeconds = (((hours*60)+minutes)*60) + (int) Math.floor(seconds);
+
                     if(!prefs.getBoolean("strava2", false)) {
                         Uri intentUri = Uri.parse("https://www.strava.com/oauth/mobile/authorize")
                                 .buildUpon()
@@ -471,11 +593,17 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
                         intent.putExtra("key", 999);
                         startActivityForResult(intent, RQ_LOGIN);
                     }else{
-                        finishStrava();
+                        finishStrava(saveTitle, saveDescription, saveSeconds);
                     }
 
                 }
             });
+        dialog.findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
 
 
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -483,15 +611,14 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
     }
 
 
-    public void finishStrava() {
+    @SuppressLint("StaticFieldLeak")
+    public void finishStrava(String saveTitle, String saveDescription, int saveSeconds) {
         new AsyncTask<Void, Void, Void>() {
 
             protected void onPreExecute() {
             }
 
             protected Void doInBackground(Void... unused) {
-
-
                 AuthenticationConfig config = AuthenticationConfig.create()
                         .debug()
                         .build();
@@ -530,24 +657,13 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
                         .build();
 
 
-                String title = "Morning Lift";
-                Calendar cal = Calendar.getInstance();
-                int time = cal.get(Calendar.HOUR_OF_DAY);
-                if(time>21 || time<3){
-                    title = "Night Lift";
-                }else if(time>17){
-                    title = "Evening Lift";
-                }else if(time>12){
-                    title = "Afternoon Lift";
-                }
-
 
                 ActivityAPI activityAPI = new ActivityAPI(sconfig);
-                Activity activity = activityAPI.createActivity(title)
+                Activity activity = activityAPI.createActivity(saveTitle)
                         .ofType(ActivityType.WEIGHT_TRAINING)
-                        .startingOn(Calendar.getInstance().getTime())
-                        .withElapsedTime(Time.seconds(3600))
-                        .withDescription(getDescription())
+                        .startingOn(saveDate)
+                        .withElapsedTime(Time.seconds(saveSeconds))
+                        .withDescription(saveDescription)
                         .isPrivate(true)
                         .withTrainer(true)
                         .withCommute(false)

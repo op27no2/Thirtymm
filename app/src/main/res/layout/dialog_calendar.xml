@@ -64,7 +64,7 @@
                     android:text = ""/>
 
                 <com.rilixtech.materialfancybutton.MaterialFancyButton
-                android:id="@+id/volume_dialog_save"
+                android:id="@+id/dismiss_button"
                 android:layout_toRightOf="@+id/start_run"
                 android:layout_alignParentRight="true"
                 android:layout_width="100dp"

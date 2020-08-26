@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.icu.text.Collator;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -19,6 +20,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Locale;
 
 import op27no2.fitness.Centurion2.Database.AppDatabase;
 import op27no2.fitness.Centurion2.Database.Repository;
@@ -163,7 +167,7 @@ public class DialogLifts extends Dialog  {
                                 }
                             }
 
-
+                            alphabetize(mList);
                             mAdapter = new MyDialogAdapter(mContext, mList, mRepository, mLiftingWorkout, parentposition,mInterface);
                             mRecyclerView.setAdapter(mAdapter);
 
@@ -209,6 +213,8 @@ public class DialogLifts extends Dialog  {
                         mRepository.insertLiftMap(mLiftMap);
                         mRepository.insertLiftMap(mLiftMap2);
                         mRepository.insertLiftMap(mLiftMap3);
+
+                        alphabetize(mList);
                         mAdapter = new MyDialogAdapter(mContext, mList, mRepository, mLiftingWorkout, parentposition,mInterface);
                         mAdapter.notifyDataSetChanged();
                     }                return null;
@@ -255,6 +261,7 @@ public class DialogLifts extends Dialog  {
             System.out.println("finish ui");
 
             //set lift data to recyclerview
+            alphabetize(mList);
             mAdapter = new MyDialogAdapter(mContext, mList, mRepository, mLiftingWorkout, parentposition,mInterface);
             mRecyclerView.setAdapter(mAdapter);
             mAdapter2.setSelected(1000);
@@ -263,6 +270,20 @@ public class DialogLifts extends Dialog  {
 
 
 
+        }
+
+
+        private void alphabetize(ArrayList<LiftMap> mList){
+            Collator collator = Collator.getInstance(Locale.US);
+            if (!mList.isEmpty()) {
+                Collections.sort(mList, new Comparator<LiftMap>() {
+                    @Override
+                    public int compare(LiftMap c1, LiftMap c2) {
+                        //You should ensure that list doesn't contain null values!
+                        return collator.compare(c1.getName(), c2.getName());
+                    }
+                });
+            }
         }
 
 }

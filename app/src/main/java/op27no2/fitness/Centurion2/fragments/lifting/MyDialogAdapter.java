@@ -85,10 +85,18 @@ public class MyDialogAdapter extends RecyclerView.Adapter<MyDialogAdapter.ViewHo
                 //TODO this is correct position language?
                 String name = liftMapArrayList.get(holder.getAdapterPosition()).getName();
                 int weight = prefs.getInt("last_weight"+name, 200);
+                int reps = prefs.getInt("default_reps" + name, 0);
+
                 mLiftingWorkout.getMyLifts().get(parentPosition).setName(name);
                 mLiftingWorkout.getMyLifts().get(parentPosition).setWeight(weight);
+                ArrayList<Integer> weights = mLiftingWorkout.getMyLifts().get(parentPosition).getRepWeights();
+                ArrayList<Integer> myreps = mLiftingWorkout.getMyLifts().get(parentPosition).getReps();
+                weights.set(0,weight);
+                myreps.set(0,reps);
+
                 mRepository.updateWorkout(mLiftingWorkout);
                 mListener.onDialogDismiss();
+
             }
         });
 

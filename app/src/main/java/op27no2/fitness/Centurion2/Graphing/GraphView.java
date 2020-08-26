@@ -89,6 +89,9 @@ abstract public class GraphView extends LinearLayout {
 				verlabels = generateVerlabels(graphheight);
 			}
 
+
+
+
 			// vertical lines
 			if(graphViewStyle.getGridStyle() != GridStyle.HORIZONTAL) {
 				paint.setTextAlign(Align.LEFT);
@@ -98,6 +101,7 @@ abstract public class GraphView extends LinearLayout {
 					float y = ((graphheight / vers) * i) + border;
 					canvas.drawLine(horstart, y, width, y, paint);
 				}
+
 			}
 
 			drawHorizontalLabels(canvas, border, horstart, height, horlabels, graphwidth);
@@ -159,6 +163,58 @@ abstract public class GraphView extends LinearLayout {
 				return super.onTouchEvent(event);
 			}
 
+			//This is new logic to auto-fit Y with set increments defined as resolution,
+			double maxY = getMaxYIgnoreManual();
+			double minY = getMinYIgnoreManual();
+			if(maxY>hardMaxY || minY < hardMinY){
+				System.out.println("min Y: "+minY);
+				System.out.println("max Y: "+maxY);
+
+				double lines = Math.floor(maxY / resolution)+1;
+				double lines2 = 0;
+
+				//if(minY <0){
+					lines2 = -(Math.floor(Math.abs(minY)/ resolution)+1);
+					if(minY >=0) {
+					lines2 = 0;
+					}
+					setManualYAxisBounds((lines)*resolution,(lines2)*resolution);
+
+					int size = (int) lines + (int) -lines2 + 1;
+					System.out.println("size "+size);
+
+					String[] labels = new String[size];
+					for(int i=0; i<size; i++){
+						labels[size-1-i] = Integer.toString((int) (resolution*lines2)+(resolution*i));
+					}
+
+					setVerticalLabels(labels);
+
+				/*}else{
+					setManualYAxisBounds((lines+1)*resolution,0);
+				}*/
+
+			}else {
+				System.out.println("set manual test: " + manualMaxYValue+" "+ manualMinYValue);
+				setManualYAxisBounds(hardMaxY, hardMinY);
+				double lines1 = Math.floor(hardMaxY / resolution);
+				System.out.println("lines1: "+lines1);
+				double lines2 = -Math.floor(Math.abs(hardMinY)/ resolution);
+				System.out.println("lines2: "+lines2);
+
+				int lines = (int) lines1 + (int) -lines2 + 1;
+				System.out.println("lines: "+lines);
+
+				String[] labels = new String[lines];
+				for(int i=0; i<lines; i++){
+					labels[lines-1-i] = Integer.toString((int) (resolution*lines2)+(resolution*i));
+				}
+				setVerticalLabels(labels);
+			}
+
+
+
+			//back to normal onTouch function
 			boolean handled = false;
 			// first scale
 			if (scalable && scaleDetector != null) {
@@ -321,6 +377,11 @@ abstract public class GraphView extends LinearLayout {
 	private boolean staticVerticalLabels;
     private boolean showHorizontalLabels = true;
     private boolean showVerticalLabels = true;
+
+    private Integer resolution = 500;
+    private Integer hardMinY = -1500;
+    private Integer hardMaxY = 1500;
+    private boolean includeNegatives = true;
 
 	public GraphView(Context context, AttributeSet attrs) {
 		this(context, attrs.getAttributeValue(null, "title"));
@@ -625,6 +686,35 @@ abstract public class GraphView extends LinearLayout {
 		return largest;
 	}
 
+	protected double getMaxYIgnoreManual() {
+		double largest;
+
+		largest = Integer.MIN_VALUE;
+		for (int i=0; i<graphSeries.size(); i++) {
+			GraphViewDataInterface[] values = _values(i);
+			for (int ii=0; ii<values.length; ii++)
+				if (values[ii].getY() > largest)
+					largest = values[ii].getY();
+		}
+
+		return largest;
+	}
+
+	protected double getMinYIgnoreManual() {
+		double smallest;
+			smallest = Integer.MAX_VALUE;
+			for (int i=0; i<graphSeries.size(); i++) {
+				GraphViewDataInterface[] values = _values(i);
+				for (int ii=0; ii<values.length; ii++)
+					if (values[ii].getY() < smallest)
+						smallest = values[ii].getY();
+			}
+
+		return smallest;
+	}
+
+
+
 	/**
 	 * returns the minimal X value of the current viewport (if viewport is set)
 	 * otherwise minimal X value of all data.
@@ -678,6 +768,9 @@ abstract public class GraphView extends LinearLayout {
 		}
 		return smallest;
 	}
+
+
+
 
 	/**
 	 * returns the size of the Viewport
@@ -794,6 +887,13 @@ abstract public class GraphView extends LinearLayout {
 	public void setGraphViewStyle(GraphViewStyle style) {
 		graphViewStyle = style;
 		labelTextHeight = null;
+	}
+
+	public void setResolution(int res, Boolean includenegatives, int hardminY, int hardmaxY) {
+		resolution = res;
+		hardMinY = hardminY;
+		hardMaxY = hardmaxY;
+		includeNegatives = includenegatives;
 	}
 
 	/**
