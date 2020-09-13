@@ -640,19 +640,28 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                     long id = AppDatabase.getAppDatabase(getActivity()).ntDAO().insert(mNutritionDay);
                     mNutritionDay = AppDatabase.getAppDatabase(getActivity()).ntDAO().findById((int) id);
 
-
                     System.out.println("nutrition day after insertion uid: "+mNutritionDay.getUid());
-
-
 
                     cals = mValues.get(0);
 
                 }else{
-                    System.out.println("nutrition day found get names/values uid: "+mNutritionDay.getUid());
                     mNames = mNutritionDay.getNames();
                     mValues = mNutritionDay.getValues();
-                    cals = mValues.get(0);
 
+                    if(mNames.size() == 0 || mValues.size() == 0){
+                        System.out.println("nutrition day found get names/values uid: "+mNutritionDay.getUid());
+                        mNames.add("Cals");
+                        mValues.add(Integer.parseInt(prefs.getString("bmr", "-2000")));
+                        mNames.add("Protein");
+                        mValues.add(0);
+                        mNutritionDay.setNames(mNames);
+                        mNutritionDay.setValues(mValues);
+                        System.out.println(mNames.get(0)+" "+mValues.get(1));
+                    }else {
+                        System.out.println("mNames size not zero "+mNames.get(0)+" "+mValues.get(0));
+                    }
+
+                    cals = mValues.get(0);
 
                 }
 

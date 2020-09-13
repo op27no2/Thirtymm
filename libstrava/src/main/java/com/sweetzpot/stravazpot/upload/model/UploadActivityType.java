@@ -3,6 +3,7 @@ package com.sweetzpot.stravazpot.upload.model;
 public enum UploadActivityType {
     RIDE("ride"),
     RUN("run"),
+    RACE("race"),
     SWIM("swim"),
     HIKE("hike"),
     WALK("walk"),

@@ -24,8 +24,8 @@ public class LineGraphView extends GraphView {
 	private float dataPointsRadius = 10f;
 	public String colorflag;
 	public double sum = 0;
-	public double themaxX;
-	public double theminX;
+	public double xAxixMax;
+	public double xAxisMin;
 	public int daycount;
 	public int day;
 	public SharedPreferences prefs;
@@ -67,8 +67,8 @@ public class LineGraphView extends GraphView {
 		// draw data
 		paint.setStrokeWidth(style.thickness);
 		paint.setColor(style.color);
-		themaxX = minX+diffX;
-		theminX = minX;
+		xAxixMax = minX+diffX;
+		xAxisMin = minX;
 
 		
 		Path bgPath = null;
@@ -96,12 +96,12 @@ public class LineGraphView extends GraphView {
 		
 		float firstX = 0;
 		for (int i = 0; i < values.length; i++) {
-			double yY = values[i].getY();
+			double dataY = values[i].getY();
 			double valY = values[i].getY() - minY;
 			double ratY = valY / diffY;
 			double y = graphheight * ratY;
 			
-			double xX = values[i].getX();
+			double dataX = values[i].getX();
 			double valX = values[i].getX() - minX;
 			double ratX = valX / diffX;
 			double x = graphwidth * ratX;
@@ -121,10 +121,10 @@ public class LineGraphView extends GraphView {
 				}
 
 				//if previous value is below line, less than zero
-				//yY is the actual value from dataset, so looking at previous value and current value
-				if(values[i-1].getY()<0 && yY >= 0){
+				//dataY is the actual value from dataset, so looking at previous value and current value
+				if(values[i-1].getY()<0 && dataY >= 0){
 					//x point at intercept
-					double interx = (-pyY/((yY-pyY)/(xX-pxX)))+pxX;
+					double interx = (-pyY/((dataY-pyY)/(dataX-pxX)))+pxX;
 					//subtract minimum x to get distance from minimum x, to get value x
 					double valiX = interx - minX;
 					//ratio of intercept on screen, value x out of values on screen
@@ -179,8 +179,8 @@ public class LineGraphView extends GraphView {
 				}
 
 				//drawing above
-				else if(values[i-1].getY()>0 && yY <= 0){
-					double interx = (-pyY/((yY-pyY)/(xX-pxX)))+pxX;
+				else if(values[i-1].getY()>0 && dataY <= 0){
+					double interx = (-pyY/((dataY-pyY)/(dataX-pxX)))+pxX;
 					double valiX = interx - minX;
 					double ratiX = valiX / diffX;
 					double ix = graphwidth * ratiX;
@@ -225,7 +225,7 @@ public class LineGraphView extends GraphView {
 					colorflag="red";
 				}
 				//if its not a split case like above, its just a normal above or below, red or green.
-				else if(yY < 0){
+				else if(dataY < 0){
 				paint.setColor(Color.rgb(255, 0, 0));
 					if(aTitle.equals("Grams")){
 						paint.setColor(style.color);
@@ -247,8 +247,8 @@ public class LineGraphView extends GraphView {
 		        Calendar c = Calendar.getInstance(); 
 		   //     dayset = Integer.parseInt(prefs.getString("tapnum2", "1"));
 
-				//find todays weekday, which is last displayed data point. Then subtract backwards as we move back from that data point xX are the X data points (e.g. 0 to 30?)
-				int weekday = c.get(Calendar.DAY_OF_WEEK) - (listsize - (int) xX);
+				//find todays weekday, which is last displayed data point. Then subtract backwards as we move back from that data point dataX are the X data points (e.g. 0 to 30?)
+				int weekday = c.get(Calendar.DAY_OF_WEEK) - (listsize - (int) dataX);
 
 				//if
 				if(values.length < 10){
@@ -267,7 +267,7 @@ public class LineGraphView extends GraphView {
 				}
 				
 				int day = c.get(Calendar.DAY_OF_YEAR) ;
-				c.set(Calendar.DAY_OF_YEAR, day - (listsize - (int) xX)+2);
+				c.set(Calendar.DAY_OF_YEAR, day - (listsize - (int) dataX)+2);
 				int dayofmonth = c.get(Calendar.DAY_OF_MONTH);
 				int month = c.get(Calendar.MONTH);
 				int year = c.get(Calendar.YEAR);
@@ -377,10 +377,10 @@ public class LineGraphView extends GraphView {
 					bgPath.lineTo(endX, yzero);
 					bgPath.lineTo(prevX, prevY);
 					bgPath.close();
-					if (yY > 0) {
+					if (dataY > 0) {
 						paintBackground.setColor(Color.argb(45, 0, 225, 0));
 					}
-					if (yY < 0) {
+					if (dataY < 0) {
 						paintBackground.setColor(Color.argb(45, 255, 0, 0));
 					}
 					canvas.drawPath(bgPath, paintBackground);
@@ -391,23 +391,28 @@ public class LineGraphView extends GraphView {
 			
 			lastEndY = y;
 			lastEndX = x;
-			pyY = yY;
-			pxX = xX;
+			pyY = dataY;
+			pxX = dataX;
 			
-
+			//add all values that aren't the first or last, which can be "off the page"
 			if(i>0 && i<values.length-1){
-			sum = sum+ yY;
+			sum = sum+ dataY;
 			}
+
+			//if first or last are on the page, actually add them
 			if(i == values.length -1){
-				if(themaxX == xX){
-					sum = sum+yY;
+				if(xAxixMax == dataX || xAxixMax > dataX){
+					sum = sum+dataY;
 				}
 			}
 			if(i == 0){
-				if(theminX == xX){
-					sum = sum+yY;
+				if(xAxisMin == dataX){
+					sum = sum+dataY;
 				}
 			}
+
+
+
 
 		//ends the loop for each data value
 		}
@@ -415,7 +420,11 @@ public class LineGraphView extends GraphView {
 		//checks sum of values and draws calories red or green + or -
 		String units = prefs.getString("timeout", "Pounds");
 		System.out.println("LineUnits:"+units);
-		
+		for(int j=0; j<values.length;j++){
+			System.out.println("Y test "+j+": "+values[j].getY());
+		}
+
+
 		int sum1 = (int) Math.floor(sum);
 		int sum2 = (int) Math.floor(sum/350);
 		double sum3 = (double) sum2/10;

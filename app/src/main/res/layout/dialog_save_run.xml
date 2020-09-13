@@ -16,6 +16,7 @@
         android:text="Save Workout?"
         android:textColor="@color/colorPrimary"
         android:layout_marginTop="14dp"
+        android:layout_marginBottom="10dp"
         android:layout_marginRight="20dp"
         android:layout_marginLeft="20dp"/>
 
@@ -28,6 +29,7 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#FFFFFF"/>
+
     <TextView
         android:id="@+id/date"
         android:layout_marginLeft="10dp"
@@ -63,7 +65,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="20sp"
+                android:textSize="22sp"
                 android:text="Title:"
                 android:textColor="#000000"
                 />
@@ -71,9 +73,10 @@
                 android:id="@+id/workout_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="20sp"
+                android:textSize="22sp"
                 android:text="Daily Run"
                 android:textColor="#000000"
+                android:selectAllOnFocus="true"
                 />
         </LinearLayout>
 
@@ -102,8 +105,74 @@
             android:textSize="16sp"
             android:hint="description"
             android:textColor="#000000"
+            android:selectAllOnFocus="true"
             />
     </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginLeft="10dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        >
+        <TextView
+            android:id="@+id/duration1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:textSize="22sp"
+            android:text="Duration:"
+            android:textColor="#000000"
+            />
+        <EditText
+            android:inputType="number"
+            android:id="@+id/duration_hours"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:hint="0"
+            android:textColor="#000000"
+            android:selectAllOnFocus="true"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:text=":"
+            android:textColor="#000000"
+            />
+        <EditText
+            android:inputType="number"
+            android:id="@+id/duration_minutes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:hint="00"
+            android:textColor="#000000"
+            android:selectAllOnFocus="true"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:text=":"
+            android:textColor="#000000"
+            />
+        <EditText
+            android:inputType="number"
+            android:id="@+id/duration_seconds"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:hint="00"
+            android:textColor="#000000"
+            android:selectAllOnFocus="true"
+            />
+
+    </LinearLayout>
+
+
     <LinearLayout
         android:layout_below="@+id/title"
         android:id="@+id/row1"
@@ -219,6 +288,7 @@
                 android:textSize="20sp"
                 android:text="0"
                 android:textColor="#000000"
+                android:selectAllOnFocus="true"
                 />
         </LinearLayout>
 

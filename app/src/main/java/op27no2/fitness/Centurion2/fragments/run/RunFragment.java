@@ -166,7 +166,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private Repository mRepository;
     private Calendar cal;
     private String formattedDate;
-    private long finalTIme;
+    private long finalTime;
     private MapSnapshotter mapSnapshotter;
     private FrameLayout mFrame;
 
@@ -836,7 +836,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     public void getData(long timestamp, long elapsedTime, ArrayList<Point> rCoordinates, double min, double max, ArrayList<TrackedPoint> points) {
         System.out.println("elapsedTime:" + elapsedTime);
 
-        finalTIme = elapsedTime;
+        finalTime = elapsedTime;
         long micro = elapsedTime / 100000;
         long elapsedSeconds = elapsedTime / 1000;
         long secondsDisplay = elapsedSeconds % 60;
@@ -1409,9 +1409,11 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             Location.distanceBetween(routeCoordinates.get(i).latitude(), routeCoordinates.get(i).longitude(), routeCoordinates.get(i + 1).latitude(), routeCoordinates.get(i + 1).longitude(), distance);
             total[0] = total[0] + distance[0];
         }
-        long pace = (long) (finalTIme/(total[0] *0.000621371192f));
+        long pace = (long) (finalTime /(total[0] *0.000621371192f));
 
-        mEditDuration.setText(getDuration(finalTIme));
+        mEditDuration.setText(getDuration(finalTime));
+
+
         mEditDistance.setText(getMiles(total[0]));
         mEditPace.setText(getDuration(pace)+" /mi");
         mEditCals.setText(Integer.toString(((int) Math.floor(total[0] *0.000621371192f*prefs.getInt("weight",215)*0.63))));
@@ -1465,6 +1467,56 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             }
         });
 
+        EditText mEditTime1 = dialog.findViewById(R.id.duration_hours);
+        EditText mEditTime2 = dialog.findViewById(R.id.duration_minutes);
+        EditText mEditTime3 = dialog.findViewById(R.id.duration_seconds);
+        int hours = (int) Math.floor(finalTime/(1000*60*60));
+        int minutes = (int) Math.floor(finalTime/(1000*60)%hours);
+        int seconds = (int) Math.floor(finalTime/(1000)%minutes);
+        if(hours>0) {
+            mEditTime1.setText(Integer.toString(hours));
+        }
+        if(minutes>0) {
+            mEditTime2.setText(Integer.toString(minutes));
+        }
+        if(seconds>0) {
+            mEditTime3.setText(Integer.toString(seconds));
+        }
+
+        mEditTime1.addTextChangedListener(new TextWatcher(){
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(s.length()==1){
+                    mEditTime2.requestFocus();
+                }
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+        });
+        mEditTime2.addTextChangedListener(new TextWatcher(){
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(s.length()==2){
+                    mEditTime3.requestFocus();
+                }
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+        });
+
+        mEditTime3.addTextChangedListener(new TextWatcher(){
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+        });
 
 
 
@@ -1479,7 +1531,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                 String before = timefield.substring(0,pos);
                 String after = timefield.substring(pos+1,timefield.length());
 
-                if(timefield.contains(":") && before.matches("[0-9]+") && after.matches("[0-9]+")) {
+            //    if(timefield.contains(":") && before.matches("[0-9]+") && after.matches("[0-9]+")) {
 
 
                     //stop service set screen miles back to 0
@@ -1490,13 +1542,17 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                     }
                     timerService = null;
                     timerText.setText("0:00");
+
+
+
                     distanceText.setText("0");
 
                     //get fields from EditTexts
 
                     saveDistance = (int) Math.floor(Float.parseFloat(mEditDistance.getText().toString()) * 1609.34400);
                     saveCals = Integer.parseInt(mEditCals.getText().toString());
-                    saveTime = getIntFromDuration(mEditDuration.getText().toString());
+                  //  saveTime = getIntFromDuration(mEditDuration.getText().toString());
+                    saveTime = (Integer.parseInt(mEditTime1.getText().toString())*60*60)+(Integer.parseInt(mEditTime1.getText().toString())*60)+(Integer.parseInt(mEditTime1.getText().toString()));
                     saveDescription = mEditDescription.getText().toString();
                     saveTitle = mEditTitle.getText().toString();
                     stravaCheckBox = mStravaCheck.isChecked();
@@ -1515,7 +1571,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
 
                     dialog.dismiss();
-                }
+              //  }
             }
         });
 
@@ -1741,6 +1797,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
         return msecond;
     }
+
+
 
     private String getDuration(long elapsedTime){
         long micro = elapsedTime / 100000;

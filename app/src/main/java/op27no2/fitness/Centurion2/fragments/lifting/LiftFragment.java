@@ -24,6 +24,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
@@ -594,6 +595,7 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
                         startActivityForResult(intent, RQ_LOGIN);
                     }else{
                         finishStrava(saveTitle, saveDescription, saveSeconds);
+                        dialog.dismiss();
                     }
 
                 }
@@ -674,6 +676,8 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
 
             protected void onPostExecute(Void unused) {
                 // Post Code
+                Toast.makeText(getActivity(), "Upload Processed", Toast.LENGTH_LONG).show();
+
             }
         }.execute();
 
