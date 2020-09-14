@@ -1470,16 +1470,29 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         EditText mEditTime1 = dialog.findViewById(R.id.duration_hours);
         EditText mEditTime2 = dialog.findViewById(R.id.duration_minutes);
         EditText mEditTime3 = dialog.findViewById(R.id.duration_seconds);
-        int hours = (int) Math.floor(finalTime/(1000*60*60));
-        int minutes = (int) Math.floor(finalTime/(1000*60)%hours);
-        int seconds = (int) Math.floor(finalTime/(1000)%minutes);
+
+        long elapsedSeconds = finalTime / 1000;
+        long secondsDisplay = elapsedSeconds % 60;
+        long elapsedMinutes = elapsedSeconds / 60;
+        long minutesDisplay = elapsedMinutes % 60;
+        long hoursDisplay = elapsedMinutes / 60;
+
+        int hours = (int)  Math.floor(hoursDisplay);
+        int minutes = (int)  Math.floor(minutesDisplay);
+        int seconds = (int)  Math.floor(secondsDisplay);
+
         if(hours>0) {
             mEditTime1.setText(Integer.toString(hours));
         }
-        if(minutes>0) {
+        if(minutes<10 && minutes>0) {
+            mEditTime2.setText("0"+Integer.toString(minutes));
+        }else if (minutes>0){
             mEditTime2.setText(Integer.toString(minutes));
         }
-        if(seconds>0) {
+
+        if(seconds<10) {
+            mEditTime3.setText("0"+Integer.toString(seconds));
+        }else{
             mEditTime3.setText(Integer.toString(seconds));
         }
 
@@ -1806,11 +1819,21 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         long secondsDisplay = elapsedSeconds % 60;
         long elapsedMinutes = elapsedSeconds / 60;
         long minutesDisplay = elapsedMinutes % 60;
-        if (secondsDisplay < 10) {
-            return((minutesDisplay + ":0" + secondsDisplay));
-        } else {
-            return((minutesDisplay + ":" + secondsDisplay));
+        long hoursDisplay = (int) Math.floor(elapsedMinutes / 60);
+        if(hoursDisplay>0) {
+            if (secondsDisplay < 10) {
+                return ((hoursDisplay + ":" + minutesDisplay + ":0" + secondsDisplay));
+            } else {
+                return ((hoursDisplay + ":" + minutesDisplay + ":" + secondsDisplay));
+            }
+        }else{
+            if (secondsDisplay < 10) {
+                return ((minutesDisplay + ":0" + secondsDisplay));
+            } else {
+                return ((minutesDisplay + ":" + secondsDisplay));
+            }
         }
+
     }
 
     private void updateWidgets(){
