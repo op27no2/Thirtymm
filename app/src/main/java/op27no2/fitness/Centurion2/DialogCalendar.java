@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -157,26 +158,34 @@ public class DialogCalendar extends Dialog  {
 
                         LiftingWorkout mLiftingWorkout = AppDatabase.getAppDatabase(mContext).lwDAO().findByDate(formattedDate);
                         RunWorkout mRunWorkout = AppDatabase.getAppDatabase(mContext).rwDAO().findByDate(formattedDate);
+                        List<RunWorkout> mRunWorkouts = AppDatabase.getAppDatabase(mContext).rwDAO().findAllByDate(formattedDate);
+                        //TODO now use List instead of one owrkout when approp
+
+
+
                         NutritionDay mNutritionDay = AppDatabase.getAppDatabase(mContext).ntDAO().findByDate(formattedDate);
 
-                        if (mLiftingWorkout != null && mLiftingWorkout.getMyLifts().size() != 0 && mRunWorkout != null && mRunWorkout.getDistance() != 0) {
+                        if (mLiftingWorkout != null && mLiftingWorkout.getMyLifts().size() != 0 && mRunWorkouts != null && mRunWorkouts.size() != 0) {
                             //araylist is for circles, hashmap for numbers
                             bothDays.add(theDay);
                           //  liftDays.add(theDay);
                            // runDays.add(theDay);*/
                             Double sets = getAverageSets(mLiftingWorkout);
-                            Double miles = getMiles(mRunWorkout.getDistance());
+                            Double miles = 0.0;
+                            for(int k=0; k<mRunWorkouts.size(); k++) {
+                                miles = miles+getMiles(mRunWorkouts.get(k).getDistance());
+                            }
+
                             System.out.println("distances "+miles);
                             Double[] bothVals = {sets, miles};
                             bothDaysH.put(theDay,bothVals);
-                            //liftDaysH.put(theDay, sets);
-                            //runDaysH.put(theDay,miles);
 
-                           // liftVolumes.add(getAverageSets(mLiftingWorkout));
                             System.out.println("setshold "+setsHold);
-                           // runDistances.add(getMiles(mRunWorkout.getDistance()));
-                            milesHold = milesHold + getMiles(mRunWorkout.getDistance());
-                            setsHold = setsHold + getAverageSets(mLiftingWorkout);
+
+                            /*milesHold = milesHold + getMiles(mRunWorkout.getDistance());
+                            setsHold = setsHold + getAverageSets(mLiftingWorkout);*/
+                            milesHold = milesHold + miles;
+                            setsHold = setsHold + sets;
 
                         } else {
                             if (mLiftingWorkout != null && mLiftingWorkout.getMyLifts().size() != 0) {
@@ -186,13 +195,17 @@ public class DialogCalendar extends Dialog  {
 
                                 setsHold = setsHold + getAverageSets(mLiftingWorkout);
                             }
-                            if (mRunWorkout != null && mRunWorkout.getDistance() != 0) {
-                               runDays.add(theDay);
-                             //   runDistances.add(getMiles(mRunWorkout.getDistance()));
-                                runDaysH.put(theDay,getMiles(mRunWorkout.getDistance()));
+                            if (mRunWorkouts != null && mRunWorkouts.size() != 0) {
+                                runDays.add(theDay);
+                                Double miles = 0.0;
+                                for(int k=0; k<mRunWorkouts.size(); k++) {
+                                    miles = miles+getMiles(mRunWorkouts.get(k).getDistance());
+                                }
+
+                                runDaysH.put(theDay,miles);
                                 System.out.println("distances "+getMiles(mRunWorkout.getDistance()));
 
-                                milesHold = milesHold + getMiles(mRunWorkout.getDistance());
+                                milesHold = milesHold + miles;
                             }
                         }
                         if (mNutritionDay != null && mNutritionDay.getFlags() != null && mNutritionDay.getFlags().size() != 0) {
@@ -237,8 +250,6 @@ public class DialogCalendar extends Dialog  {
                 finishUI();
             }
         }.execute();
-
-
 
     }
 

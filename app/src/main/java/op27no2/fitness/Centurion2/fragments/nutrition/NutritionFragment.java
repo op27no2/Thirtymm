@@ -12,6 +12,8 @@ import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Vibrator;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -592,8 +594,15 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         //TODO Update ON Resume because widget could change it!
         getDayData();
         if(mAdapter !=null) {
-            mAdapter.setSelected(selectedPosition);
-            mAdapter.notifyDataSetChanged();
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("selected position " + selectedPosition);
+                    mAdapter.setSelected(selectedPosition);
+                    mAdapter.notifyDataSetChanged();
+                }
+            }, 200);
+
         }
 
     }

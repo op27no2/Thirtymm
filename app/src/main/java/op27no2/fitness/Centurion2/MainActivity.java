@@ -40,7 +40,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
    /*     EditText editText = (EditText) findViewById(R.id.editText);
         String message = editText.getText().toString();
         intent.putExtra(EXTRA_MESSAGE, message);*/
-        startActivity(intent);
+
+        //TODO bring back intro and create firstlogin logic
+      //  startActivity(intent);
+
+
 
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.

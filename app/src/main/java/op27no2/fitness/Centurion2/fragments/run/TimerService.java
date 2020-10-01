@@ -49,9 +49,12 @@ public class TimerService extends Service  {
     private double lat;
     private double lon;
     private double alt;
+    private float acc;
+    private float accuracyThreshold = 10;
     private double maxalt = 0;
     private double minalt = 1000000;
     private boolean paused = false;
+    private boolean smoothInput = true;
 
     public void registerCallBack(TimerInterface myCallback){
         this.myCallback= myCallback;
@@ -103,6 +106,7 @@ public class TimerService extends Service  {
                         lat = location.getLatitude();
                         lon = location.getLongitude();
                         alt = location.getAltitude();
+                        acc   = location.getAccuracy();
                     }else{
                         System.out.println("location null");
                     }
@@ -176,7 +180,7 @@ public class TimerService extends Service  {
 
 
     public void updateTime(){
-        System.out.println("lat: "+ lat + "lon" + lon);
+        System.out.println("lat: "+ lat + " lon:" + lon+" acc"+acc);
         if(!paused) {
             if (alt > maxalt) {
                 maxalt = alt;
@@ -185,21 +189,39 @@ public class TimerService extends Service  {
                 minalt = alt;
             }
 
-            routeCoordinates.add(Point.fromLngLat(lon, lat, alt));
             if(routeCoordinates.size()>1){
                 float[] distance = new float[2];
-                Location.distanceBetween(routeCoordinates.get(routeCoordinates.size()-2).latitude(), routeCoordinates.get(routeCoordinates.size()-2).longitude(), routeCoordinates.get(routeCoordinates.size()-1).latitude(), routeCoordinates.get(routeCoordinates.size()-1).longitude(), distance);
-                totalDistance = totalDistance+ distance[0];
+                //distance in meters
+             //   Location.distanceBetween(routeCoordinates.get(routeCoordinates.size()-2).latitude(), routeCoordinates.get(routeCoordinates.size()-2).longitude(), routeCoordinates.get(routeCoordinates.size()-1).latitude(), routeCoordinates.get(routeCoordinates.size()-1).longitude(), distance);
+                Location.distanceBetween(routeCoordinates.get(routeCoordinates.size()-2).latitude(), routeCoordinates.get(routeCoordinates.size()-2).longitude(), lat, lon, distance);
+
+                //gets rid of large GPS jumps, must be feasible to have moved that distance, i.e. for running <25 mph =~ 11 mps
+                long previousTimeMillis = trackPoints.get(trackPoints.size()-1).getTimestamp();
+                //if distance to last tracked point and proposed point in meters divided by previous timestamp > 11, its a jump and ignore, must be <11
+                // will keep checking as distance is accrued, so will eventually log and hopefully GPS is fixed., could maybe check if its near a road too...
+
+
+                //distance in mps is greater than 0.1, i.e. remove drift when stopped...
+                if(distance[0]/(previousTimeMillis/1000)>0.5 && acc<accuracyThreshold) {
+                    totalDistance = totalDistance+ distance[0];
+                    routeCoordinates.add(Point.fromLngLat(lon, lat, alt));
+                    //trackpoints same but with time, switching over in order to upload TCX???
+                    trackPoints.add(new TrackedPoint(System.currentTimeMillis(),Point.fromLngLat(lon, lat, alt), totalDistance));
+                }
+
+            }else {
+                routeCoordinates.add(Point.fromLngLat(lon, lat, alt));
+                //trackpoints same but with time, switching over in order to upload TCX???
+                trackPoints.add(new TrackedPoint(System.currentTimeMillis(),Point.fromLngLat(lon, lat, alt), totalDistance));
             }
+
             System.out.println("total Distance: "+ totalDistance);
 
 
-            //trackpoints same but with time, switching over in order to upload TCX???
-            trackPoints.add(new TrackedPoint(System.currentTimeMillis(),Point.fromLngLat(lon, lat, alt), totalDistance));
-            long elapsedTime = System.currentTimeMillis() - startTime - pausedTime;
+            long runningTime = System.currentTimeMillis() - startTime - pausedTime;
 
             if (myCallback != null) {
-                myCallback.getData(System.currentTimeMillis(),elapsedTime, routeCoordinates, minalt, maxalt, trackPoints);
+                myCallback.getData(System.currentTimeMillis(),runningTime, routeCoordinates, minalt, maxalt, trackPoints);
             }
         }
 

@@ -187,6 +187,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private double holdZoom;
     private ImageView zoomBar;
     private ImageView zoom1;
+    private ImageView zoomIn;
+    private ImageView zoomOut;
     private ImageView loadOverlay;
 
     private ImageView settingsButton;
@@ -362,7 +364,13 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         zoom1 = view.findViewById(R.id.view_zoom);
         zoom1.setOnTouchListener(handleZoom);
 
-        loadOverlay = view.findViewById(R.id.load_overlay);
+        zoomIn = view.findViewById(R.id.view_zoom_in);
+        zoomIn.setOnTouchListener(handleZoomIn);
+
+        zoomOut = view.findViewById(R.id.view_zoom_out);
+        zoomOut.setOnTouchListener(handleZoomOut);
+
+        // loadOverlay = view.findViewById(R.id.load_overlay);
 
         getNutritionDayData();
 
@@ -502,18 +510,19 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         }
     }
 
-
+    //updates bearing and follows target
     private void updateBearing(){
         if(trackBearing) {
             int j = routeCoordinates.size() - 1;
             float[] distance2 = new float[2];
-            if (j > 1) {
+            if (j > 10) {
                 System.out.println("update bearing called");
-                Location.distanceBetween(routeCoordinates.get(j - 1).latitude(), routeCoordinates.get(j - 1).longitude(), routeCoordinates.get(j).latitude(), routeCoordinates.get(j).longitude(), distance2);
+                Location.distanceBetween(routeCoordinates.get(j - 10).latitude(), routeCoordinates.get(j - 10).longitude(), routeCoordinates.get(j).latitude(), routeCoordinates.get(j).longitude(), distance2);
                 if (!DrawModeActive && distance2[0] > 1) {
                     double bearing = getDirection(routeCoordinates.get(j - 1).latitude(), routeCoordinates.get(j - 1).longitude(), routeCoordinates.get(j).latitude(), routeCoordinates.get(j).longitude());
                     CameraPosition position = new CameraPosition.Builder()
                             .bearing(bearing)
+                            .target(new LatLng(routeCoordinates.get(j).latitude(), routeCoordinates.get(j).longitude()))
                             .build();
                     mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 1000);
                 }
@@ -525,7 +534,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     @Override
     public void onMapReady(@NonNull final MapboxMap mapboxMap) {
         RunFragment.this.mapboxMap = mapboxMap;
-        loadOverlay.setVisibility(View.GONE);
+      //  loadOverlay.setVisibility(View.GONE);
         mapReady = true;
 
         // mapboxMap.setStyle(new Style.Builder().fromUri("mapbox://styles/op27no2/ck2tujbra2ox21cqzxh4ql48y"),new Style.OnStyleLoaded() {
@@ -622,6 +631,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
             // Set the component's render mode
             locationComponent.setRenderMode(RenderMode.COMPASS);
+
 
             new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                 @Override
@@ -736,7 +746,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             bindTimerService();
         }
         if(mapReady){
-            loadOverlay.setVisibility(View.VISIBLE);
+          //  loadOverlay.setVisibility(View.VISIBLE);
         }
     }
 
@@ -745,7 +755,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     public void onPause() {
         super.onPause();
         System.out.println("run fragment paused");
-        loadOverlay.setVisibility(View.VISIBLE);
+    //    loadOverlay.setVisibility(View.VISIBLE);
 
         if(isMyServiceRunning(TimerService.class)){
             unbindTimerService();
@@ -842,10 +852,14 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         long secondsDisplay = elapsedSeconds % 60;
         long elapsedMinutes = elapsedSeconds / 60;
         long minutesDisplay = elapsedMinutes % 60;
+        int hoursDisplay = (int) Math.floor(elapsedMinutes / 60);
+        
         if (secondsDisplay < 10) {
             timerText.setText(minutesDisplay + ":0" + secondsDisplay);
-        } else {
+        } else if(hoursDisplay == 0){
             timerText.setText(minutesDisplay + ":" + secondsDisplay);
+        }         else{
+            timerText.setText(hoursDisplay+":"+minutesDisplay + ":" + secondsDisplay);
         }
 
         maxalt = max;
@@ -1178,8 +1192,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
 
     private View.OnTouchListener handleZoom = new View.OnTouchListener() {
-
-
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
             double height = view.getMeasuredHeight();
@@ -1200,14 +1212,93 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                     .zoom(zoom)
                     .build();
 
-
             mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 100);
 
+            return true;
+        }
+    };
+
+    private View.OnTouchListener handleZoomIn = new View.OnTouchListener() {
+        Handler handler = new Handler();
+
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            switch(motionEvent.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+
+                    int delay = 10; //milliseconds
+
+                    handler.postDelayed(new Runnable(){
+                        public void run(){
+
+                            double mapzoom = mapboxMap.getCameraPosition().zoom;
+                            mapzoom = mapzoom*1.01;
+                            System.out.println("new zoom"+mapzoom);
+                            CameraPosition position = new CameraPosition.Builder()
+                                    .zoom(mapzoom)
+                                    .build();
+                            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 100);
+                            handler.postDelayed(this, delay);
+                        }
+                    }, delay);
+
+
+
+                    break;
+
+                case MotionEvent.ACTION_MOVE:
+                    // touch move code
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                    // touch up code
+                    handler.removeCallbacksAndMessages(null);
+                    break;
+            }
 
 
             return true;
         }
     };
+
+
+    private View.OnTouchListener handleZoomOut = new View.OnTouchListener() {
+        Handler handler = new Handler();
+
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            switch(motionEvent.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+
+                    int delay = 10; //milliseconds
+                    handler.postDelayed(new Runnable(){
+                        public void run(){
+                            double mapzoom = mapboxMap.getCameraPosition().zoom;
+                            mapzoom = mapzoom*.99;
+                            System.out.println("new zoom"+mapzoom);
+                            CameraPosition position = new CameraPosition.Builder()
+                                    .zoom(mapzoom)
+                                    .build();
+                            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 100);
+                            handler.postDelayed(this, delay);
+                        }
+                    }, delay);
+                    break;
+
+                case MotionEvent.ACTION_MOVE:
+                    // touch move code
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                    // touch up code
+                    handler.removeCallbacksAndMessages(null);
+                    break;
+            }
+
+            return true;
+        }
+    };
+
 
 
 
@@ -1392,7 +1483,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         TextView mTextDate = dialog.findViewById(R.id.date);
         mTextDate.setText(formattedDate);
 
-        EditText mEditDuration = dialog.findViewById(R.id.duration_value);
         EditText mEditDistance = dialog.findViewById(R.id.distance_value);
         EditText mEditPace = dialog.findViewById(R.id.pace_value);
         EditText mEditCals = dialog.findViewById(R.id.cals_value);
@@ -1411,11 +1501,11 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         }
         long pace = (long) (finalTime /(total[0] *0.000621371192f));
 
-        mEditDuration.setText(getDuration(finalTime));
 
 
         mEditDistance.setText(getMiles(total[0]));
         mEditPace.setText(getDuration(pace)+" /mi");
+
         mEditCals.setText(Integer.toString(((int) Math.floor(total[0] *0.000621371192f*prefs.getInt("weight",215)*0.63))));
         mEditDistance.addTextChangedListener(new TextWatcher() {
             @Override
@@ -1430,11 +1520,17 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             @Override
             public void onTextChanged(CharSequence s, int start,
                                       int before, int count) {
-                total[0] = Float.parseFloat(s.toString());
-                System.out.println("total = "+total[0]);
-                saveCals = (((int) Math.floor(total[0]*prefs.getInt("weight",215)*0.63f)));
-                System.out.println("save Cals = "+saveCals);
-                mEditCals.setText(Integer.toString(saveCals));
+                if(!s.toString().equals("")) {
+                    total[0] = Float.parseFloat(s.toString());
+                    System.out.println("total = " + total[0]);
+                    saveCals = (((int) Math.floor(total[0] * prefs.getInt("weight", 215) * 0.63f)));
+                    System.out.println("save Cals = " + saveCals);
+                    mEditCals.setText(Integer.toString(saveCals));
+                }else{
+                    System.out.println("string empty savecals 0");
+                    saveCals = 0;
+                    mEditCals.setText(Integer.toString(saveCals));
+                }
             }
         });
 
@@ -1481,14 +1577,15 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         int minutes = (int)  Math.floor(minutesDisplay);
         int seconds = (int)  Math.floor(secondsDisplay);
 
-        if(hours>0) {
+     //   if(hours>0) {
             mEditTime1.setText(Integer.toString(hours));
-        }
-        if(minutes<10 && minutes>0) {
+     //   }
+        if(minutes<10) {
             mEditTime2.setText("0"+Integer.toString(minutes));
-        }else if (minutes>0){
-            mEditTime2.setText(Integer.toString(minutes));
         }
+  /*      else if (minutes>0){
+            mEditTime2.setText(Integer.toString(minutes));
+        }*/
 
         if(seconds<10) {
             mEditTime3.setText("0"+Integer.toString(seconds));
@@ -1539,13 +1636,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             @Override
             public void onClick(View v) {
                 //check time is formatted correctly
-                String timefield = mEditDuration.getText().toString();
-                int pos = timefield.indexOf(":");
-                String before = timefield.substring(0,pos);
-                String after = timefield.substring(pos+1,timefield.length());
-
-            //    if(timefield.contains(":") && before.matches("[0-9]+") && after.matches("[0-9]+")) {
-
 
                     //stop service set screen miles back to 0
                     startButton.setText("Start");
@@ -1564,7 +1654,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
                     saveDistance = (int) Math.floor(Float.parseFloat(mEditDistance.getText().toString()) * 1609.34400);
                     saveCals = Integer.parseInt(mEditCals.getText().toString());
-                  //  saveTime = getIntFromDuration(mEditDuration.getText().toString());
                     saveTime = (Integer.parseInt(mEditTime1.getText().toString())*60*60)+(Integer.parseInt(mEditTime1.getText().toString())*60)+(Integer.parseInt(mEditTime1.getText().toString()));
                     saveDescription = mEditDescription.getText().toString();
                     saveTitle = mEditTitle.getText().toString();

@@ -26,6 +26,9 @@ public interface RunWorkoutDAO {
     void getTen(String date);
 */
 
+    @Query("SELECT * FROM run_workouts where date LIKE  :date")
+    List<RunWorkout> findAllByDate(String date);
+
 
     @Query("SELECT * FROM run_workouts where date LIKE  :date")
     RunWorkout findByDate(String date);
