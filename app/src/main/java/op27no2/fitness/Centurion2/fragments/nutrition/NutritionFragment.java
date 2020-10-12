@@ -39,6 +39,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 
 import op27no2.fitness.Centurion2.Database.AppDatabase;
 import op27no2.fitness.Centurion2.Database.Repository;
@@ -57,6 +58,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
     private SharedPreferences.Editor edt;
 
     private String formattedDate;
+    private String todayDate;
     private Vibrator rabbit;
     private TextView dateText;
     private Calendar cal;
@@ -67,6 +69,8 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
     private NutritionAdapter mAdapter;
     private ArrayList<String> mNames = new ArrayList<String>(2);
     private ArrayList<Integer> mValues = new ArrayList<Integer>(2);
+    private HashMap<String, Double> mGoalMap = new  HashMap<String, Double>();
+    private int mGoalType;
     private Integer cals;
 
     //graphing
@@ -105,6 +109,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         View view = inflater.inflate(R.layout.fragment_nutrition, container, false);
         prefs = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
+        mGoalType = prefs.getInt("goaltype", 0);
         mInterface = (CalendarDialogInterface) this;
         mPickerInterface = this;
 
@@ -124,6 +129,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         df = new SimpleDateFormat("EEE, MMM d, ''yy");
 
         formattedDate = df.format(c);
+        todayDate = formattedDate;
         System.out.println("fomratted time => " + df.format(time));
 
 
@@ -619,6 +625,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                 mValues.clear();
                 mNames.clear();
                 mDates.clear();
+                mGoalMap.clear();
                 mNutritionDays.clear();
 
             }
@@ -636,9 +643,36 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                     mValues.add(Integer.parseInt(prefs.getString("bmr", "-2000")));
                     mNames.add("Protein");
                     mValues.add(0);
+
                     mNutritionDay.setNames(mNames);
                     mNutritionDay.setValues(mValues);
                     mNutritionDay.setDate(formattedDate);
+                    mNutritionDay.setDateMillis(cal.getTimeInMillis());
+                    System.out.println("min set time millis: "+cal.getTimeInMillis());
+
+
+                    //Will only edit goal if it is Today, won't change goals if looking back/ahead. Some days may therefore not have goals if map is opened
+                    //should be fine as we can look back and just change for progress list when goals change.
+                    //TODO display goalstodayDate
+                    if(formattedDate == todayDate) {
+                        switch (mGoalType) {
+                            case 0:
+                                mGoalMap.put("Cals", (double) prefs.getInt("deficit", 300));
+                                break;
+                            case 1:
+                                mGoalMap.put("Cals", (double) prefs.getInt("recomp", 300));
+                                break;
+                            case 2:
+                                mGoalMap.put("Cals", (double) prefs.getInt("bulk", 300));
+                                break;
+                            default:
+                                break;
+                        }
+                        mGoalMap.put("Protein", (double) prefs.getFloat("protein", 0.6f) * prefs.getInt("weight", (int) 150));
+                        mGoalMap.put("Sets", (double) prefs.getInt("volume", 15));
+                        mNutritionDay.setGoalMap(mGoalMap);
+                    }
+
                     //TODO can I really get rid of this??
                   //  mRepository.insertNutrition(mNutritionDay);
 

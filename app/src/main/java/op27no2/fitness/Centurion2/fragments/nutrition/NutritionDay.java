@@ -16,6 +16,9 @@ public class NutritionDay {
     @ColumnInfo(name = "date")
     private String date;
 
+    @ColumnInfo(name = "datemillis")
+    private Long dateMillis;
+
     //don't use this, switched to array
     @ColumnInfo(name = "cals")
     private Integer cals;
@@ -61,6 +64,14 @@ public class NutritionDay {
         this.date = date;
     }
 
+    public Long getDateMillis() {
+        return dateMillis;
+    }
+
+    public void setDateMillis(Long datemillis) {
+        this.dateMillis = datemillis;
+    }
+
     public void setNames(ArrayList<String> categories){
         mNames = categories;
     }
@@ -91,6 +102,13 @@ public class NutritionDay {
 
     public void setGoalItem(String name, Double value){
         mGoalMap.put(name,value);
+    }
+
+    public Integer getGoalType(){
+        return mGoalType;
+    }
+    public void setGoalType(Integer goalType){
+        this.mGoalType = goalType;
     }
 
     public Integer getCals(){

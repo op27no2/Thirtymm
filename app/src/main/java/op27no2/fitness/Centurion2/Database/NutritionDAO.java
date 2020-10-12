@@ -23,6 +23,9 @@ public interface NutritionDAO {
     @Query("SELECT * FROM nutrition_days where uid LIKE  :id")
     NutritionDay findById(int id);
 
+    @Query("SELECT * FROM nutrition_days where datemillis = (SELECT MIN(datemillis) FROM nutrition_days)")
+    NutritionDay findMinimumDate();
+
     @Insert
     long[] insertAll(NutritionDay... lws);
 

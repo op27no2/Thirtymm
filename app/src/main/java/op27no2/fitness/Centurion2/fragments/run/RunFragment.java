@@ -885,7 +885,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             secondHold = elapsedSeconds;
         }
 
-
     }
 
     private View.OnTouchListener customOnTouchListener = new View.OnTouchListener() {

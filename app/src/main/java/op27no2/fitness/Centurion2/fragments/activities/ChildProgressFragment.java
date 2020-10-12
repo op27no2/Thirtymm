@@ -69,7 +69,7 @@ public class ChildProgressFragment extends Fragment {
 
 
 
-        //currently the top title Row for goals, progress adapter has data, but also uses GridAdapter for each row...
+        //currently the top title Row for goals uses GridAdapterHeader, progress adapter has data, but  uses GridAdapter for each row...
         GridView grid = view.findViewById(R.id.grid_view);
         ArrayList<Double> headerGrid = new ArrayList<Double>();
         headerGrid.add((double) prefs.getInt("volume",0));
@@ -77,7 +77,7 @@ public class ChildProgressFragment extends Fragment {
         double x = ((double) prefs.getInt("weight", 0))*((double) prefs.getFloat("protein", 0));
         double xx = (double) Math.floor(x);
         headerGrid.add(xx);
-        MyGridAdapter gridAdapter = new MyGridAdapter(mContext, headerGrid, res);
+        MyGridHeaderAdapter gridAdapter = new MyGridHeaderAdapter(mContext, headerGrid, res);
         grid.setNumColumns(headerGrid.size());
         grid.setAdapter(gridAdapter);
 
@@ -142,6 +142,11 @@ public class ChildProgressFragment extends Fragment {
             SimpleDateFormat shortFormat = new SimpleDateFormat("M/d");
 
              mDays = (ArrayList<NutritionDay>) AppDatabase.getAppDatabase(getActivity()).ntDAO().getAll();
+             //this works now!
+             NutritionDay minDate = AppDatabase.getAppDatabase(getActivity()).ntDAO().findMinimumDate();
+             System.out.println("minimum date found: "+ minDate.getDate());
+             System.out.println("minimum date found mils: "+ minDate.getDateMillis());
+
              //this block should return oldest day from mDays
              Date dateZero = null;
                 try {

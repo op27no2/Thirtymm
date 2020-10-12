@@ -8,6 +8,7 @@ import com.mapbox.geojson.Point;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import op27no2.fitness.Centurion2.fragments.lifting.Lift;
 
@@ -75,6 +76,19 @@ public class Converters {
     public static String fromArrayList5(ArrayList<Point> list) {
         Gson gson = new Gson();
         String json = gson.toJson(list);
+        return json;
+    }
+
+    @TypeConverter
+    public static HashMap<String, Double> fromString6(String value) {
+        Type hashMapType = new TypeToken<HashMap<String, Double>>() {}.getType();
+        return new Gson().fromJson(value, hashMapType);
+    }
+
+    @TypeConverter
+    public static String fromHashMap(HashMap<String, Double> hashmap) {
+        Gson gson = new Gson();
+        String json = gson.toJson(hashmap);
         return json;
     }
 

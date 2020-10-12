@@ -56,6 +56,18 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    static final Migration MIGRATION_2_3 = new Migration(2, 3) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE nutrition_days ADD COLUMN goals TEXT DEFAULT ''");
+            database.execSQL("ALTER TABLE nutrition_days ADD COLUMN goalType TEXT DEFAULT ''");
+            database.execSQL("ALTER TABLE nutrition_days ADD COLUMN datemillis TEXT DEFAULT ''");
+
+        }
+    };
+
+
+
 
  /*   static final Migration MIGRATION_2_3 = new Migration(2, 3) {
         @Override
