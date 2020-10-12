@@ -55,7 +55,7 @@ public class MyGridAdapter extends BaseAdapter {
             final LinearLayout gridCell = (LinearLayout) convertView.findViewById(R.id.grid_cell_layout);
             final TextView textView = (TextView)convertView.findViewById(R.id.grid_text);
 
-               // textView.setText(Double.toString(mValues.get(position)));
+            textView.setText(Double.toString(mValues.get(position)));
 
 
             if (value > 1) {

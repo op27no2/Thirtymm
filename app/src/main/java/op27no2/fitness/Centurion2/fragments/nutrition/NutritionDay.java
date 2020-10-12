@@ -5,6 +5,7 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 @Entity(tableName = "nutrition_days")
 public class NutritionDay {
@@ -15,6 +16,7 @@ public class NutritionDay {
     @ColumnInfo(name = "date")
     private String date;
 
+    //don't use this, switched to array
     @ColumnInfo(name = "cals")
     private Integer cals;
 
@@ -36,6 +38,12 @@ public class NutritionDay {
     @ColumnInfo(name = "flags")
     private ArrayList<Integer> mFlags = new ArrayList<Integer>();
 
+    @ColumnInfo(name = "goals")
+    private HashMap<String, Double> mGoalMap = new HashMap<String, Double>();
+
+    //goal Tpye 0 = deficit, 1 = recomp, 2 = bulk
+    @ColumnInfo(name = "goalType")
+    private Integer mGoalType;
 
     public int getUid() {
         return uid;
@@ -59,6 +67,7 @@ public class NutritionDay {
     public ArrayList<String> getNames(){
         return mNames;
     }
+
     public void setValues(ArrayList<Integer> values){
         mValues = values;
     }
@@ -73,6 +82,16 @@ public class NutritionDay {
         return mFlags;
     }
 
+    public void setGoalMap(HashMap<String, Double> goals){
+        mGoalMap = goals;
+    }
+    public HashMap<String, Double> getGoalMap(){
+        return mGoalMap;
+    }
+
+    public void setGoalItem(String name, Double value){
+        mGoalMap.put(name,value);
+    }
 
     public Integer getCals(){
         return cals;

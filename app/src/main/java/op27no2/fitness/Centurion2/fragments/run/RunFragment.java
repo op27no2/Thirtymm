@@ -185,7 +185,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private Boolean mapCheckBox;
 
     private double holdZoom;
-    private ImageView zoomBar;
     private ImageView zoom1;
     private ImageView zoomIn;
     private ImageView zoomOut;
@@ -261,7 +260,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
         });
 
-        zoomBar = view.findViewById(R.id.zoom_bar);
 
         ImageView mFreeze = view.findViewById(R.id.freeze);
         mFreeze.setOnClickListener(new View.OnClickListener() {
@@ -329,8 +327,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                 float add = (float) (height*(1f - ((16f-13f)/7f)));
                 System.out.println("add: "+add);
 
-                zoomBar.setY(bar+add);
-                //zoomBar.setY((float) (bar+(height*(16/22))));
 
             }
         });
@@ -1196,14 +1192,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         public boolean onTouch(View view, MotionEvent motionEvent) {
             double height = view.getMeasuredHeight();
             double y = (double) motionEvent.getY();
-            float bar = (float) y+view.getY();
-            if(bar<view.getY()){
-                bar = view.getY();
-            }else if(bar > view.getY()+height){
-                bar = (float) (view.getY()+height);
-            }
 
-            zoomBar.setY(bar);
 
             double zoom = (1 - y/height)*7+13;
 

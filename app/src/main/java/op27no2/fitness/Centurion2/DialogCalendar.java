@@ -66,7 +66,7 @@ public class DialogCalendar extends Dialog  {
         private ArrayList<Double> liftVolumes = new ArrayList<Double>();
         private HashMap<CalendarDay, Boolean[]> flagDaysH = new HashMap<CalendarDay, Boolean[]>();
 
-        private int MONTHS_DISPLAYED = 6;
+        private int MONTHS_DISPLAYED = 3;
         private ArrayList<Double> milesList = new ArrayList<Double>();
         private ArrayList<Double> setsList = new ArrayList<Double>();
         private int MONTH;

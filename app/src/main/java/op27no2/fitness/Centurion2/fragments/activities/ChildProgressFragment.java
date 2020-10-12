@@ -67,9 +67,11 @@ public class ChildProgressFragment extends Fragment {
         Resources res = mContext.getResources();
         ResourcesCompat.getColor(res, R.color.colorPrimary, null);
 
+
+
+        //currently the top title Row for goals, progress adapter has data, but also uses GridAdapter for each row...
         GridView grid = view.findViewById(R.id.grid_view);
         ArrayList<Double> headerGrid = new ArrayList<Double>();
-
         headerGrid.add((double) prefs.getInt("volume",0));
         headerGrid.add((double) prefs.getInt("deficit", 0));
         double x = ((double) prefs.getInt("weight", 0))*((double) prefs.getFloat("protein", 0));
@@ -78,6 +80,9 @@ public class ChildProgressFragment extends Fragment {
         MyGridAdapter gridAdapter = new MyGridAdapter(mContext, headerGrid, res);
         grid.setNumColumns(headerGrid.size());
         grid.setAdapter(gridAdapter);
+
+
+
 
 /*
         //Header (switch to recyclerview at some point)

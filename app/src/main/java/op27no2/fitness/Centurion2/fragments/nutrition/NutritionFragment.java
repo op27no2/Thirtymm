@@ -639,13 +639,10 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                     mNutritionDay.setNames(mNames);
                     mNutritionDay.setValues(mValues);
                     mNutritionDay.setDate(formattedDate);
-                    mRepository.insertNutrition(mNutritionDay);
-          /*          try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }*/
+                    //TODO can I really get rid of this??
+                  //  mRepository.insertNutrition(mNutritionDay);
 
+                    //TODO and do I really need this?, widget doesn't have
                     long id = AppDatabase.getAppDatabase(getActivity()).ntDAO().insert(mNutritionDay);
                     mNutritionDay = AppDatabase.getAppDatabase(getActivity()).ntDAO().findById((int) id);
 

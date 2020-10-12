@@ -313,16 +313,19 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
             case 0:
                 buttonDeficit.setText("Deficit Goal\n"+Integer.toString((int) weight)+" Calories");
                 edt.putInt("deficit",(int) weight);
+                edt.putInt("goalType", 0);
                 edt.apply();
                 break;
             case 1:
                 buttonMaintenance.setText("Maintenance Goal:\n"+"Base Cals +/- "+Integer.toString((int) weight));
                 edt.putInt("recomp",(int) weight);
+                edt.putInt("goalType", 1);
                 edt.apply();
                 break;
             case 2:
                 buttonSurplus.setText("Surplus Goal:\n"+Integer.toString((int) weight)+"+ Calories");
                 edt.putInt("bulk",(int) weight);
+                edt.putInt("goalType", 2);
                 edt.apply();
                 break;
             case 3:

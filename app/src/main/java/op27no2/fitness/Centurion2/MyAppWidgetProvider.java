@@ -77,18 +77,55 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                 }
                 protected Void doInBackground(Void... unused) {
                     mDay = AppDatabase.getAppDatabase(context).ntDAO().findByDate(date);
-                    if(mDay == null) {
+           /*         if(mDay == null) {
                         mDay = new NutritionDay();
                         System.out.println("day null should create");
                         mNames.add("Cals");
-                        mValues.add(prefs.getInt("BaseCals", -2000));
+                        mValues.add(Integer.parseInt(prefs.getString("bmr", "-2000")));
                         mNames.add("Protein");
                         mValues.add(0);
                         mDay.setNames(mNames);
                         mDay.setValues(mValues);
                         mDay.setDate(date);
                         mRepository.insertNutrition(mDay);
+                    }*/
+                    if(mDay == null){
+                        mDay = new NutritionDay();
+                        System.out.println("nutrition day null create uid: "+mDay.getUid());
+                        mNames.add("Cals");
+                        mValues.add(Integer.parseInt(prefs.getString("bmr", "-2000")));
+                        mNames.add("Protein");
+                        mValues.add(0);
+                        mDay.setNames(mNames);
+                        mDay.setValues(mValues);
+                        mDay.setDate(date);
+                        mRepository.insertNutrition(mDay);
+
+                       /* long id = AppDatabase.getAppDatabase(getActivity()).ntDAO().insert(mNutritionDay);
+                        mDay = AppDatabase.getAppDatabase(getActivity()).ntDAO().findById((int) id);
+                        */
+                       // System.out.println("nutrition day after insertion uid: "+mDay.getUid());
+
+                    }else{
+                        mNames = mDay.getNames();
+                        mValues = mDay.getValues();
+
+                        if(mNames.size() == 0 || mValues.size() == 0){
+                            System.out.println("nutrition day found get names/values uid: "+mDay.getUid());
+                            mNames.add("Cals");
+                            mValues.add(Integer.parseInt(prefs.getString("bmr", "-2000")));
+                            mNames.add("Protein");
+                            mValues.add(0);
+                            mDay.setNames(mNames);
+                            mDay.setValues(mValues);
+                        }else {
+                            System.out.println("mNames size not zero "+mNames.get(0)+" "+mValues.get(0));
+                        }
+
                     }
+
+
+
                     return null;
                 }
                 protected void onPostExecute(Void unused) {
