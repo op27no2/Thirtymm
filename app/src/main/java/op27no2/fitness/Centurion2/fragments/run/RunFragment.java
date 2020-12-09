@@ -182,7 +182,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private String saveTitle;
     private String saveDate;
     private Boolean stravaCheckBox;
-    private Boolean mapCheckBox;
+    private Boolean saveMap;
 
     private double holdZoom;
     private ImageView zoom1;
@@ -538,6 +538,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         mapboxMap.setStyle(new Style.Builder().fromUri("asset://mystyle.json"), new Style.OnStyleLoaded() {
             @Override
             public void onStyleLoaded(@NonNull Style style) {
+                System.out.println("map ready style loaded");
                 enableLocationComponent(style);
                 mStyle = style;
 
@@ -741,9 +742,11 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         if(isMyServiceRunning(TimerService.class)){
             bindTimerService();
         }
-        if(mapReady){
-          //  loadOverlay.setVisibility(View.VISIBLE);
+        mapView.onResume();
+        if(RunFragment.this.mapboxMap == null) {
+            mapView.getMapAsync(this);
         }
+
     }
 
 
@@ -1646,7 +1649,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                     saveDescription = mEditDescription.getText().toString();
                     saveTitle = mEditTitle.getText().toString();
                     stravaCheckBox = mStravaCheck.isChecked();
-                    mapCheckBox = mMapCheck.isChecked();
+                    saveMap = mMapCheck.isChecked();
 
                     //starts save process, gets image then callback finishes and calls saveRun(bitmap)
                     moveToBounds();
@@ -1712,6 +1715,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         mRunWorkout.setCalories(saveCals);
         mRunWorkout.setDescription(saveDescription);
         mRunWorkout.setTitle(saveTitle);
+        mRunWorkout.setSaveMap(saveMap);
 
 
         int cals = mNutritionDay.getValues().get(0);
@@ -1723,11 +1727,13 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         mRepository.updateNutrition(mNutritionDay);
 
         //store name of bitmap file to retrieve, file stored on system.
-        String bmp = saveBitmap(bMap,UUID.randomUUID().toString());
-        System.out.println("bmp string: "+bmp);
-        String coords = saveCoordinates(routeCoordinates,UUID.randomUUID().toString());
-        mRunWorkout.setImage(bmp);
-        mRunWorkout.setCoordinates(coords);
+        if(saveMap) {
+            String bmp = saveBitmap(bMap, UUID.randomUUID().toString());
+            System.out.println("bmp string: " + bmp);
+            String coords = saveCoordinates(routeCoordinates, UUID.randomUUID().toString());
+            mRunWorkout.setImage(bmp);
+            mRunWorkout.setCoordinates(coords);
+        }
 
         //TODO add checkbox for social upload
         if(stravaCheckBox) {

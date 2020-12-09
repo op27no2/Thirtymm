@@ -41,14 +41,17 @@ public class ChildProgressFragment extends Fragment {
     private ProgressAdapter mProgressAdapter;
     private ArrayList<NutritionDay> mDays = new ArrayList<NutritionDay>();
     private ArrayList<LiftingWorkout> mWorkouts = new ArrayList<LiftingWorkout>();
+    private ArrayList<ArrayList<GoalsDetail>> mBigGoalsDetail = new ArrayList<ArrayList<GoalsDetail>>();
     private ArrayList<Float> setWeekData = new ArrayList<Float>();
-    private ArrayList<Integer> calWeekData = new ArrayList<Integer>();
-    private ArrayList<Integer> proteinWeekData = new ArrayList<Integer>();
+    private ArrayList<Float> calWeekData = new ArrayList<Float>();
+    private ArrayList<Float> proteinWeekData = new ArrayList<Float>();
     private ArrayList<String> calendarWeeks = new ArrayList<String>();
     private TextView volumeText;
     private TextView calorieText;
     private TextView proteinText;
     private Context mContext;
+    private Date today;
+    private GridView grid;
 
     public ChildProgressFragment() {
         // Required empty public constructor
@@ -63,25 +66,25 @@ public class ChildProgressFragment extends Fragment {
         edt = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
         mRepository = new Repository(getActivity());
         mContext = getActivity();
+        grid = view.findViewById(R.id.grid_view);
+
 
         Resources res = mContext.getResources();
         ResourcesCompat.getColor(res, R.color.colorPrimary, null);
 
 
 
-        //currently the top title Row for goals uses GridAdapterHeader, progress adapter has data, but  uses GridAdapter for each row...
-        GridView grid = view.findViewById(R.id.grid_view);
+        //currently the top title Row for goals uses GridAdapterHeader, below that progress adapter has data for each row, but within progressadapter each row uses GridAdapter to display contents...
+/*
         ArrayList<Double> headerGrid = new ArrayList<Double>();
         headerGrid.add((double) prefs.getInt("volume",0));
         headerGrid.add((double) prefs.getInt("deficit", 0));
         double x = ((double) prefs.getInt("weight", 0))*((double) prefs.getFloat("protein", 0));
         double xx = (double) Math.floor(x);
-        headerGrid.add(xx);
-        MyGridHeaderAdapter gridAdapter = new MyGridHeaderAdapter(mContext, headerGrid, res);
-        grid.setNumColumns(headerGrid.size());
-        grid.setAdapter(gridAdapter);
+        headerGrid.add(xx);*/
 
-
+        Calendar mCal1 = Calendar.getInstance();
+        today = mCal1.getTime();
 
 
 /*
@@ -118,8 +121,11 @@ public class ChildProgressFragment extends Fragment {
                 })
         );
 
-        mProgressAdapter = new ProgressAdapter(setWeekData, calWeekData, proteinWeekData,calendarWeeks, getActivity());
+        mProgressAdapter = new ProgressAdapter(mBigGoalsDetail, setWeekData, calWeekData, proteinWeekData, calendarWeeks, getActivity());
         mRecyclerView.setAdapter(mProgressAdapter);
+
+
+
 
         getDayData();
 
@@ -146,65 +152,168 @@ public class ChildProgressFragment extends Fragment {
              NutritionDay minDate = AppDatabase.getAppDatabase(getActivity()).ntDAO().findMinimumDate();
              System.out.println("minimum date found: "+ minDate.getDate());
              System.out.println("minimum date found mils: "+ minDate.getDateMillis());
-
-             //this block should return oldest day from mDays
              Date dateZero = null;
-                try {
-                    dateZero = df.parse(mDays.get(0).getDate());
-                } catch (ParseException e) {
-                    e.printStackTrace();
+             try { dateZero = df.parse(minDate.getDate());
+             }catch(ParseException e){ e.printStackTrace();
+             }
+
+             //so for new algorithm, we are storing the weeks goals on NutrtionDay, so once Sunday is reached, Goal will be locked in
+             //look to Sundays for the weeks goal, and total weeks values to see if they were met
+             //not necessarily opened every week, so keep goal until new goal on Sunday detected.
+             Calendar mCal = Calendar.getInstance();
+             mCal.setTime(today);
+             ArrayList<Integer> weekTotals = new ArrayList<Integer>(2);
+             for(int i=0; i<2;i++){ //change to i<mvalues.size()
+                 weekTotals.add(0);
+             }
+
+                System.out.println("date Zero: "+ dateZero);
+                System.out.println("date today: "+ today);
+
+                SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+                ArrayList<GoalsDetail> mGoalList = new ArrayList<GoalsDetail>();
+
+                //loop backwards till we get to day zero
+                while(!fmt.format(mCal.getTime()).equals(fmt.format(dateZero))){
+
+                    //get nutritionday for that day
+                    String mDate = df.format(mCal.getTime());
+                    System.out.println("date: "+ mDate);
+                    NutritionDay mDay = AppDatabase.getAppDatabase(getActivity()).ntDAO().findByDate(mDate);
+
+                    //if today isn't sunday first loop needs goals from today, not Sunday.
+                    Calendar mcal2 = Calendar.getInstance();
+                    mcal2.setTime(today);
+                    if(mcal2.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY){
+                        mGoalList = mDay.getGoalList();
+                        if(mGoalList != null) {
+                            System.out.println("goal list not null");
+                            System.out.println("goal list size: "+mGoalList.size());
+                            for (int i = 0; i < mGoalList.size(); i++) {
+                                System.out.println("goal: " + mGoalList.get(i).getName());
+                            }
+
+                        }else{
+                            System.out.println("goal list null");
+                        }
+                    //else if it is Sunday moving backwards, we are getting goals to count backward for the week.
+                    }else if (mCal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY){
+                        //List of GoalsDetail saved with every nutrition day, but bascially just needed for Sunday here, can store week totals in it too and pass it
+                        mGoalList = mDay.getGoalList();
+                        if(mGoalList != null) {
+                            System.out.println("goal list not null");
+                            System.out.println("goal list size: "+mGoalList.size());
+                            for (int i = 0; i < mGoalList.size(); i++) {
+
+                                System.out.println("goal: "+mGoalList.get(i).getName());
+
+                                //goals list has names that will match the Names array with matching values Array in Nutrition day, find index for that goal and get weektotals
+                                //TODO do this monday instead
+                             /* String name = mGoalList.get(i).getName();
+                                int dex = mDay.getNames().indexOf(name);
+                                if(dex>=0) {
+                                    mGoalList.get(i).setWeekTotal(weekTotals.get(dex));
+                                }
+                                System.out.println("nametest = "+name);
+                                System.out.println("nametest index= "+dex);*/
+
+                            }
+
+                        }else{
+                            System.out.println("goal list null");
+                        }
+
+                    }
+
+
+                //whatever day it is, we are adding the day's data to the week totals.
+                 if(mDay !=null) {
+                     if (mDay.getValues().get(0) != null) {
+                         Integer newvalue = weekTotals.get(0) + mDay.getValues().get(0);
+                         weekTotals.set(0, newvalue);
+                     }
+                     if (mDay.getValues().get(1) != null) {
+                         Integer newvalue = weekTotals.get(1) + mDay.getValues().get(1);
+                         weekTotals.set(1, newvalue);
+                     }
+                 }
+
+
+                //if its Monday, add the week string to the labels, and save week totals since we are moving backwards.
+                    if(mCal.get(Calendar.DAY_OF_WEEK)  == Calendar.MONDAY) {
+                        calendarWeeks.add(shortFormat.format(mCal.getTime()));
+                        System.out.println("should add week = "+mCal.getTime());
+
+                        for (int i = 0; i < mGoalList.size(); i++) {
+                            //go through each goal and evaluate, store data for the row. can look back to the last Monday
+                            //now just going by position, but can eventually search for name and match to nutritiondays.getNames()? or better solution
+                            String name = mGoalList.get(i).getName();
+                            // day has 2 arrays, names i.e. cals, protein, and values. Goals has names, find the matching index
+                            int index = mDay.getNames().indexOf(name);
+                            if(index>=0) {
+                                mGoalList.get(i).setWeekTotal(weekTotals.get(index));
+                            }
+                            System.out.println("nametest = "+name);
+                            System.out.println("nametest index= "+index);
+
+                            //TODO need to retrieve sets total. Dummy value now
+                            mGoalList.get(2).setWeekTotal(10);
+
+
+                        }
+
+                        ArrayList<GoalsDetail> toAdd = new ArrayList<GoalsDetail>(mGoalList);
+                        mBigGoalsDetail.add(toAdd);
+
+                        //update adapter and clear stuff for next week counting backwards starting Sunday.
+                        mRecyclerView.post(new Runnable(){
+                            @Override
+                            public void run() {
+                                 mProgressAdapter.notifyDataSetChanged();
+
+                            }
+                        });
+
+                        mGoalList.clear();
+                        weekTotals.clear();
+                    }
+
+
+
+
+
+                System.out.println("whilin "+mBigGoalsDetail.size());
+                if(mBigGoalsDetail.size()!=0) {
+                    System.out.println("whilin2 " + mBigGoalsDetail.get(0).size());
                 }
 
-                for(int i=1; i<mDays.size();i++){
-                    Date dateCompare = null;
-                    try {
-                        dateCompare = df.parse(mDays.get(i).getDate());
-                    } catch (ParseException e) {
-                        e.printStackTrace();
+                //TODO this is just reporting for testin gplease delete
+                    for(int i=0; i< mBigGoalsDetail.size(); i++){
+                        for(int j=0; j< mBigGoalsDetail.get(i).size(); j++){
+                            System.out.println("week goal name: "+mBigGoalsDetail.get(i).get(j).getName());
+                            System.out.println("week goal total: " +mBigGoalsDetail.get(i).get(j).getWeekTotal());
+
+                        }
                     }
-                if (dateCompare.before(dateZero)) {
-                    //sets dateZero to older date to be compared again
-                    dateZero = dateCompare;
+
+
+
+                 mCal.add(Calendar.DATE, -1);
+                 //TODO wouldn't loop again if below true, so check here and do any final things, or maybe loop to include one more day above?
+                 if(fmt.format(mCal.getTime()).equals(fmt.format(dateZero))){
+                     System.out.println("thats last day yo");
+                     break;
+                     //do something on today to show this week so far, this is last iteration
                  }
              }
 
-             mWorkouts = (ArrayList<LiftingWorkout>) AppDatabase.getAppDatabase(getActivity()).lwDAO().getAll();
-            //and this block should return oldest day from mWorkouts
-            if(mWorkouts !=null && mWorkouts.size()!=0) {
-
-                Date dateZero2 = null;
-                try {
-                    dateZero2 = df.parse(mWorkouts.get(0).getWorkoutDate());
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-
-                for (int i = 1; i < mWorkouts.size(); i++) {
-                    Date dateCompare = null;
-                    try {
-                        dateCompare = df.parse(mWorkouts.get(i).getWorkoutDate());
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-                    if (dateCompare.before(dateZero2)) {
-                        //sets dateZero to older date to be compared again
-                        dateZero2 = dateCompare;
-                    }
-                }
-
-
-                //now after this block dateZero should be oldest formatted date, iterate to that date when making goal data
-                if (dateZero2.before(dateZero)) {
-                    //sets dateZero to older date
-                    dateZero = dateZero2;
-                }
-            }
-            System.out.println("Oldest Date: "+dateZero);
 
 
 
-            Calendar mCal = Calendar.getInstance();
-            Float holdSets = 0f;
+                //old algorithm
+
+
+ /*           Float holdSets = 0f;
             int holdCals = 0;
             int holdProtein = 0;
 
@@ -217,6 +326,7 @@ public class ChildProgressFragment extends Fragment {
 
                 if(day == Calendar.MONDAY) {
                    // System.out.println("day formatting" +df.format(mCal.getTime()));
+                    //counts back to monday, adds the monday string to a string array, collects all the monday strings
                     calendarWeeks.add(shortFormat.format(mCal.getTime()));
                 }
 
@@ -255,8 +365,7 @@ public class ChildProgressFragment extends Fragment {
                 }
 
                 mCal.add(Calendar.DATE, -1);
-
-            }
+            }*/
 
 
                 return null;
@@ -279,8 +388,46 @@ public class ChildProgressFragment extends Fragment {
 
     private void finishUI(){
 
+        //TODO getting most recent row for now
+        ArrayList<String> titles = new ArrayList<String>();
+        Resources res = mContext.getResources();
+        int j = mBigGoalsDetail.size();
+        if(j>=1) {
+            for (int i = 0; i < mBigGoalsDetail.get(j - 1).size(); i++) {
+                titles.add(mBigGoalsDetail.get(j - 1).get(i).getName());
+            }
+        }else{
+            titles.add("test");
+            titles.add("test2");
+            titles.add("test3");
+        }
+            MyGridHeaderAdapter gridAdapter = new MyGridHeaderAdapter(mContext, titles, res);
+            grid.setNumColumns(titles.size());
+            grid.setAdapter(gridAdapter);
 
 
     }
+
+    //returns a float based on success. greater than 1 should indicate success, <1 is a percent failure for color map
+    private float checkSuccess(int value, GoalsDetail detail){
+        float result = 0f;
+        if(detail.getGoalType() == 0){
+            result = detail.getGoalLimitLow()/value; //e.g  100/50 will be 2 for a deficit goal. if you go over, 100/150, you are below 1 and we can colorize, this isn't really linear currently, hard to get low on scale
+        }
+        if(detail.getGoalType() == 1){
+            if(value > detail.getGoalLimitLow() && value<detail.getGoalLimitHigh()){
+                result = 1;
+            }else if(value < detail.getGoalLimitLow()){
+                result = value/detail.getGoalLimitLow();                  //50/100
+            }else if(value > detail.getGoalLimitHigh()){
+                result = detail.getGoalLimitHigh()/value;    //e.g. again 100/150 gives low numbers if you go over
+            }
+        }
+        if(detail.getGoalType() == 2) {
+            result = value/detail.getGoalLimitHigh();    //want to go over, so under is<1, i.e. 50/100 if you don't get enough
+        }
+        return result;
+    }
+
 
 }

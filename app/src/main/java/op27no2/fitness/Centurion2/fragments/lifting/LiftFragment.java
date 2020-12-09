@@ -269,12 +269,17 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
     private void getDayData() {
         new AsyncTask<Void, Void, Void>() {
             protected void onPreExecute() {
+                System.out.println("get day data");
+
                 // Pre Code
             }
             protected Void doInBackground(Void... unused) {
+                System.out.println("get lift workout1");
                 mLiftingWorkout = AppDatabase.getAppDatabase(getActivity()).lwDAO().findByDate(formattedDate);
                 mNamedWorkouts = (ArrayList<NamedWorkout>) AppDatabase.getAppDatabase(getActivity()).nwDAO().getAll();
+                System.out.println("get lift workout2");
                 if (mLiftingWorkout == null) {
+                    System.out.println("create lift workout");
                     mLiftingWorkout = new LiftingWorkout();
                     mLiftingWorkout.setWorkoutDate(formattedDate);
                     mRepository.insertWorkout(mLiftingWorkout);
@@ -288,19 +293,26 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
             }
             protected void onPostExecute(Void unused) {
                 // Post Code
+                System.out.println("get day data post execute");
+
                 finishUI();
             }
-        }.execute();
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
     }
 
 
     private void finishUI() {
+        System.out.println("finish UI");
+
         SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, ''yy");
         DateFormat df2= new SimpleDateFormat("EEE, M/d");
         try {
+            System.out.println("finish UI set date");
             Date date = df.parse(formattedDate);
             dateText.setText(df2.format(date));
         } catch (ParseException e) {
+            System.out.println("finish UI set data error "+e.getMessage());
             e.printStackTrace();
         }
 
@@ -579,7 +591,10 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
 
                     int saveSeconds = (((hours*60)+minutes)*60) + (int) Math.floor(seconds);
 
-                    if(!prefs.getBoolean("strava2", false)) {
+                    //TODO switch this logic to a strava authenticate in settings
+                    if(!prefs.getBoolean("strava9", false)) {
+                        System.out.println("need to authenticate");
+
                         Uri intentUri = Uri.parse("https://www.strava.com/oauth/mobile/authorize")
                                 .buildUpon()
                                 .appendQueryParameter("client_id", "43815")
@@ -594,6 +609,8 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
                         intent.putExtra("key", 999);
                         startActivityForResult(intent, RQ_LOGIN);
                     }else{
+                        System.out.println("should be authenitcated, moving forward");
+
                         finishStrava(saveTitle, saveDescription, saveSeconds);
                         dialog.dismiss();
                     }
@@ -629,6 +646,8 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
                 String mToken2 = null;
 
                 if(prefs.getBoolean("first_refresh", true) == true) {
+                    System.out.println("first token grab");
+
                     LoginResult result = api.getTokenForApp(AppCredentials.with(43815, "87571a766af016d9949d28929316f894bbc57938"))
                             .withCode(prefs.getString("code", "")) //original response token placed here as well.
                             .execute();
@@ -638,6 +657,8 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
                     edt.putString("refresh_token",mToken2 );
                     edt.apply();
                 }else {
+                    System.out.println("refresh token ");
+
                     AuthenticationConfig config2 = AuthenticationConfig.create()
                             .debug()
                             .build();

@@ -36,9 +36,10 @@ public class ProgressAdapter extends RecyclerView.Adapter<ProgressAdapter.ViewHo
     private Boolean direction = true;
     private ImageView mapView;
     private Context mContext;
+    ArrayList<ArrayList<GoalsDetail>> goalWeekData = new ArrayList<ArrayList<GoalsDetail>>();
     ArrayList<Float> setWeekData = new ArrayList<Float>();
-    ArrayList<Integer> calWeekData = new ArrayList<Integer>();
-    ArrayList<Integer> proteinWeekData = new ArrayList<Integer>();
+    ArrayList<Float> calWeekData = new ArrayList<Float>();
+    ArrayList<Float> proteinWeekData = new ArrayList<Float>();
     ArrayList<String> calendarWeekData = new ArrayList<String>();
 
     @Override
@@ -61,13 +62,13 @@ public class ProgressAdapter extends RecyclerView.Adapter<ProgressAdapter.ViewHo
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public ProgressAdapter(ArrayList<Float> sets, ArrayList<Integer> cals, ArrayList<Integer> protein, ArrayList<String> weeks, Context context) {
+    public ProgressAdapter(ArrayList<ArrayList<GoalsDetail>> mGoals, ArrayList<Float> sets, ArrayList<Float> cals, ArrayList<Float> protein, ArrayList<String> weeks, Context context) {
         setWeekData = sets;
         calWeekData = cals;
         proteinWeekData = protein;
         calendarWeekData = weeks;
+        goalWeekData = mGoals;
         mContext = context;
-
     }
 
     // Create new views (invoked by the layout manager)
@@ -75,11 +76,12 @@ public class ProgressAdapter extends RecyclerView.Adapter<ProgressAdapter.ViewHo
     public ProgressAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         // create a new view
 
-
         View view = (View) LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.adapter_progress_line, parent, false);
         // set the view's size, margins, paddings and layout parameters
         mInterface = this;
+        System.out.println("Progress Adapter data0: "+goalWeekData.size());
+
 
         prefs = parent.getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = parent.getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
@@ -102,15 +104,19 @@ public class ProgressAdapter extends RecyclerView.Adapter<ProgressAdapter.ViewHo
 
         TextView mText = holder.mView.findViewById(R.id.week_text);
         GridView grid = holder.mView.findViewById(R.id.grid_view);
-        ArrayList<Double> gridCol = new ArrayList<Double>();
+        ArrayList<Double> gridCol1 = new ArrayList<Double>();
+        ArrayList<Double> gridCol2 = new ArrayList<Double>();
 
         int pos = holder.getAdapterPosition();
-        gridCol.add(calWeekData.get(pos) / (double) prefs.getInt("volume",0));
+      /*  gridCol.add(calWeekData.get(pos) / (double) prefs.getInt("volume",0));
         gridCol.add(calWeekData.get(pos) / (double) prefs.getInt("deficit", 0));
         gridCol.add(proteinWeekData.get(pos) /    ((double) prefs.getInt("weight", 0))*((double) prefs.getFloat("protein", 0))   );
-        System.out.println("data: "+gridCol.get(0) + " "+gridCol.get(1)+" "+gridCol.get(2));
-        MyGridAdapter gridAdapter = new MyGridAdapter(mContext, gridCol, res);
-        grid.setNumColumns(gridCol.size());
+        System.out.println("data: "+gridCol.get(0) + " "+gridCol.get(1)+" "+gridCol.get(2));*/
+
+
+        MyGridAdapter gridAdapter = new MyGridAdapter(mContext, goalWeekData.get(pos) , res);
+      //  grid.setNumColumns(goalWeekData.size());
+        grid.setNumColumns(goalWeekData.get(pos).size());
         grid.setAdapter(gridAdapter);
 
         mText.setText(calendarWeekData.get(holder.getAdapterPosition()));
@@ -171,9 +177,30 @@ public class ProgressAdapter extends RecyclerView.Adapter<ProgressAdapter.ViewHo
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return calWeekData.size();
+        return goalWeekData.size();
     }
 
+
+    //returns a float based on success. greater thanor= 1 should indicate success, <1 is a percent failure for color map
+    private float checkSuccess(int value, GoalsDetail detail){
+        float result = 0f;
+        if(detail.getGoalType() == 0){
+            result = detail.getGoalLimitLow()/value; //e.g  100/50 will be 2 for a deficit goal. if you go over, 100/150, you are below 1 and we can colorize, this isn't really linear currently, hard to get low on scale
+        }
+        if(detail.getGoalType() == 1){
+            if(value > detail.getGoalLimitLow() && value<detail.getGoalLimitHigh()){
+                result = 1;
+            }else if(value < detail.getGoalLimitLow()){
+                result = value/detail.getGoalLimitLow();                  //50/100
+            }else if(value > detail.getGoalLimitHigh()){
+                result = detail.getGoalLimitHigh()/value;    //e.g. again 100/150 gives low numbers if you go over
+            }
+        }
+        if(detail.getGoalType() == 2) {
+            result = value/detail.getGoalLimitHigh();    //want to go over, so under is<1, i.e. 50/100 if you don't get enough
+        }
+        return result;
+    }
 
 
 }

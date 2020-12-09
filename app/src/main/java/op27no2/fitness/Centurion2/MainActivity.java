@@ -160,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             List<String> code = getIntent().getData().getQueryParameters("code");
             System.out.println("EZ DATA "+code.get(0));
             edt.putString("code", code.get(0));
-            edt.putBoolean("strava8", true);
+            edt.putBoolean("strava9", true);
             edt.apply();
             getIntent().removeExtra("key");
 

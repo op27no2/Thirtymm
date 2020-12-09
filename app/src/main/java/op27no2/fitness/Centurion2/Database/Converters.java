@@ -8,8 +8,8 @@ import com.mapbox.geojson.Point;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 
+import op27no2.fitness.Centurion2.fragments.activities.GoalsDetail;
 import op27no2.fitness.Centurion2.fragments.lifting.Lift;
 
 public class Converters {
@@ -80,15 +80,15 @@ public class Converters {
     }
 
     @TypeConverter
-    public static HashMap<String, Double> fromString6(String value) {
-        Type hashMapType = new TypeToken<HashMap<String, Double>>() {}.getType();
-        return new Gson().fromJson(value, hashMapType);
+    public static ArrayList<GoalsDetail> fromString6(String value) {
+        Type listType = new TypeToken<ArrayList<GoalsDetail>>() {}.getType();
+        return new Gson().fromJson(value, listType);
     }
 
     @TypeConverter
-    public static String fromHashMap(HashMap<String, Double> hashmap) {
+    public static String fromArrayList6(ArrayList<GoalsDetail> list) {
         Gson gson = new Gson();
-        String json = gson.toJson(hashmap);
+        String json = gson.toJson(list);
         return json;
     }
 

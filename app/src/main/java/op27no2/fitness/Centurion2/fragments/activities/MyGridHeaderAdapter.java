@@ -17,11 +17,11 @@ import op27no2.fitness.Centurion2.R;
 
 public class MyGridHeaderAdapter extends BaseAdapter {
     private Context mContext;
-    private ArrayList<Double> mValues = new ArrayList<Double>();
+    private ArrayList<String> mValues = new ArrayList<String>();
     private Resources resources;
     private Boolean drawText;
 
-    public MyGridHeaderAdapter(Context context, ArrayList<Double> values, Resources res) {
+    public MyGridHeaderAdapter(Context context, ArrayList<String> values, Resources res) {
         this.mContext = context;
         this.mValues = values;
         this.resources = res;
@@ -45,7 +45,6 @@ public class MyGridHeaderAdapter extends BaseAdapter {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
 
-            final Double value = mValues.get(position);
 
             if (convertView == null) {
                 final LayoutInflater layoutInflater = LayoutInflater.from(mContext);
@@ -56,14 +55,11 @@ public class MyGridHeaderAdapter extends BaseAdapter {
             final TextView textView = (TextView)convertView.findViewById(R.id.grid_text);
 
 
-             //   textView.setText(Double.toString(mValues.get(position)));
+            textView.setText(mValues.get(position));
 
 
-                if (value > 1) {
-                    gridCell.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.green, null));
-                } else {
-                    gridCell.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.colorPrimaryDark, null));
-                }
+            gridCell.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.darkgrey, null));
+
 
             return convertView;
 

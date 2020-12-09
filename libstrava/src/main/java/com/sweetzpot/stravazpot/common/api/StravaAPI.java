@@ -33,7 +33,7 @@ public abstract class StravaAPI {
         } else if(response.code() == UNAUTHORIZED_CODE){
             throw new StravaUnauthorizedException();
         } else {
-            throw new StravaAPIException("Response was not successful");
+            throw new StravaAPIException("Response was not successful "+response.message());
         }
     }
 }

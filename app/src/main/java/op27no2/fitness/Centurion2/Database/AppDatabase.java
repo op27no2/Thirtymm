@@ -15,7 +15,7 @@ import op27no2.fitness.Centurion2.fragments.lifting.NamedWorkout;
 import op27no2.fitness.Centurion2.fragments.nutrition.NutritionDay;
 import op27no2.fitness.Centurion2.fragments.run.RunWorkout;
 
-@Database(entities = {LiftingWorkout.class, NutritionDay.class, LiftMap.class, RunWorkout.class, NamedWorkout.class}, version = 2)
+@Database(entities = {LiftingWorkout.class, NutritionDay.class, LiftMap.class, RunWorkout.class, NamedWorkout.class}, version = 4)
 @TypeConverters({Converters.class})
 
 public abstract class AppDatabase extends RoomDatabase {
@@ -32,7 +32,7 @@ public abstract class AppDatabase extends RoomDatabase {
         if (INSTANCE == null) {
             INSTANCE = Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, "user-database")
                    // .build();
-                    .addMigrations(MIGRATION_1_2).build();
+                    .addMigrations(MIGRATION_1_2).addMigrations(MIGRATION_2_3).addMigrations(MIGRATION_3_4).build();
 
                             // allow queries on the main thread.
                             // Don't do this on a real app! See PersistenceBasicSample for an example.
@@ -62,7 +62,13 @@ public abstract class AppDatabase extends RoomDatabase {
             database.execSQL("ALTER TABLE nutrition_days ADD COLUMN goals TEXT DEFAULT ''");
             database.execSQL("ALTER TABLE nutrition_days ADD COLUMN goalType TEXT DEFAULT ''");
             database.execSQL("ALTER TABLE nutrition_days ADD COLUMN datemillis TEXT DEFAULT ''");
+        }
+    };
 
+    static final Migration MIGRATION_3_4 = new Migration(3, 4) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE run_workouts ADD COLUMN savemap BOOLEAN DEFAULT ''");
         }
     };
 

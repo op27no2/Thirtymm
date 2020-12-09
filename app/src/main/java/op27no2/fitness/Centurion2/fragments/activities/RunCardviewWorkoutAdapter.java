@@ -117,8 +117,10 @@ public class RunCardviewWorkoutAdapter extends RecyclerView.Adapter<RunCardviewW
         mText3.setText(getDuration(pace)+" /mi");
         mText4.setText(mWorkouts.get(holder.getAdapterPosition()).getWorkoutDate());
         mText5.setText(Integer.toString(mWorkouts.get(holder.getAdapterPosition()).getCalories()));
-        if(mWorkouts.get(holder.getAdapterPosition()).getImage() != null){
+        if(mWorkouts.get(holder.getAdapterPosition()).getImage() != null && mWorkouts.get(holder.getAdapterPosition()).getSaveMap() == true){
             Glide.with(mContext).load(mWorkouts.get(holder.getAdapterPosition()).getImage()).centerCrop().into(mImage);
+        }else{
+            mImage.setVisibility(View.GONE);
         }
         System.out.println("bitmaps: " +position+" " + mWorkouts.get(holder.getAdapterPosition()).getImage());
         mText0.setText(mWorkouts.get(holder.getAdapterPosition()).getTitle());

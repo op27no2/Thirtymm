@@ -39,7 +39,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 
 import op27no2.fitness.Centurion2.Database.AppDatabase;
 import op27no2.fitness.Centurion2.Database.Repository;
@@ -51,6 +50,7 @@ import op27no2.fitness.Centurion2.Graphing.LineGraphView;
 import op27no2.fitness.Centurion2.MyAppWidgetProvider;
 import op27no2.fitness.Centurion2.R;
 import op27no2.fitness.Centurion2.RecyclerItemClickListener;
+import op27no2.fitness.Centurion2.fragments.activities.GoalsDetail;
 import op27no2.fitness.Centurion2.fragments.lifting.PickerDialogInterface;
 
 public class NutritionFragment extends Fragment implements CalendarDialogInterface, PickerDialogInterface {
@@ -69,7 +69,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
     private NutritionAdapter mAdapter;
     private ArrayList<String> mNames = new ArrayList<String>(2);
     private ArrayList<Integer> mValues = new ArrayList<Integer>(2);
-    private HashMap<String, Double> mGoalMap = new  HashMap<String, Double>();
+    private ArrayList<GoalsDetail> mGoalList = new  ArrayList<GoalsDetail>(2);
     private int mGoalType;
     private Integer cals;
 
@@ -132,14 +132,12 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         todayDate = formattedDate;
         System.out.println("fomratted time => " + df.format(time));
 
-
         Calendar cal2 = Calendar.getInstance();
         DateFormat df2= new SimpleDateFormat("EEE, M/d");
         Date c2 = cal2.getTime();
         String day1 = df2.format(c2);
         dateText = view.findViewById(R.id.toolbar_date);
         dateText.setText(day1);
-
 
         mRecyclerView = view.findViewById(R.id.my_recycler_view);
         mRecyclerView.setHasFixedSize(true);
@@ -625,7 +623,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                 mValues.clear();
                 mNames.clear();
                 mDates.clear();
-                mGoalMap.clear();
+                mGoalList.clear();
                 mNutritionDays.clear();
 
             }
@@ -654,27 +652,33 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                     //Will only edit goal if it is Today, won't change goals if looking back/ahead. Some days may therefore not have goals if map is opened
                     //should be fine as we can look back and just change for progress list when goals change.
                     //TODO display goalstodayDate
-                    if(formattedDate == todayDate) {
+                    System.out.println("creating goalsx");
+
+                    if(formattedDate.equals(todayDate)){
+                        System.out.println("creating goals");
                         switch (mGoalType) {
                             case 0:
-                                mGoalMap.put("Cals", (double) prefs.getInt("deficit", 300));
+                                GoalsDetail mDetail = new GoalsDetail( "Cals", 0, prefs.getInt("deficit", -300), 0);
+                                mGoalList.add(mDetail);
                                 break;
                             case 1:
-                                mGoalMap.put("Cals", (double) prefs.getInt("recomp", 300));
+                                GoalsDetail mDetail2 = new GoalsDetail("Cals", 1, prefs.getInt("recomp", 300), prefs.getInt("recomp", 300));
+                                mGoalList.add(mDetail2);
                                 break;
                             case 2:
-                                mGoalMap.put("Cals", (double) prefs.getInt("bulk", 300));
+                                GoalsDetail mDetail3 = new GoalsDetail("Cals", 2,0, prefs.getInt("recomp", 300));
+                                mGoalList.add(mDetail3);
                                 break;
                             default:
                                 break;
                         }
-                        mGoalMap.put("Protein", (double) prefs.getFloat("protein", 0.6f) * prefs.getInt("weight", (int) 150));
-                        mGoalMap.put("Sets", (double) prefs.getInt("volume", 15));
-                        mNutritionDay.setGoalMap(mGoalMap);
+                        GoalsDetail mDetail4 = new GoalsDetail( "Protein", 2, 0,  (int) Math.floor(prefs.getFloat("protein", 0.6f) * prefs.getInt("weight", (int) 150)));
+                        mGoalList.add(mDetail4);
+                        GoalsDetail mDetail5 = new GoalsDetail( "Sets", 2, 0,  prefs.getInt("volume", 15));
+                        mGoalList.add(mDetail5);
+                        mNutritionDay.setGoalList(mGoalList);
                     }
 
-                    //TODO can I really get rid of this??
-                  //  mRepository.insertNutrition(mNutritionDay);
 
                     //TODO and do I really need this?, widget doesn't have
                     long id = AppDatabase.getAppDatabase(getActivity()).ntDAO().insert(mNutritionDay);
@@ -700,6 +704,36 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                     }else {
                         System.out.println("mNames size not zero "+mNames.get(0)+" "+mValues.get(0));
                     }
+
+                    if(mNutritionDay.getGoalList() == null || mNutritionDay.getGoalList().size() == 0) {
+                        System.out.println("need to create goals if its today");
+
+                        if (formattedDate.equals(todayDate)) {
+                            System.out.println("creating goals");
+                            switch (mGoalType) {
+                                case 0:
+                                    GoalsDetail mDetail = new GoalsDetail("Cals", 0, prefs.getInt("deficit", -300), 0);
+                                    mGoalList.add(mDetail);
+                                    break;
+                                case 1:
+                                    GoalsDetail mDetail2 = new GoalsDetail("Cals", 1, prefs.getInt("recomp", 300), prefs.getInt("recomp", 300));
+                                    mGoalList.add(mDetail2);
+                                    break;
+                                case 2:
+                                    GoalsDetail mDetail3 = new GoalsDetail("Cals", 2, 0, prefs.getInt("recomp", 300));
+                                    mGoalList.add(mDetail3);
+                                    break;
+                                default:
+                                    break;
+                            }
+                            GoalsDetail mDetail4 = new GoalsDetail("Protein", 2, 0, (int) Math.floor(prefs.getFloat("protein", 0.6f) * prefs.getInt("weight", (int) 150)));
+                            mGoalList.add(mDetail4);
+                            GoalsDetail mDetail5 = new GoalsDetail("Sets", 2, 0, prefs.getInt("volume", 15));
+                            mGoalList.add(mDetail5);
+                            mNutritionDay.setGoalList(mGoalList);
+                        }
+                    }
+                    mRepository.updateNutrition(mNutritionDay);
 
                     cals = mValues.get(0);
 
@@ -766,7 +800,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         setFlags.add(0);
         setFlags.add(0);
 
-    if(mNutritionDay.getFlags() != null && mNutritionDay.getFlags().size() != 0) {
+        if(mNutritionDay.getFlags() != null && mNutritionDay.getFlags().size() > 2) {
             setFlags = mNutritionDay.getFlags();
             if(setFlags.get(0) ==1){
                 flag1True = true;
@@ -778,6 +812,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                 flag3True = true;
             }
         }
+
         if(setFlags.get(0)==1) {
             flag1.setColorFilter(ContextCompat.getColor(getActivity(), R.color.colorAccentLight), PorterDuff.Mode.SRC_ATOP);
         }else{
@@ -795,6 +830,9 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         }else{
             flag3.setColorFilter(ContextCompat.getColor(getActivity(), R.color.black), PorterDuff.Mode.SRC_ATOP);
         }
+
+
+
 
 
 

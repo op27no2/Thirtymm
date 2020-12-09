@@ -5,7 +5,8 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+
+import op27no2.fitness.Centurion2.fragments.activities.GoalsDetail;
 
 @Entity(tableName = "nutrition_days")
 public class NutritionDay {
@@ -42,9 +43,10 @@ public class NutritionDay {
     private ArrayList<Integer> mFlags = new ArrayList<Integer>();
 
     @ColumnInfo(name = "goals")
-    private HashMap<String, Double> mGoalMap = new HashMap<String, Double>();
+    private ArrayList<GoalsDetail> mGoalList = new ArrayList<GoalsDetail>();
 
-    //goal Tpye 0 = deficit, 1 = recomp, 2 = bulk
+
+    //goal Tpye 0 = deficit, 1 = recomp, 2 = bulk - move away from this, now include in goalsdetail per day.
     @ColumnInfo(name = "goalType")
     private Integer mGoalType;
 
@@ -93,16 +95,14 @@ public class NutritionDay {
         return mFlags;
     }
 
-    public void setGoalMap(HashMap<String, Double> goals){
-        mGoalMap = goals;
+    public void setGoalList(ArrayList<GoalsDetail> goals){
+        mGoalList = goals;
     }
-    public HashMap<String, Double> getGoalMap(){
-        return mGoalMap;
+    public ArrayList<GoalsDetail> getGoalList(){
+        return mGoalList;
     }
 
-    public void setGoalItem(String name, Double value){
-        mGoalMap.put(name,value);
-    }
+
 
     public Integer getGoalType(){
         return mGoalType;

@@ -35,6 +35,9 @@ public class RunWorkout {
     @ColumnInfo(name = "title")
     private String title;
 
+    @ColumnInfo(name = "savemap")
+    private Boolean saveMap;
+
     @ColumnInfo(name = "runs")
     //private ArrayList<Point> coordinates = new ArrayList<Point>();
     private String coordinates;
@@ -78,6 +81,15 @@ public class RunWorkout {
     public void setWorkoutType(String typ) {
         this.workoutType = typ;
     }
+
+    public Boolean getSaveMap() {
+        return saveMap;
+    }
+
+    public void setSaveMap(Boolean map) {
+        this.saveMap = map;
+    }
+
 
     //we just store a uid reference to the coordinates stored in sharedprefs as json object
     public String getCoordinates() {
