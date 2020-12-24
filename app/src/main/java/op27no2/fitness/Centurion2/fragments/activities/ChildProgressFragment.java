@@ -175,6 +175,13 @@ public class ChildProgressFragment extends Fragment {
 
                 //loop backwards till we get to day zero
                 while(!fmt.format(mCal.getTime()).equals(fmt.format(dateZero))){
+                    //TODO change this to mDay.getvalues.Size()?
+                    if(weekTotals.size() == 0){
+                        for(int i=0; i<2;i++){ //change to i<mvalues.size()
+                            weekTotals.add(0);
+                        }
+                    }
+
 
                     //get nutritionday for that day
                     String mDate = df.format(mCal.getTime());
@@ -227,7 +234,7 @@ public class ChildProgressFragment extends Fragment {
 
 
                 //whatever day it is, we are adding the day's data to the week totals.
-                 if(mDay !=null) {
+                 if(mDay !=null && mDay.getValues().size() != 0 && mDay.getNames().size() != 0) {
                      if (mDay.getValues().get(0) != null) {
                          Integer newvalue = weekTotals.get(0) + mDay.getValues().get(0);
                          weekTotals.set(0, newvalue);
