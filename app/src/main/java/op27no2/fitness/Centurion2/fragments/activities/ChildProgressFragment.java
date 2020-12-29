@@ -134,6 +134,7 @@ public class ChildProgressFragment extends Fragment {
 
 
 
+
     @SuppressLint("StaticFieldLeak")
     private void getDayData(){
         new AsyncTask<Void, Void, Void>() {
@@ -172,6 +173,9 @@ public class ChildProgressFragment extends Fragment {
 
                 SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
                 ArrayList<GoalsDetail> mGoalList = new ArrayList<GoalsDetail>();
+                ArrayList<GoalsDetail> mGoalListHoldLast = new ArrayList<GoalsDetail>();
+
+                Boolean firstDayFlag = true;
 
                 //loop backwards till we get to day zero
                 while(!fmt.format(mCal.getTime()).equals(fmt.format(dateZero))){
@@ -189,9 +193,15 @@ public class ChildProgressFragment extends Fragment {
                     NutritionDay mDay = AppDatabase.getAppDatabase(getActivity()).ntDAO().findByDate(mDate);
 
                     //if today isn't sunday first loop needs goals from today, not Sunday.
+                    //TODO this would default to Mondays goals, not e.g. starting on wed?
                     Calendar mcal2 = Calendar.getInstance();
                     mcal2.setTime(today);
-                    if(mcal2.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY){
+
+
+                    if(mcal2.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY && firstDayFlag == true){
+                        //set flag to false, so if first week is Wed, we are getting goals from just Wed, then algorithm below does it for Sunday going backwards from here.
+                        firstDayFlag = false;
+
                         mGoalList = mDay.getGoalList();
                         if(mGoalList != null) {
                             System.out.println("goal list not null");
@@ -213,16 +223,6 @@ public class ChildProgressFragment extends Fragment {
                             for (int i = 0; i < mGoalList.size(); i++) {
 
                                 System.out.println("goal: "+mGoalList.get(i).getName());
-
-                                //goals list has names that will match the Names array with matching values Array in Nutrition day, find index for that goal and get weektotals
-                                //TODO do this monday instead
-                             /* String name = mGoalList.get(i).getName();
-                                int dex = mDay.getNames().indexOf(name);
-                                if(dex>=0) {
-                                    mGoalList.get(i).setWeekTotal(weekTotals.get(dex));
-                                }
-                                System.out.println("nametest = "+name);
-                                System.out.println("nametest index= "+dex);*/
 
                             }
 
@@ -280,6 +280,7 @@ public class ChildProgressFragment extends Fragment {
 
                             }
                         });
+
 
                         mGoalList.clear();
                         weekTotals.clear();
