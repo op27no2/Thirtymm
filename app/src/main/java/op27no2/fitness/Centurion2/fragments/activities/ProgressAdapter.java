@@ -36,11 +36,10 @@ public class ProgressAdapter extends RecyclerView.Adapter<ProgressAdapter.ViewHo
     private Boolean direction = true;
     private ImageView mapView;
     private Context mContext;
+    private int offset = 0;
     ArrayList<ArrayList<GoalsDetail>> goalWeekData = new ArrayList<ArrayList<GoalsDetail>>();
-    ArrayList<Float> setWeekData = new ArrayList<Float>();
-    ArrayList<Float> calWeekData = new ArrayList<Float>();
-    ArrayList<Float> proteinWeekData = new ArrayList<Float>();
     ArrayList<String> calendarWeekData = new ArrayList<String>();
+    ArrayList<Integer> goalChangePositions = new ArrayList<Integer>();
 
     @Override
     public void onDialogDismiss() {
@@ -62,10 +61,7 @@ public class ProgressAdapter extends RecyclerView.Adapter<ProgressAdapter.ViewHo
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public ProgressAdapter(ArrayList<ArrayList<GoalsDetail>> mGoals, ArrayList<Float> sets, ArrayList<Float> cals, ArrayList<Float> protein, ArrayList<String> weeks, Context context) {
-        setWeekData = sets;
-        calWeekData = cals;
-        proteinWeekData = protein;
+    public ProgressAdapter(ArrayList<ArrayList<GoalsDetail>> mGoals, ArrayList<String> weeks, Context context) {
         calendarWeekData = weeks;
         goalWeekData = mGoals;
         mContext = context;
@@ -104,51 +100,27 @@ public class ProgressAdapter extends RecyclerView.Adapter<ProgressAdapter.ViewHo
 
         TextView mText = holder.mView.findViewById(R.id.week_text);
         GridView grid = holder.mView.findViewById(R.id.grid_view);
-        ArrayList<Double> gridCol1 = new ArrayList<Double>();
-        ArrayList<Double> gridCol2 = new ArrayList<Double>();
+        GridView gridTitle = holder.mView.findViewById(R.id.grid_view_title);
+
 
         int pos = holder.getAdapterPosition();
-      /*  gridCol.add(calWeekData.get(pos) / (double) prefs.getInt("volume",0));
-        gridCol.add(calWeekData.get(pos) / (double) prefs.getInt("deficit", 0));
-        gridCol.add(proteinWeekData.get(pos) /    ((double) prefs.getInt("weight", 0))*((double) prefs.getFloat("protein", 0))   );
-        System.out.println("data: "+gridCol.get(0) + " "+gridCol.get(1)+" "+gridCol.get(2));*/
 
 
-        MyGridAdapter gridAdapter = new MyGridAdapter(mContext, goalWeekData.get(pos) , res);
+        MyGridEachRowAdapter gridAdapter = new MyGridEachRowAdapter(mContext, goalWeekData.get(pos) , res, false);
       //  grid.setNumColumns(goalWeekData.size());
         grid.setNumColumns(goalWeekData.get(pos).size());
         grid.setAdapter(gridAdapter);
 
-        mText.setText(calendarWeekData.get(holder.getAdapterPosition()));
+        if(pos==0){
+            gridTitle.setVisibility(View.VISIBLE);
+            MyGridEachRowAdapter gridAdapter2 = new MyGridEachRowAdapter(mContext, goalWeekData.get(pos) , res, true);
+            //  grid.setNumColumns(goalWeekData.size());
+            gridTitle.setNumColumns(goalWeekData.get(pos).size());
+            gridTitle.setAdapter(gridAdapter2);
 
-
-
-      /*  ImageView image1 = holder.mView.findViewById(R.id.column1);
-        ImageView image2 = holder.mView.findViewById(R.id.column2);
-        ImageView image3 = holder.mView.findViewById(R.id.column3);
-        ImageView image4 = holder.mView.findViewById(R.id.column4);*/
-
-/*
-        if(holder.getAdapterPosition()<setWeekData.size() && setWeekData.get(holder.getAdapterPosition()) > prefs.getFloat("volume",0f)){
-            image1.setBackgroundColor(ResourcesCompat.getColor(res, R.color.green, null));
-            }else{
-            image1.setBackgroundColor(ResourcesCompat.getColor(res, R.color.orange, null));
         }
-        if(holder.getAdapterPosition()<calWeekData.size() && calWeekData.get(holder.getAdapterPosition()) < prefs.getInt("deficit", 0)) {
-            image2.setBackgroundColor(ResourcesCompat.getColor(res, R.color.green, null));
-            }else{
-            image2.setBackgroundColor(ResourcesCompat.getColor(res, R.color.yellow, null));
-        }
-        if(holder.getAdapterPosition()<proteinWeekData.size() && proteinWeekData.get(holder.getAdapterPosition()) > prefs.getFloat("protein", 0)) {
-            image3.setBackgroundColor(ResourcesCompat.getColor(res, R.color.green, null));
-            }else{
-            image3.setBackgroundColor(ResourcesCompat.getColor(res, R.color.orange, null));
-        }
-        image4.setBackgroundColor(ResourcesCompat.getColor(res, R.color.colorPrimaryDark, null));
-*/
 
-
-        //holder.getAdapterPosition()
+        mText.setText(calendarWeekData.get(pos));
 
 
 

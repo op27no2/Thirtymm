@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:clickable="true"
     android:animateLayoutChanges="true"
     android:foreground="?android:attr/selectableItemBackground"
@@ -71,28 +71,56 @@
         android:background="@color/lightgrey"
         >
     </ImageView>-->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@color/lightgrey"
+        >
+        <TextView
+            android:padding="2dp"
+            android:id="@+id/week_text"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:gravity="bottom"
+            android:paddingBottom="10dp"
+            android:background="@color/darkgrey"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:layout_marginBottom="1dp"
+            android:layout_marginRight="1dp"
+            >
+        </TextView>
+    </LinearLayout>
 
-    <GridView
-        android:layout_marginBottom="1dp"
-        android:id="@+id/grid_view"
-        android:layout_width="match_parent"
+
+    <LinearLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:horizontalSpacing="1dp"
-        android:columnCount="3"
-        ></GridView>
+        android:orientation="vertical"
+        android:clickable="true"
+        android:animateLayoutChanges="true"
+        android:foreground="?android:attr/selectableItemBackground"
+        >
+        <GridView
+            android:layout_marginBottom="1dp"
+            android:visibility="gone"
+            android:id="@+id/grid_view_title"
+            android:layout_toRightOf="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:horizontalSpacing="1dp"
+            android:columnCount="3"
+            ></GridView>
+        <GridView
+            android:layout_marginBottom="1dp"
+            android:id="@+id/grid_view"
+            android:layout_toRightOf="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:horizontalSpacing="1dp"
+            android:columnCount="3"
+            ></GridView>
+    </LinearLayout>
 
-
-    <TextView
-        android:padding="2dp"
-        android:id="@+id/week_text"
-        android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:textColor="@color/white"
-        android:text="Sleep:\n 7 Hours"
-        app:autoSizeTextType="uniform"
-        app:autoSizeMinTextSize="12sp"
-        app:autoSizeMaxTextSize="100sp"
-        app:autoSizeStepGranularity="2sp">
-    </TextView>
-
-</FrameLayout>
+</LinearLayout>

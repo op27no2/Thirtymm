@@ -57,7 +57,7 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
     private ArrayList<LiftMap> mLiftMaps = new ArrayList<LiftMap>();
     private SimpleDateFormat df;
     private HashMap<String, Integer> mVolume = new HashMap<String, Integer>();
-    private ArrayList<Map.Entry<String, Integer>> listOfEntry;
+    private ArrayList<Map.Entry<String, Integer>> listOfLiftNamesAndSets;
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
     private VolumeAdapter mAdapter;
@@ -253,21 +253,21 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
         }
 
         Set<Map.Entry<String, Integer>> entrySet = mVolume.entrySet();
-        listOfEntry = new ArrayList<Map.Entry<String, Integer>>(entrySet);
+        listOfLiftNamesAndSets = new ArrayList<Map.Entry<String, Integer>>(entrySet);
 
         //set lift data to recyclerview
-        mAdapter = new VolumeAdapter(listOfEntry, mRepository, mInterface);
+        mAdapter = new VolumeAdapter(listOfLiftNamesAndSets, mRepository, mInterface);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setNestedScrollingEnabled(false);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
         System.out.println("oncreate GetLiftMaps called");
         //get all info and set colors
-        for(int j=0; j<listOfEntry.size(); j++){
-            if(j==listOfEntry.size()-1){
-                getLiftMap(true, listOfEntry.get(j).getKey(),listOfEntry.get(j).getValue());
+        for(int j = 0; j< listOfLiftNamesAndSets.size(); j++){
+            if(j== listOfLiftNamesAndSets.size()-1){
+                getLiftMap(true, listOfLiftNamesAndSets.get(j).getKey(), listOfLiftNamesAndSets.get(j).getValue());
             }else{
-                getLiftMap(false, listOfEntry.get(j).getKey(), listOfEntry.get(j).getValue());
+                getLiftMap(false, listOfLiftNamesAndSets.get(j).getKey(), listOfLiftNamesAndSets.get(j).getValue());
             }
         }
 
@@ -555,12 +555,12 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
     public void onDialogDismiss() {
         System.out.println("Volume Dialog ondismiss getliftmaps called");
         muscleVolumes.clear();
-        for(int j=0; j<listOfEntry.size(); j++){
-            if(j==listOfEntry.size()-1){
+        for(int j = 0; j< listOfLiftNamesAndSets.size(); j++){
+            if(j== listOfLiftNamesAndSets.size()-1){
                 //flags the last entry, this list is the lifts and their volumes, have to get ratios (lift map) for each lift/volume key pair
-                getLiftMap(true, listOfEntry.get(j).getKey(),listOfEntry.get(j).getValue());
+                getLiftMap(true, listOfLiftNamesAndSets.get(j).getKey(), listOfLiftNamesAndSets.get(j).getValue());
             }else{
-                getLiftMap(false, listOfEntry.get(j).getKey(), listOfEntry.get(j).getValue());
+                getLiftMap(false, listOfLiftNamesAndSets.get(j).getKey(), listOfLiftNamesAndSets.get(j).getValue());
             }
         }
 

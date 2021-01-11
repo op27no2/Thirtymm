@@ -8,7 +8,7 @@ public class GoalsDetail {
     private Integer goalLimitHigh;
 
     //used when adding after summing each week for ProgressAdapter
-    private Integer weekTotal;
+    private float weekTotal;
 
     public GoalsDetail(String name, Integer type, Integer lowlimit, Integer highlimit) {
         this.goalName = name;
@@ -45,10 +45,10 @@ public class GoalsDetail {
         goalLimitHigh = high;
     }
 
-    public Integer getWeekTotal(){
+    public float getWeekTotal(){
         return weekTotal;
     }
-    public void setWeekTotal(Integer total){
+    public void setWeekTotal(float total){
         weekTotal = total;
     }
 

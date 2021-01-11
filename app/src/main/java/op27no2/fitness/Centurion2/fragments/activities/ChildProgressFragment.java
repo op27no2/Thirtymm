@@ -23,11 +23,16 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import op27no2.fitness.Centurion2.Database.AppDatabase;
 import op27no2.fitness.Centurion2.Database.Repository;
 import op27no2.fitness.Centurion2.R;
 import op27no2.fitness.Centurion2.RecyclerItemClickListener;
+import op27no2.fitness.Centurion2.fragments.lifting.Lift;
+import op27no2.fitness.Centurion2.fragments.lifting.LiftMap;
 import op27no2.fitness.Centurion2.fragments.lifting.LiftingWorkout;
 import op27no2.fitness.Centurion2.fragments.nutrition.NutritionDay;
 
@@ -52,6 +57,11 @@ public class ChildProgressFragment extends Fragment {
     private Context mContext;
     private Date today;
     private GridView grid;
+    private HashMap<String, Integer> mVolume = new HashMap<String, Integer>();
+    private ArrayList<Map.Entry<String, Integer>> listOfLiftNamesAndSets;
+    private HashMap<String, Double> muscleVolumes = new HashMap<String, Double>();
+    private ArrayList<GoalsDetail> mGoalList = new ArrayList<GoalsDetail>();
+
 
     public ChildProgressFragment() {
         // Required empty public constructor
@@ -172,10 +182,8 @@ public class ChildProgressFragment extends Fragment {
                 System.out.println("date today: "+ today);
 
                 SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
-                ArrayList<GoalsDetail> mGoalList = new ArrayList<GoalsDetail>();
-                ArrayList<GoalsDetail> mGoalListHoldLast = new ArrayList<GoalsDetail>();
 
-                Boolean firstDayFlag = true;
+                Boolean goalsForWeekFound = false;
 
                 //loop backwards till we get to day zero
                 while(!fmt.format(mCal.getTime()).equals(fmt.format(dateZero))){
@@ -192,15 +200,43 @@ public class ChildProgressFragment extends Fragment {
                     System.out.println("date: "+ mDate);
                     NutritionDay mDay = AppDatabase.getAppDatabase(getActivity()).ntDAO().findByDate(mDate);
 
+                    //get Lifting info for that day
+                    LiftingWorkout mLiftDay = AppDatabase.getAppDatabase(getActivity()).lwDAO().findByDate(mDate);
+
+                    if(mLiftDay != null) {
+                        ArrayList<Lift> mLifts = mLiftDay.getMyLifts();
+                        //add to weekly total for Volume
+                        for (int j = 0; j < mLifts.size(); j++) {
+                            String name = mLifts.get(j).getName();
+                            int sets = mLifts.get(j).getReps().size();
+                            if (mVolume.containsKey(name)) {
+                                int hold = mVolume.get(name);
+                                hold = hold + sets;
+                                mVolume.put(name, hold);
+                            } else {
+                                mVolume.put(name, sets);
+                            }
+                        }
+                    }
+
+
+
                     //if today isn't sunday first loop needs goals from today, not Sunday.
-                    //TODO this would default to Mondays goals, not e.g. starting on wed?
+
+                    //WE are counting backwards from the day. Each day may not have goals if app was not logged in on that day.
+                    //The first day counting backward for that week should be the goals for that week
+                    //That is, if Sunday has goals, those were the last in the week and will be set
+                    //If Sunday did not have goals, nor saturday, but Friday did, we would take those for the week isntead.
+                    //on Monday, total everything up and then reset
+
+                    //If no goals for the week, no DATA and will be grey?
+
+
                     Calendar mcal2 = Calendar.getInstance();
                     mcal2.setTime(today);
 
 
-                    if(mcal2.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY && firstDayFlag == true){
-                        //set flag to false, so if first week is Wed, we are getting goals from just Wed, then algorithm below does it for Sunday going backwards from here.
-                        firstDayFlag = false;
+                    if( goalsForWeekFound == false){
 
                         mGoalList = mDay.getGoalList();
                         if(mGoalList != null) {
@@ -209,27 +245,11 @@ public class ChildProgressFragment extends Fragment {
                             for (int i = 0; i < mGoalList.size(); i++) {
                                 System.out.println("goal: " + mGoalList.get(i).getName());
                             }
-
+                            goalsForWeekFound = true;
                         }else{
                             System.out.println("goal list null");
                         }
                     //else if it is Sunday moving backwards, we are getting goals to count backward for the week.
-                    }else if (mCal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY){
-                        //List of GoalsDetail saved with every nutrition day, but bascially just needed for Sunday here, can store week totals in it too and pass it
-                        mGoalList = mDay.getGoalList();
-                        if(mGoalList != null) {
-                            System.out.println("goal list not null");
-                            System.out.println("goal list size: "+mGoalList.size());
-                            for (int i = 0; i < mGoalList.size(); i++) {
-
-                                System.out.println("goal: "+mGoalList.get(i).getName());
-
-                            }
-
-                        }else{
-                            System.out.println("goal list null");
-                        }
-
                     }
 
 
@@ -246,10 +266,13 @@ public class ChildProgressFragment extends Fragment {
                  }
 
 
+
                 //if its Monday, add the week string to the labels, and save week totals since we are moving backwards.
                     if(mCal.get(Calendar.DAY_OF_WEEK)  == Calendar.MONDAY) {
                         calendarWeeks.add(shortFormat.format(mCal.getTime()));
                         System.out.println("should add week = "+mCal.getTime());
+
+                        convertVolumeToWeekGoal(mVolume);
 
                         for (int i = 0; i < mGoalList.size(); i++) {
                             //go through each goal and evaluate, store data for the row. can look back to the last Monday
@@ -258,13 +281,10 @@ public class ChildProgressFragment extends Fragment {
                             // day has 2 arrays, names i.e. cals, protein, and values. Goals has names, find the matching index
                             int index = mDay.getNames().indexOf(name);
                             if(index>=0) {
-                                mGoalList.get(i).setWeekTotal(weekTotals.get(index));
+                                mGoalList.get(i).setWeekTotal((float) weekTotals.get(index));
                             }
                             System.out.println("nametest = "+name);
                             System.out.println("nametest index= "+index);
-
-                            //TODO need to retrieve sets total. Dummy value now
-                            mGoalList.get(2).setWeekTotal(10);
 
 
                         }
@@ -284,23 +304,29 @@ public class ChildProgressFragment extends Fragment {
 
                         mGoalList.clear();
                         weekTotals.clear();
+                        mVolume.clear();
+                        listOfLiftNamesAndSets.clear();
+                        muscleVolumes.clear();
+                        goalsForWeekFound = false;
                     }
 
 
 
 
 
-                System.out.println("whilin "+mBigGoalsDetail.size());
+                System.out.println("Day Processed, current Big Goal List Size = "+mBigGoalsDetail.size());
                 if(mBigGoalsDetail.size()!=0) {
-                    System.out.println("whilin2 " + mBigGoalsDetail.get(0).size());
+                    System.out.println("size of each goal list entry");
+                    for(int i=0; i< mBigGoalsDetail.size(); i++) {
+                        System.out.println("i="+i+" :"+mBigGoalsDetail.get(i).size());
+                    }
                 }
 
                 //TODO this is just reporting for testin gplease delete
                     for(int i=0; i< mBigGoalsDetail.size(); i++){
                         for(int j=0; j< mBigGoalsDetail.get(i).size(); j++){
-                            System.out.println("week goal name: "+mBigGoalsDetail.get(i).get(j).getName());
-                            System.out.println("week goal total: " +mBigGoalsDetail.get(i).get(j).getWeekTotal());
-
+                            System.out.println("week "+i+" goal name: "+mBigGoalsDetail.get(i).get(j).getName());
+                            System.out.println("week "+i+" goal total: " +mBigGoalsDetail.get(i).get(j).getWeekTotal());
                         }
                     }
 
@@ -436,6 +462,53 @@ public class ChildProgressFragment extends Fragment {
         }
         return result;
     }
+
+
+    private int convertVolumeToWeekGoal(HashMap<String, Integer> VolumeFromLifts){
+        int result = 0;
+        for (Map.Entry<String, Integer> entry : mVolume.entrySet()) {
+            System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+        }
+        Set<Map.Entry<String, Integer>> entrySet = mVolume.entrySet();
+        listOfLiftNamesAndSets = new ArrayList<Map.Entry<String, Integer>>(entrySet);
+        //get all info and set colors
+        for(int j = 0; j< listOfLiftNamesAndSets.size(); j++){
+            String liftName = listOfLiftNamesAndSets.get(j).getKey();
+            Integer numSets = listOfLiftNamesAndSets.get(j).getValue();
+            LiftMap mMap = AppDatabase.getAppDatabase(getActivity()).lmDAO().findByName(liftName);
+            if(mMap != null) {
+                ArrayList<String> names = mMap.getMuscles();
+                ArrayList<Integer> ratios = mMap.getRatios();
+                if (mMap.getRatios() != null) {
+                    for (int i = 0; i < mMap.getRatios().size(); i++) {
+                        if (muscleVolumes.containsKey(names.get(i))) {
+                            Double hold = muscleVolumes.get(names.get(i));
+                            //dividing by 10 because stored as integers
+                            hold = hold +  ((double) ratios.get(i)/10) * numSets;
+                            muscleVolumes.put(names.get(i), hold);
+                        } else {
+                            //dividing by 10 because stored as integers
+                            muscleVolumes.put(names.get(i), ((double) ratios.get(i)/10) * numSets);
+                        }
+                    }
+                }
+            }else{
+                System.out.println("LIFT MAP NULL: "+liftName);
+            }
+        }
+
+        Double avgsets = 0.0;
+        for (Double value : muscleVolumes.values()) {
+            avgsets = avgsets+value;
+        }
+        float totalWeekSets = (float) (avgsets/38);
+
+        mGoalList.get(2).setWeekTotal(totalWeekSets);
+
+
+        return result;
+    }
+
 
 
 }

@@ -708,7 +708,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                     if(mNutritionDay.getGoalList() == null || mNutritionDay.getGoalList().size() == 0) {
                         System.out.println("need to create goals if its today");
 
-                        if (formattedDate.equals(todayDate)) {
+                    //    if (formattedDate.equals(todayDate)) {
                             System.out.println("creating goals");
                             switch (mGoalType) {
                                 case 0:
@@ -731,7 +731,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                             GoalsDetail mDetail5 = new GoalsDetail("Sets", 2, 0, prefs.getInt("volume", 15));
                             mGoalList.add(mDetail5);
                             mNutritionDay.setGoalList(mGoalList);
-                        }
+                  //      }
                     }
                     mRepository.updateNutrition(mNutritionDay);
 

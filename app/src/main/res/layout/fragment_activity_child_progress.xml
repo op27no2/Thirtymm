@@ -13,6 +13,25 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+        <TextView
+            android:padding="2dp"
+            android:id="@+id/week_text"
+            android:layout_width="40dp"
+            android:layout_height="30dp"
+            android:background="@color/darkgrey"
+            android:textColor="@color/white"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="12sp"
+            app:autoSizeMaxTextSize="100sp"
+            app:autoSizeStepGranularity="2sp"/>
+        <ImageView
+            android:layout_toRightOf="@+id/week_text"
+            android:background="@color/lightgrey"
+            android:id="@+id/divider0"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            ></ImageView>
+
         <GridView
             android:layout_marginBottom="1dp"
             android:id="@+id/grid_view"
@@ -21,6 +40,8 @@
             android:horizontalSpacing="1dp"
             android:columnCount="4"
             ></GridView>
+
+
 
 <!--
         <TextView
@@ -98,14 +119,14 @@
         </TextView>
         -->
     </LinearLayout>
-    <ImageView
+<!--    <ImageView
         android:id="@+id/divider"
         android:layout_below="@+id/header"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/colorAccent"
         >
-    </ImageView>
+    </ImageView>-->
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_below="@+id/divider"

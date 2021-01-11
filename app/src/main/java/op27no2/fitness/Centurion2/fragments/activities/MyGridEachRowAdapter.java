@@ -2,6 +2,7 @@ package op27no2.fitness.Centurion2.fragments.activities;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.icu.text.DecimalFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,22 +16,26 @@ import java.util.ArrayList;
 
 import op27no2.fitness.Centurion2.R;
 
-public class MyGridAdapter extends BaseAdapter {
+public class MyGridEachRowAdapter extends BaseAdapter {
     private Context mContext;
     private ArrayList<GoalsDetail> mValues = new ArrayList<GoalsDetail>();
     private Resources resources;
-    private Boolean drawText;
+    private Boolean titleRow;
 
-    public MyGridAdapter(Context context, ArrayList<GoalsDetail> mGoalDetail, Resources res) {
+    public MyGridEachRowAdapter(Context context, ArrayList<GoalsDetail> mGoalDetail, Resources res, Boolean isTitleRow) {
         this.mContext = context;
         this.mValues = mGoalDetail;
         this.resources = res;
+        this.titleRow = isTitleRow;
     }
 
         @Override
         public int getCount() {
-            return mValues.size();
+            return 6;
         }
+    /*    public int getCount() {
+            return mValues.size()*addTitleRow;
+        }*/
 
         @Override
         public long getItemId(int position) {
@@ -46,24 +51,58 @@ public class MyGridAdapter extends BaseAdapter {
         public View getView(int position, View convertView, ViewGroup parent) {
 
 
+
             if (convertView == null) {
                 final LayoutInflater layoutInflater = LayoutInflater.from(mContext);
                 convertView = layoutInflater.inflate(R.layout.adapter_grid_cell, null);
             }
-
             final LinearLayout gridCell = (LinearLayout) convertView.findViewById(R.id.grid_cell_layout);
             final TextView textView = (TextView) convertView.findViewById(R.id.grid_text);
+            DecimalFormat df = new DecimalFormat("#.#");
 
-            //TODO change to consider goal type
-            if(mValues.get(position).getGoalType() == 2) {
-                    textView.setText(Double.toString(mValues.get(position).getWeekTotal()) + "/" + Double.toString(mValues.get(position).getGoalLimitHigh()));
+
+            //GOAL IS TO BE BELOW VALUE
+            if(mValues.get(position).getGoalType() == 0) {
+                if(titleRow) {
+                    textView.setText(mValues.get(position).getName() + " < " + mValues.get(position).getGoalLimitLow());
+                    gridCell.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.darkgrey, null));
+                }else {
+                    textView.setText((df.format(mValues.get(position).getWeekTotal())) + "/" + df.format((mValues.get(position).getGoalLimitLow())));
+                }
             }
 
+            //GOAL IS TO BE BETWEEN TWO VALUES
+            if(mValues.get(position).getGoalType() == 1) {
+                if(titleRow) {
+                    textView.setText(mValues.get(position).getGoalLimitLow()+" < "+mValues.get(position).getName() + " < " + mValues.get(position).getGoalLimitHigh());
+                    gridCell.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.darkgrey, null));
+                }else {
+                    textView.setText(df.format(mValues.get(position).getGoalLimitHigh()) + "/" + df.format(mValues.get(position).getWeekTotal()) + "/" + Double.toString(mValues.get(position).getGoalLimitHigh()));
+                }
+            }
+
+            //GOAL IS TO BE ABOVE VALUE
+            if(mValues.get(position).getGoalType() == 2) {
+                if(titleRow) {
+                    textView.setText(mValues.get(position).getName() + " < " + mValues.get(position).getGoalLimitHigh());
+                    gridCell.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.darkgrey, null));
+                }else {
+                    textView.setText(df.format(mValues.get(position).getWeekTotal()) + "/" + df.format(mValues.get(position).getGoalLimitHigh()));
+                }
+            }
+
+            //Check Success
             if (checkSuccess(mValues.get(position)) >= 1) {
                 gridCell.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.green, null));
             } else {
                 gridCell.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.colorPrimaryDark, null));
             }
+
+
+
+
+
+
 
 
             return convertView;
@@ -73,8 +112,12 @@ public class MyGridAdapter extends BaseAdapter {
 
     private float checkSuccess(GoalsDetail detail){
         float result = 0f;
-        if(detail.getGoalType() == 0){
-            result = detail.getGoalLimitLow()/detail.getWeekTotal(); //e.g  100/50 will be 2 for a deficit goal. if you go over, 100/150, you are below 1 and we can colorize, this isn't really linear currently, hard to get low on scale
+        if(detail.getGoalType() == 0) {
+            if (detail.getWeekTotal() < detail.getGoalLimitLow()) {
+                result = 1+((detail.getGoalLimitLow() - detail.getWeekTotal()) / Math.abs(detail.getGoalLimitLow()));
+            } else if (detail.getWeekTotal() == detail.getGoalLimitLow()) {
+                result = 1;
+            }
         }
         if(detail.getGoalType() == 1){
             if(detail.getWeekTotal() > detail.getGoalLimitLow() && detail.getWeekTotal()<detail.getGoalLimitHigh()){

@@ -74,6 +74,7 @@ public class DialogCalendar extends Dialog  {
 
         private MaterialCalendarView mCal;
         private Calendar copyCal;
+        private Calendar copyCalTEST;
         private TextView mileText;
         private TextView setsText;
         private Double milesHold = 0.0;
@@ -106,6 +107,7 @@ public class DialogCalendar extends Dialog  {
             getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
             copyCal  = (Calendar)fragCalendar.clone();
+
             System.out.println("async dates: "+ fragCalendar.get(Calendar.DAY_OF_MONTH));
             System.out.println("loaded date: "+ copyCal.get(Calendar.DAY_OF_MONTH));
 
