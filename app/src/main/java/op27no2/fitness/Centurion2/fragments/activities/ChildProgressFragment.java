@@ -10,7 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
-import android.widget.TextView;
 
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
@@ -47,13 +46,8 @@ public class ChildProgressFragment extends Fragment {
     private ArrayList<NutritionDay> mDays = new ArrayList<NutritionDay>();
     private ArrayList<LiftingWorkout> mWorkouts = new ArrayList<LiftingWorkout>();
     private ArrayList<ArrayList<GoalsDetail>> mBigGoalsDetail = new ArrayList<ArrayList<GoalsDetail>>();
-    private ArrayList<Float> setWeekData = new ArrayList<Float>();
-    private ArrayList<Float> calWeekData = new ArrayList<Float>();
-    private ArrayList<Float> proteinWeekData = new ArrayList<Float>();
+    private ArrayList<Integer> goalChangePositions = new ArrayList<Integer>();
     private ArrayList<String> calendarWeeks = new ArrayList<String>();
-    private TextView volumeText;
-    private TextView calorieText;
-    private TextView proteinText;
     private Context mContext;
     private Date today;
     private GridView grid;
@@ -131,7 +125,7 @@ public class ChildProgressFragment extends Fragment {
                 })
         );
 
-        mProgressAdapter = new ProgressAdapter(mBigGoalsDetail, setWeekData, calWeekData, proteinWeekData, calendarWeeks, getActivity());
+        mProgressAdapter = new ProgressAdapter(mBigGoalsDetail, calendarWeeks, goalChangePositions, getActivity());
         mRecyclerView.setAdapter(mProgressAdapter);
 
 
@@ -243,7 +237,7 @@ public class ChildProgressFragment extends Fragment {
                             System.out.println("goal list not null");
                             System.out.println("goal list size: "+mGoalList.size());
                             for (int i = 0; i < mGoalList.size(); i++) {
-                                System.out.println("goal: " + mGoalList.get(i).getName());
+                                System.out.println("goal: " + mGoalList.get(i).getGoalName());
                             }
                             goalsForWeekFound = true;
                         }else{
@@ -277,7 +271,7 @@ public class ChildProgressFragment extends Fragment {
                         for (int i = 0; i < mGoalList.size(); i++) {
                             //go through each goal and evaluate, store data for the row. can look back to the last Monday
                             //now just going by position, but can eventually search for name and match to nutritiondays.getNames()? or better solution
-                            String name = mGoalList.get(i).getName();
+                            String name = mGoalList.get(i).getGoalName();
                             // day has 2 arrays, names i.e. cals, protein, and values. Goals has names, find the matching index
                             int index = mDay.getNames().indexOf(name);
                             if(index>=0) {
@@ -325,7 +319,7 @@ public class ChildProgressFragment extends Fragment {
                 //TODO this is just reporting for testin gplease delete
                     for(int i=0; i< mBigGoalsDetail.size(); i++){
                         for(int j=0; j< mBigGoalsDetail.get(i).size(); j++){
-                            System.out.println("week "+i+" goal name: "+mBigGoalsDetail.get(i).get(j).getName());
+                            System.out.println("week "+i+" goal name: "+mBigGoalsDetail.get(i).get(j).getGoalName());
                             System.out.println("week "+i+" goal total: " +mBigGoalsDetail.get(i).get(j).getWeekTotal());
                         }
                     }
@@ -342,6 +336,61 @@ public class ChildProgressFragment extends Fragment {
              }
 
 
+            for(int i=0; i<mBigGoalsDetail.size()-1;i++){
+                if(!mBigGoalsDetail.get(i+1).equals(mBigGoalsDetail.get(i))){
+                    if(mBigGoalsDetail.get(i).size() == mBigGoalsDetail.get(i+1).size()){
+                        System.out.println("Goals Size Same");
+                        boolean checkSame = true;
+                       for(int j=0; j<mBigGoalsDetail.get(i).size();j++){
+                           System.out.println("goal 1 name:"+mBigGoalsDetail.get(i).get(j).getGoalName());
+                           System.out.println("goal 2 name:"+mBigGoalsDetail.get(i+1).get(j).getGoalName());
+                           if(mBigGoalsDetail.get(i).get(j).getGoalName().equals(mBigGoalsDetail.get(i+1).get(j).getGoalName())){
+                               System.out.println("true");
+                           }else{
+                               System.out.println("false");
+                           }
+                           System.out.println("goal 1 type:"+mBigGoalsDetail.get(i).get(j).getGoalType());
+                           System.out.println("goal 2 type:"+mBigGoalsDetail.get(i+1).get(j).getGoalType());
+                           if(mBigGoalsDetail.get(i).get(j).getGoalType().equals(mBigGoalsDetail.get(i+1).get(j).getGoalType())){
+                               System.out.println("true");
+                           }else{
+                               System.out.println("false");
+                           }
+                           System.out.println("goal 1 low:"+mBigGoalsDetail.get(i).get(j).getGoalLimitLow());
+                           System.out.println("goal 2 low:"+mBigGoalsDetail.get(i+1).get(j).getGoalLimitLow());
+                           if(mBigGoalsDetail.get(i).get(j).getGoalLimitLow().equals(mBigGoalsDetail.get(i+1).get(j).getGoalLimitLow())){
+                               System.out.println("true");
+                           }else{
+                               System.out.println("false");
+                           }
+                           System.out.println("goal 1 high:"+mBigGoalsDetail.get(i).get(j).getGoalLimitHigh());
+                           System.out.println("goal 2 high:"+mBigGoalsDetail.get(i+1).get(j).getGoalLimitHigh());
+                           if(mBigGoalsDetail.get(i).get(j).getGoalLimitHigh().equals(mBigGoalsDetail.get(i+1).get(j).getGoalLimitHigh())){
+                               System.out.println("true");
+                           }else{
+                               System.out.println("false");
+                           }
+
+
+                           if(mBigGoalsDetail.get(i).get(j).getGoalName().equals(mBigGoalsDetail.get(i+1).get(j).getGoalName()) && mBigGoalsDetail.get(i).get(j).getGoalType().equals(mBigGoalsDetail.get(i+1).get(j).getGoalType()) &&
+                                   mBigGoalsDetail.get(i).get(j).getGoalLimitLow().equals(mBigGoalsDetail.get(i+1).get(j).getGoalLimitLow()) && mBigGoalsDetail.get(i).get(j).getGoalLimitHigh().equals(mBigGoalsDetail.get(i+1).get(j).getGoalLimitHigh())){
+                           //the are the same do nothing
+                           }else{
+                               checkSame = false;
+                               System.out.println("Goals Diff");
+                           }
+                       }
+                        if(checkSame == false) {
+                            //goals for the two weeks are not the same, log number to make sure you display header row
+                            goalChangePositions.add(i + 1);
+                        }
+
+
+                    }
+
+
+                }
+            }
 
 
                 //old algorithm
@@ -405,13 +454,6 @@ public class ChildProgressFragment extends Fragment {
                 return null;
             }
             protected void onPostExecute(Void unused) {
-                // Post Code
-                for(int i=0; i<calWeekData.size();i++){
-                    System.out.println("grid data cals:" +calWeekData.get(i));
-                }
-                for(int i=0; i<proteinWeekData.size();i++){
-                    System.out.println("grid data protein:" +proteinWeekData.get(i));
-                }
 
 
                 finishUI();
@@ -428,7 +470,7 @@ public class ChildProgressFragment extends Fragment {
         int j = mBigGoalsDetail.size();
         if(j>=1) {
             for (int i = 0; i < mBigGoalsDetail.get(j - 1).size(); i++) {
-                titles.add(mBigGoalsDetail.get(j - 1).get(i).getName());
+                titles.add(mBigGoalsDetail.get(j - 1).get(i).getGoalName());
             }
         }else{
             titles.add("test");

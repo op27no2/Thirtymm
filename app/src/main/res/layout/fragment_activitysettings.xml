@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fancy="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:animateLayoutChanges="false"
+    android:layout_height="match_parent">
+
+
+
+
+    <RelativeLayout
+        android:id="@+id/toolbar"
+        android:background="@color/colorPrimary"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize">
+
+        <TextView
+            android:id="@+id/toolbar_title"
+            android:layout_marginLeft="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Settings"
+            android:textSize="20sp"
+            android:textColor="#FFFFFF"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/content"
+        android:layout_below="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    <TextView
+        android:id="@+id/preferences_text"
+        android:text="General"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:gravity="center_vertical"
+        android:layout_marginLeft="20dp"
+        android:textColor="@color/colorAccent"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        />
+
+        <RelativeLayout
+            android:id="@+id/goals"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_below="@+id/preferences_text"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize">
+            <TextView
+                android:id="@+id/goals_text"
+                android:text="Goals"
+                android:layout_marginLeft="20dp"
+                android:gravity="center_vertical"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:textSize="18sp"
+                />
+
+
+        </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/weight"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_below="@+id/goals"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize">
+            <TextView
+                android:id="@+id/weight_text"
+                android:text="Weight"
+                android:layout_marginLeft="20dp"
+                android:gravity="center_vertical"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:textSize="18sp"
+                />
+
+
+        </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/avatar"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_below="@+id/weight"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize">
+            <TextView
+                android:id="@+id/avatar_text"
+                android:text="Avatar"
+                android:layout_marginLeft="20dp"
+                android:gravity="center_vertical"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:textSize="18sp"
+                />
+        </RelativeLayout>
+
+
+
+    </RelativeLayout>
+
+
+
+
+</RelativeLayout>

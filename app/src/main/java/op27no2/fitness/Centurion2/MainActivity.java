@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         intent.putExtra(EXTRA_MESSAGE, message);*/
 
         //TODO bring back intro and create firstlogin logic
-      //  startActivity(intent);
+        startActivity(intent);
 
 
 
@@ -69,6 +69,12 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         NavController navController = Navigation.findNavController(this, nav_host_fragment);
         navController.navigate(R.id.navigation_settings);
     }
+
+    public void goToActivitySettings(){
+        NavController navController = Navigation.findNavController(this, nav_host_fragment);
+        navController.navigate(R.id.navigation_activitysettings);
+    }
+
 
     public void goToRunSettings(){
         NavController navController = Navigation.findNavController(this, nav_host_fragment);

@@ -9,13 +9,14 @@ import androidx.room.TypeConverters;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
+import op27no2.fitness.Centurion2.fragments.activities.GoalsDetail;
 import op27no2.fitness.Centurion2.fragments.lifting.LiftMap;
 import op27no2.fitness.Centurion2.fragments.lifting.LiftingWorkout;
 import op27no2.fitness.Centurion2.fragments.lifting.NamedWorkout;
 import op27no2.fitness.Centurion2.fragments.nutrition.NutritionDay;
 import op27no2.fitness.Centurion2.fragments.run.RunWorkout;
 
-@Database(entities = {LiftingWorkout.class, NutritionDay.class, LiftMap.class, RunWorkout.class, NamedWorkout.class}, version = 4)
+@Database(entities = {LiftingWorkout.class, NutritionDay.class, LiftMap.class, RunWorkout.class, NamedWorkout.class, GoalsDetail.class}, version = 5)
 @TypeConverters({Converters.class})
 
 public abstract class AppDatabase extends RoomDatabase {
@@ -27,12 +28,13 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract NutritionDAO ntDAO();
     public abstract NamedWorkoutDAO nwDAO();
     public abstract LiftMapDAO lmDAO();
+    public abstract GoalListDAO glDAO();
 
     public static AppDatabase getAppDatabase(Context context) {
         if (INSTANCE == null) {
             INSTANCE = Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, "user-database")
                    // .build();
-                    .addMigrations(MIGRATION_1_2).addMigrations(MIGRATION_2_3).addMigrations(MIGRATION_3_4).build();
+                    .addMigrations(MIGRATION_1_2).addMigrations(MIGRATION_2_3).addMigrations(MIGRATION_3_4).addMigrations(MIGRATION_4_5).build();
 
                             // allow queries on the main thread.
                             // Don't do this on a real app! See PersistenceBasicSample for an example.
@@ -72,6 +74,12 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    static final Migration MIGRATION_4_5 = new Migration(4, 5) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+
+        }
+    };
 
 
 

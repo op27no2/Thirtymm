@@ -18,6 +18,7 @@ public class Repository {
     private NutritionDAO mNutritionDao;
     private NamedWorkoutDAO mNamedWorkoutDAO;
     private LiftMapDAO mLiftMapDao;
+    private GoalListDAO mGoalListDao;
     private LiftingWorkout liftWorkout;
 
     public Repository(Context context) {
@@ -26,6 +27,7 @@ public class Repository {
         this.mNutritionDao = dataRoombase.ntDAO();
         this.mNamedWorkoutDAO = dataRoombase.nwDAO();
         this.mLiftMapDao = dataRoombase.lmDAO();
+        this.mGoalListDao = dataRoombase.glDAO();
         this.mRunDao = dataRoombase.rwDAO();
     }
 

@@ -61,9 +61,10 @@ public class ProgressAdapter extends RecyclerView.Adapter<ProgressAdapter.ViewHo
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public ProgressAdapter(ArrayList<ArrayList<GoalsDetail>> mGoals, ArrayList<String> weeks, Context context) {
+    public ProgressAdapter(ArrayList<ArrayList<GoalsDetail>> mGoals, ArrayList<String> weeks, ArrayList<Integer> goalChanges, Context context) {
         calendarWeekData = weeks;
         goalWeekData = mGoals;
+        goalChangePositions = goalChanges;
         mContext = context;
     }
 
@@ -111,7 +112,7 @@ public class ProgressAdapter extends RecyclerView.Adapter<ProgressAdapter.ViewHo
         grid.setNumColumns(goalWeekData.get(pos).size());
         grid.setAdapter(gridAdapter);
 
-        if(pos==0){
+        if(pos==0 || goalChangePositions.contains(pos)){
             gridTitle.setVisibility(View.VISIBLE);
             MyGridEachRowAdapter gridAdapter2 = new MyGridEachRowAdapter(mContext, goalWeekData.get(pos) , res, true);
             //  grid.setNumColumns(goalWeekData.size());

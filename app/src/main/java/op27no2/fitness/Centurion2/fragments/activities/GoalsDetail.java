@@ -1,26 +1,46 @@
 package op27no2.fitness.Centurion2.fragments.activities;
 
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
+@Entity(tableName = "goallist")
 public class GoalsDetail {
+
+    @PrimaryKey(autoGenerate = true)
+    private int uid;
+
+    @ColumnInfo(name = "goalname")
     private String goalName;
     // type 0 = below low limit, type 1 = between low and high, type 2 = above high limit
+    @ColumnInfo(name = "goaltype")
     private Integer goalType;
+
+    @ColumnInfo(name = "goallimitlow")
     private Integer goalLimitLow;
+
+    @ColumnInfo(name = "goallimithigh")
     private Integer goalLimitHigh;
 
     //used when adding after summing each week for ProgressAdapter
-    private float weekTotal;
+    @ColumnInfo(name = "weektotal")
+    private Float weekTotal;
 
-    public GoalsDetail(String name, Integer type, Integer lowlimit, Integer highlimit) {
-        this.goalName = name;
-        this.goalType = type;
-        this.goalLimitLow = lowlimit;
-        this.goalLimitHigh = highlimit;
+    //used when referring to settings
+  /*  @ColumnInfo(name = "active")
+    private boolean activeGoal;*/
+
+    public GoalsDetail(String goalName, Integer goalType, Integer goalLimitLow, Integer goalLimitHigh) {
+        this.goalName = goalName;
+        this.goalType = goalType;
+        this.goalLimitLow = goalLimitLow;
+        this.goalLimitHigh = goalLimitHigh;
     }
 
-    public String getName(){
+    public String getGoalName(){
         return goalName;
     }
-    public void setName(String name){
+    public void setGoalName(String name){
         goalName = name;
     }
 
@@ -45,11 +65,27 @@ public class GoalsDetail {
         goalLimitHigh = high;
     }
 
-    public float getWeekTotal(){
+    public Float getWeekTotal(){
         return weekTotal;
     }
-    public void setWeekTotal(float total){
-        weekTotal = total;
+    public void setWeekTotal(Float weekTotal){
+        weekTotal = weekTotal;
     }
 
+/*
+    public boolean getActiveGoal(){
+        return activeGoal;
+    }
+    public void setActiveGoal(boolean activeGoal){
+        activeGoal = activeGoal;
+    }
+*/
+
+
+    public int getUid() {
+        return uid;
+    }
+    public void setUid(int uid) {
+        this.uid = uid;
+    }
 }

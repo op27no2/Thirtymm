@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -24,6 +25,7 @@ import java.util.Date;
 
 import op27no2.fitness.Centurion2.Database.AppDatabase;
 import op27no2.fitness.Centurion2.Database.Repository;
+import op27no2.fitness.Centurion2.MainActivity;
 import op27no2.fitness.Centurion2.MyAdapter;
 import op27no2.fitness.Centurion2.R;
 import op27no2.fitness.Centurion2.fragments.run.RunWorkout;
@@ -40,6 +42,8 @@ public class ActivityFragment extends Fragment {
     private RunCardviewWorkoutAdapter mRunAdapter;
     private Bundle mState;
     private Repository mRepository;
+    private ImageView settingsButton;
+
 
     private TabLayout tabLayout;
     private ViewPager viewPager;
@@ -59,6 +63,15 @@ public class ActivityFragment extends Fragment {
         tabLayout.addTab(tabLayout.newTab().setText("Progress"));
         tabLayout.addTab(tabLayout.newTab().setText("Activities"));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
+
+        settingsButton = (ImageView) view.findViewById(R.id.settings);
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((MainActivity)getActivity()).goToActivitySettings();
+            }
+        });
+
 
         final MyAdapter adapter = new MyAdapter(getActivity(),getChildFragmentManager(), tabLayout.getTabCount());
         viewPager.setAdapter(adapter);
