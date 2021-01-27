@@ -77,7 +77,7 @@ public abstract class AppDatabase extends RoomDatabase {
     static final Migration MIGRATION_4_5 = new Migration(4, 5) {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
-
+              database.execSQL("CREATE TABLE IF NOT EXISTS `goallist` (`uid` INTEGER NOT NULL, goallimithigh INTEGER , weektotal REAL, goallimitlow INTEGER, goalname TEXT, goaltype INTEGER, PRIMARY KEY(`uid`))");
         }
     };
 

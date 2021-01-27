@@ -24,18 +24,18 @@ public class ValueDialog extends Dialog  {
         private EditText mEdit;
         //passed from lift fragment adapter, keep track to  to correct row
         private float value;
-        private int position;
+        private int valueType;
 
 
 
 
-    public ValueDialog(@NonNull Context context, int pos, float mValue, ValueDialogInterface dialogInterface) {
+    public ValueDialog(@NonNull Context context, int type, float mValue, ValueDialogInterface dialogInterface) {
         super(context);
         c = context;
         mInterface = dialogInterface;
         mContext = context;
         value = mValue;
-        position = pos;
+        valueType = type;
     }
 
 
@@ -47,7 +47,7 @@ public class ValueDialog extends Dialog  {
             requestWindowFeature(Window.FEATURE_NO_TITLE);
             setContentView(R.layout.dialog_edittext);
             mEdit = (EditText) findViewById(R.id.value);
-            if(position != 5) {
+            if(valueType != 5) {
                 mEdit.setText(Integer.toString((int) value));
             }else{
                 mEdit.setText(Float.toString(value));
@@ -56,7 +56,7 @@ public class ValueDialog extends Dialog  {
             mEdit.selectAll();
 
             //if protein, accept decimals 0.6
-            if(position == 5){
+            if(valueType == 5){
                 mEdit.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
             }
 
@@ -87,20 +87,20 @@ public class ValueDialog extends Dialog  {
 
     @Override
     protected void onStop(){
-        if(position!=5) {
-            mInterface.onValueDialogDismiss(Integer.parseInt(mEdit.getText().toString()), position);
+        if(valueType !=5) {
+            mInterface.onValueDialogDismiss(Integer.parseInt(mEdit.getText().toString()), valueType);
         }else{
-            mInterface.onValueDialogDismiss(Float.parseFloat(mEdit.getText().toString()), position);
+            mInterface.onValueDialogDismiss(Float.parseFloat(mEdit.getText().toString()), valueType);
         }
 
     }
 
     @Override
     public void onBackPressed(){
-        if(position!=5) {
-            mInterface.onValueDialogDismiss(Integer.parseInt(mEdit.getText().toString()), position);
+        if(valueType !=5) {
+            mInterface.onValueDialogDismiss(Integer.parseInt(mEdit.getText().toString()), valueType);
         }else{
-            mInterface.onValueDialogDismiss(Float.parseFloat(mEdit.getText().toString()), position);
+            mInterface.onValueDialogDismiss(Float.parseFloat(mEdit.getText().toString()), valueType);
         }
         dismiss();
     }

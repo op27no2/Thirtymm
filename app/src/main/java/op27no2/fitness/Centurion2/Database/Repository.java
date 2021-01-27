@@ -3,9 +3,11 @@ package op27no2.fitness.Centurion2.Database;
 
 import android.content.Context;
 
+import java.util.ArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import op27no2.fitness.Centurion2.fragments.activities.GoalsDetail;
 import op27no2.fitness.Centurion2.fragments.lifting.LiftMap;
 import op27no2.fitness.Centurion2.fragments.lifting.LiftingWorkout;
 import op27no2.fitness.Centurion2.fragments.lifting.NamedWorkout;
@@ -142,6 +144,13 @@ public class Repository {
         Executor myExecutor = Executors.newSingleThreadExecutor();
         myExecutor.execute(() -> {
             mNamedWorkoutDAO.delete(mWorkout);
+        });
+    }
+
+    public void updateGoalList(ArrayList<GoalsDetail> mGoalList) {
+        Executor myExecutor = Executors.newSingleThreadExecutor();
+        myExecutor.execute(() -> {
+            mGoalListDao.updateGoalList(mGoalList);
         });
     }
 

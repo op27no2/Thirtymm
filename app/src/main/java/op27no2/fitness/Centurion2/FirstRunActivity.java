@@ -18,6 +18,7 @@ import com.rilixtech.materialfancybutton.MaterialFancyButton;
 import java.util.ArrayList;
 
 import op27no2.fitness.Centurion2.Database.AppDatabase;
+import op27no2.fitness.Centurion2.Database.Repository;
 import op27no2.fitness.Centurion2.fragments.activities.GoalsDetail;
 
 
@@ -51,6 +52,7 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
     private ValueDialogInterface mInterface;
 
     private ArrayList<GoalsDetail> mGoalList;
+    private Repository mRepository;
     private Context mContext;
 
 
@@ -61,6 +63,7 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
         prefs = getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
         mContext = this;
+        mRepository = new Repository(mContext);
 
         System.out.println("FirstRun onCreate");
         setContentView(R.layout.activity_first_run);
@@ -116,7 +119,7 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
             @Override
             public void onClick(View view) {
              //   Dialog dialog = new ValueDialog(view.getContext(), 0, prefs.getInt("deficit",-3500), mInterface);
-                Dialog dialog = new ValueDialog(view.getContext(), 0, mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow(), mInterface);
+                Dialog dialog = new ValueDialog(view.getContext(), 0, mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow()/7, mInterface);
                 dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
                 dialog.show();
 
@@ -126,7 +129,7 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
             @Override
             public void onClick(View view) {
             //    Dialog dialog = new ValueDialog(view.getContext(), 1, prefs.getInt("recomp",700), mInterface);
-                  Dialog dialog = new ValueDialog(view.getContext(), 0, mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow(), mInterface);
+                  Dialog dialog = new ValueDialog(view.getContext(), 1, mGoalList.get(getGoalIndex("Cals")).getGoalLimitHigh()/7, mInterface);
                 dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
                 dialog.show();
             }
@@ -135,7 +138,7 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
             @Override
             public void onClick(View view) {
             //    Dialog dialog = new ValueDialog(view.getContext(), 2, prefs.getInt("bulk",2100), mInterface);
-                Dialog dialog = new ValueDialog(view.getContext(), 0, mGoalList.get(getGoalIndex("Cals")).getGoalLimitHigh(), mInterface);
+                Dialog dialog = new ValueDialog(view.getContext(), 2, mGoalList.get(getGoalIndex("Cals")).getGoalLimitHigh()/7, mInterface);
                 dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
                 dialog.show();
             }
@@ -145,7 +148,7 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
             public void onClick(View view) {
                 int vol = 0;
                 //Dialog dialog = new ValueDialog(view.getContext(), 3, prefs.getInt("volume",vol), mInterface);Dialog dialog = new ValueDialog(view.getContext(), 0, mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow(), mInterface);
-                Dialog dialog = new ValueDialog(view.getContext(), 0, mGoalList.get(getGoalIndex("Sets")).getGoalLimitLow(), mInterface);
+                Dialog dialog = new ValueDialog(view.getContext(), 3, mGoalList.get(getGoalIndex("Sets")).getGoalLimitHigh(), mInterface);
                 dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
 
                 dialog.show();
@@ -235,7 +238,7 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
             }
             protected Void doInBackground(Void... unused) {
                 mGoalList = new ArrayList<GoalsDetail>(AppDatabase.getAppDatabase(mContext).glDAO().getAll());
-                if(mGoalList == null){
+                if(mGoalList == null || mGoalList.size() == 0){
                     //really this should be done on first run instead of prefs.
                     System.out.println("goals null should create");
                     GoalsDetail mDetail = new GoalsDetail( "Cals", 0,  -300, 0);
@@ -245,6 +248,8 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
                     GoalsDetail mDetail5 = new GoalsDetail( "Sets", 2, 0,   15);
                     mGoalList.add(mDetail5);
                     AppDatabase.getAppDatabase(mContext).glDAO().insertAll(mGoalList);
+                }else{
+                    System.out.println("First run goallist null or size zero");
                 }
 
                 return null;
@@ -353,52 +358,60 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
         System.out.println("dialog position: "+position+" value: "+value);
         switch(position){
             case 0:
-                buttonDeficit.setText("Deficit Goal\n"+Integer.toString((int) value)+" Calories");
+                int myValue = (int) -(Math.abs(value));
+                buttonDeficit.setText("Deficit Goal\n"+Integer.toString(myValue)+" Calories per Day\n (= "+Integer.toString(myValue*7)+ " per Week)");
                 mGoalList.get(getGoalIndex("Cals")).setGoalType(0);
-                mGoalList.get(getGoalIndex("Cals")).setGoalLimitLow((int) value*7);
+                mGoalList.get(getGoalIndex("Cals")).setGoalLimitLow(myValue*7);
+                mRepository.updateGoalList(mGoalList);
 
-                //TODO remove prefs we dont need once we confirm its working
+                //TODO remove prefs we dont need once we confirm its working, but not for weight, gender, units
                 edt.putInt("deficit",(int) value);
                 edt.putInt("goaltype", 0);
                 edt.apply();
                 break;
             case 1:
-                buttonMaintenance.setText("Maintenance Goal:\n"+"Base Cals +/- "+Integer.toString((int) value));
+                buttonMaintenance.setText("Maintenance Goal:\n"+"Base Cals +/- "+Integer.toString((int) value) +" per Day\n"+ "(= +/-" +Integer.toString((int) value*7) +" per Week");
                 mGoalList.get(getGoalIndex("Cals")).setGoalType(1);
                 mGoalList.get(getGoalIndex("Cals")).setGoalLimitLow((int) value*7);
                 mGoalList.get(getGoalIndex("Cals")).setGoalLimitHigh((int) value*7);
+                mRepository.updateGoalList(mGoalList);
 
                 edt.putInt("recomp",(int) value);
                 edt.putInt("goaltype", 1);
                 edt.apply();
                 break;
             case 2:
-                buttonSurplus.setText("Surplus Goal:\n"+Integer.toString((int) value)+"+ Calories");
+                buttonSurplus.setText("Surplus Goal:\n"+Integer.toString((int) value)+"+ Calories per Day\n (= "+Integer.toString((int) value*7)+ "per Week)");
                 mGoalList.get(getGoalIndex("Cals")).setGoalType(2);
                 mGoalList.get(getGoalIndex("Cals")).setGoalLimitHigh((int) value*7);
+                mRepository.updateGoalList(mGoalList);
 
                 edt.putInt("bulk",(int) value);
                 edt.putInt("goaltype", 2);
                 edt.apply();
                 break;
             case 3:
-                buttonVolume.setText("Volume Goal:\n(Sets/Muscle/Week):\n"+Integer.toString((int) value));
+                buttonVolume.setText("Volume Goal:\n(Sets per Muscle per Week):\n"+Integer.toString((int) value));
                 mGoalList.get(getGoalIndex("Sets")).setGoalType(2);
                 mGoalList.get(getGoalIndex("Sets")).setGoalLimitHigh((int) value);
+                mRepository.updateGoalList(mGoalList);
 
                 edt.putInt("volume",(int) value);
                 edt.apply();
                 break;
             case 4:
                 buttonWeight.setText("Weight:\n"+Integer.toString((int) value)+" lbs");
+                mGoalList.get(getGoalIndex("Protein")).setGoalType(2);
+                mGoalList.get(getGoalIndex("Protein")).setGoalLimitHigh((int) Math.floor((value*prefs.getFloat("protein",0.6f)*7)));
+                mRepository.updateGoalList(mGoalList);
                 edt.putInt("weight",(int) value);
                 edt.apply();
                 break;
             case 5:
-                buttonProtein.setText("Protein:\n"+Float.toString(value)+"g per lb");
+                buttonProtein.setText("Protein:\n"+Float.toString(value)+"g per lb per day");
                 mGoalList.get(getGoalIndex("Protein")).setGoalType(2);
                 mGoalList.get(getGoalIndex("Protein")).setGoalLimitHigh((int) value*prefs.getInt("weight",150)*7);
-
+                mRepository.updateGoalList(mGoalList);
                 edt.putFloat("protein", value);
                 edt.apply();
                 break;
@@ -409,10 +422,17 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
     }
 
     private void finishUI(){
-        buttonDeficit.setText("Deficit Goal\n"+"-"+Integer.toString(prefs.getInt("deficit",3500))+" Calories");
+ /*       buttonDeficit.setText("Deficit Goal\n"+"-"+Integer.toString(prefs.getInt("deficit",3500))+" Calories");
         buttonMaintenance.setText("Maintenance Goal:\n"+"Base Cals +/- "+Integer.toString(prefs.getInt("recomp",500)));
         buttonSurplus.setText("Surplus Goal:\n"+Integer.toString(prefs.getInt("bulk",2100))+"+ Calories");
         buttonVolume.setText("Volume Goal:\n(Sets/Muscle/Week):\n"+Integer.toString(prefs.getInt("volume",15)));
+        buttonWeight.setText("Weight:\n"+Integer.toString(prefs.getInt("weight",180))+" lbs");
+        buttonProtein.setText("Protein:\n"+Float.toString(prefs.getFloat("protein",0.6f))+"g per lb");*/
+
+        buttonDeficit.setText("Deficit Goal\n"+mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow()/7+" Calories per Day\n (= "+mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow()+" per Week)");
+        buttonMaintenance.setText("Maintenance Goal:\n"+"Base Cals +/- "+mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow()/7 +" per Day\n"+ "(= +/-" +mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow() +" per Week");
+        buttonSurplus.setText("Surplus Goal:\n"+mGoalList.get(getGoalIndex("Cals")).getGoalLimitHigh()/7+"+ Calories per Day\n (= "+mGoalList.get(getGoalIndex("Cals")).getGoalLimitHigh()+ "per Week)");
+        buttonVolume.setText("Volume Goal:\n(Sets per Muscle per Week):\n"+mGoalList.get(getGoalIndex("Sets")).getGoalLimitHigh());
         buttonWeight.setText("Weight:\n"+Integer.toString(prefs.getInt("weight",180))+" lbs");
         buttonProtein.setText("Protein:\n"+Float.toString(prefs.getFloat("protein",0.6f))+"g per lb");
 
@@ -421,7 +441,7 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
     private int getGoalIndex(String name){
         int index = -1;
         for(int i=0;i<mGoalList.size();i++){
-            if(mGoalList.get(i).getGoalName().equals("name")){
+            if(mGoalList.get(i).getGoalName().equals(name)){
                 index = i;
             }
         }
