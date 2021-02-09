@@ -60,6 +60,11 @@
         android:label="Preferences"
         />
     <fragment
+        android:id="@+id/navigation_nutritionsettings"
+        android:name="op27no2.fitness.Centurion2.fragments.activities.ActivitySettings"
+        android:label="Preferences"
+        />
+    <fragment
         android:id="@+id/navigation_rundetail"
         android:name="op27no2.fitness.Centurion2.fragments.run.RunDetailFragment"
         android:label="RunDetail"

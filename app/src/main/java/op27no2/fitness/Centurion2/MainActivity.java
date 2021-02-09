@@ -75,6 +75,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         navController.navigate(R.id.navigation_activitysettings);
     }
 
+    public void goToNutritionSettings(){
+        NavController navController = Navigation.findNavController(this, nav_host_fragment);
+        navController.navigate(R.id.navigation_nutritionsettings);
+    }
+
+
+
 
     public void goToRunSettings(){
         NavController navController = Navigation.findNavController(this, nav_host_fragment);

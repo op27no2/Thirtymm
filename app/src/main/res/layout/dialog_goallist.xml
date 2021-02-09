@@ -53,7 +53,6 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/my_recycler_view"
                     android:layout_below="@+id/linear"
-                    android:layout_above="@+id/plusminus"
                     android:fastScrollEnabled="false"
                     android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"
@@ -62,7 +61,7 @@
 
             <LinearLayout
                 android:id="@+id/plusminus"
-                android:layout_alignParentBottom="true"
+                android:layout_below="@+id/my_recycler_view"
                 android:layout_centerHorizontal="true"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

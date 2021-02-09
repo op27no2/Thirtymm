@@ -70,6 +70,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
     private ArrayList<String> mNames = new ArrayList<String>(2);
     private ArrayList<Integer> mValues = new ArrayList<Integer>(2);
     private ArrayList<GoalsDetail> mGoalList = new  ArrayList<GoalsDetail>(2);
+    private ArrayList<GoalsDetail> mGoalTopList = new  ArrayList<GoalsDetail>(2);
     private int mGoalType;
     private Integer cals;
 
@@ -630,6 +631,8 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
             protected Void doInBackground(Void... unused) {
                 //nutritionDay and formatted day change with selected day up top, used to edit values
                 mNutritionDay = AppDatabase.getAppDatabase(getActivity()).ntDAO().findByDate(formattedDate);
+                mGoalTopList = new ArrayList<GoalsDetail>(AppDatabase.getAppDatabase(getActivity()).glDAO().getAll());
+
                 ArrayList<NutritionDay> mmDays = new ArrayList<NutritionDay>();
                 ArrayList<String> mmDates = new ArrayList<String>();
 
@@ -656,7 +659,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
 
                     if(formattedDate.equals(todayDate)){
                         System.out.println("creating goals");
-                        switch (mGoalType) {
+         /*               switch (mGoalType) {
                             case 0:
                                 GoalsDetail mDetail = new GoalsDetail( "Cals", 0, prefs.getInt("deficit", -300), 0);
                                 mGoalList.add(mDetail);
@@ -675,8 +678,9 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                         GoalsDetail mDetail4 = new GoalsDetail( "Protein", 2, 0,  (int) Math.floor(prefs.getFloat("protein", 0.6f) * prefs.getInt("weight", (int) 150)));
                         mGoalList.add(mDetail4);
                         GoalsDetail mDetail5 = new GoalsDetail( "Sets", 2, 0,  prefs.getInt("volume", 15));
-                        mGoalList.add(mDetail5);
-                        mNutritionDay.setGoalList(mGoalList);
+                        mGoalList.add(mDetail5);*/
+         
+                        mNutritionDay.setGoalList(mGoalTopList);
                     }
 
 
@@ -709,7 +713,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                         System.out.println("need to create goals if its today");
 
                     //    if (formattedDate.equals(todayDate)) {
-                            System.out.println("creating goals");
+              /*              System.out.println("creating goals");
                             switch (mGoalType) {
                                 case 0:
                                     GoalsDetail mDetail = new GoalsDetail("Cals", 0, prefs.getInt("deficit", -300), 0);
@@ -729,8 +733,9 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                             GoalsDetail mDetail4 = new GoalsDetail("Protein", 2, 0, (int) Math.floor(prefs.getFloat("protein", 0.6f) * prefs.getInt("weight", (int) 150)));
                             mGoalList.add(mDetail4);
                             GoalsDetail mDetail5 = new GoalsDetail("Sets", 2, 0, prefs.getInt("volume", 15));
-                            mGoalList.add(mDetail5);
-                            mNutritionDay.setGoalList(mGoalList);
+                            mGoalList.add(mDetail5);*/
+
+                            mNutritionDay.setGoalList(mGoalTopList);
                   //      }
                     }
                     mRepository.updateNutrition(mNutritionDay);

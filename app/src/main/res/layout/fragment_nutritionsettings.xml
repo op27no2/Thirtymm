@@ -53,32 +53,19 @@
             android:foreground="?attr/selectableItemBackground"
             android:layout_below="@+id/preferences_text"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="?attr/actionBarSize">
             <TextView
                 android:id="@+id/goals_text"
                 android:text="Goals"
                 android:layout_marginLeft="20dp"
                 android:gravity="center_vertical"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="?attr/actionBarSize"
                 android:textSize="18sp"
                 />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/my_recycler_view"
-                android:layout_marginLeft="40dp"
-                android:layout_marginRight="40dp"
-                android:layout_below="@+id/goals_text"
-                android:fastScrollEnabled="false"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+
         </RelativeLayout>
-
-
-
-
         <RelativeLayout
             android:id="@+id/weight"
             android:clickable="true"

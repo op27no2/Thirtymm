@@ -25,7 +25,6 @@ import op27no2.fitness.Centurion2.Database.Repository;
 import op27no2.fitness.Centurion2.R;
 import op27no2.fitness.Centurion2.RecyclerItemClickListener;
 import op27no2.fitness.Centurion2.fragments.activities.GoalsDetail;
-import op27no2.fitness.Centurion2.fragments.volume.MyDialogVolumeAdapter;
 
 public class DialogGoalList extends Dialog  {
 
@@ -33,7 +32,7 @@ public class DialogGoalList extends Dialog  {
 
         private RecyclerView mRecyclerView;
         private LinearLayoutManager mLayoutManager;
-        private MyDialogVolumeAdapter mAdapter;
+
         private Repository mRepository;
         private TextView titleText;
 
@@ -41,6 +40,7 @@ public class DialogGoalList extends Dialog  {
         private Context mContext;
         private ArrayList<GoalsDetail> mGoalList;
         private int selected = 0;
+        private GoalSettingListAdapter mAdapter;
 
 
 
@@ -59,7 +59,7 @@ public class DialogGoalList extends Dialog  {
         protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             requestWindowFeature(Window.FEATURE_NO_TITLE);
-            setContentView(R.layout.dialog_volumemap);
+            setContentView(R.layout.dialog_goallist);
 
         titleText = (TextView) findViewById(R.id.my_title);
 
@@ -103,18 +103,6 @@ public class DialogGoalList extends Dialog  {
                 }
                 protected Void doInBackground(Void... unused) {
                     mGoalList = new ArrayList<GoalsDetail>(AppDatabase.getAppDatabase(mContext).glDAO().getAll());
-                    if(mGoalList == null){
-                        //really this should be done on first run instead of prefs.
-                        System.out.println("goals null should create");
-                        GoalsDetail mDetail = new GoalsDetail( "Cals", 0,  -300, 0);
-                        mGoalList.add(mDetail);
-                        GoalsDetail mDetail4 = new GoalsDetail( "Protein", 2, 0,  (int) Math.floor(0.6f * 150));
-                        mGoalList.add(mDetail4);
-                        GoalsDetail mDetail5 = new GoalsDetail( "Sets", 2, 0,   15);
-                        mGoalList.add(mDetail5);
-                        AppDatabase.getAppDatabase(mContext).glDAO().insertAll(mGoalList);
-                    }
-
                     return null;
                 }
                 protected void onPostExecute(Void unused) {
@@ -141,10 +129,10 @@ public class DialogGoalList extends Dialog  {
                         @Override
                         public void onItemClick(View view, int position) {
                             System.out.println("item clicked: "+position);
-                            selected = mAdapter.getRealPosition(position);
+                         /*   selected = mAdapter.getRealPosition(position);
 
                             mAdapter.setSelected(position);
-                            mAdapter.notifyDataSetChanged();
+                            mAdapter.notifyDataSetChanged();*/
 
                         }
                         @Override
@@ -163,18 +151,16 @@ public class DialogGoalList extends Dialog  {
 
         //set lift data to recyclerview
 
-    /*    mAdapter = new MyDialogVolumeAdapter(mLiftMap, mRepository, mContext,mlist);
+        mAdapter = new GoalSettingListAdapter(mGoalList,mRepository,mContext);
         mRecyclerView.setAdapter(mAdapter);
         mAdapter.notifyDataSetChanged();
-        titleText.setText(mLiftMap.getName());
-*/
+
         }
 
 
     @Override
     protected void onStop(){
 
-        System.out.println("ratios on-stop: "+mAdapter.getRatios());
 
 
      //   mLiftMap.setRatios(mAdapter.getRatios());
