@@ -117,7 +117,7 @@ public class ActivitySettings extends Fragment implements DialogGoalListInterfac
             protected void onPostExecute(Void unused) {
                 // Post Code
 
-
+//
                 finishUI();
             }
         }.execute();
