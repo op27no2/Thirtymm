@@ -52,6 +52,7 @@ public class ActivitySettings extends Fragment implements DialogGoalListInterfac
         prefs = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
         mRepository = new Repository(mContext);
+        mInterface = this;
 
         mGoalsButton = view.findViewById(R.id.goals);
         mWeightButton = view.findViewById(R.id.weight);

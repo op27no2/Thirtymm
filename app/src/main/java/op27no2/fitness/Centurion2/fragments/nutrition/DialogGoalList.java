@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.Window;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -31,6 +32,13 @@ public class DialogGoalList extends Dialog  {
 
         private Repository mRepository;
         private TextView titleText;
+        private EditText edit1;
+        private TextView text2;
+        private TextView text3;
+        private TextView text4;
+        private EditText edit5;
+
+
 
         private DialogGoalListInterface mInterface;
         private Context mContext;
@@ -60,6 +68,29 @@ public class DialogGoalList extends Dialog  {
             setContentView(R.layout.dialog_goalchange);
 
         titleText = (TextView) findViewById(R.id.my_title);
+        edit1 = (EditText) findViewById(R.id.edit1);
+        text2 = (TextView) findViewById(R.id.text2);
+        text3 = (TextView) findViewById(R.id.text3);
+        text4 = (TextView) findViewById(R.id.text4);
+        edit5 = (EditText) findViewById(R.id.edit5);
+        text2.setText("<");
+        text4.setText("<");
+        text3.setText(mGoalSettingDetail.getGoalName());
+
+        switch(mGoalSettingDetail.getGoalType()){
+            case 0:
+                edit5.setText(Integer.toString(mGoalSettingDetail.getGoalLimitHigh()));
+                break;
+            case  1:
+                edit1.setText(Integer.toString(mGoalSettingDetail.getGoalLimitLow()));
+                edit5.setText(Integer.toString(mGoalSettingDetail.getGoalLimitHigh()));
+                break;
+            case  2:
+                edit1.setText(Integer.toString(mGoalSettingDetail.getGoalLimitLow()));
+                break;
+            default:
+                //nothing default
+        }
 
 
         MaterialFancyButton pButton = findViewById(R.id.save);
