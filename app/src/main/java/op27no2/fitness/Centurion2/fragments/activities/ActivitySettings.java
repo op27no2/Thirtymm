@@ -1,5 +1,6 @@
 package op27no2.fitness.Centurion2.fragments.activities;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -7,6 +8,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
@@ -21,6 +23,7 @@ import op27no2.fitness.Centurion2.Database.AppDatabase;
 import op27no2.fitness.Centurion2.Database.Repository;
 import op27no2.fitness.Centurion2.R;
 import op27no2.fitness.Centurion2.RecyclerItemClickListener;
+import op27no2.fitness.Centurion2.fragments.nutrition.DialogGoalList;
 import op27no2.fitness.Centurion2.fragments.nutrition.DialogGoalListInterface;
 import op27no2.fitness.Centurion2.fragments.nutrition.GoalSettingListAdapter;
 
@@ -88,11 +91,9 @@ public class ActivitySettings extends Fragment implements DialogGoalListInterfac
                     @Override
                     public void onItemClick(View view, int position) {
                         System.out.println("item clicked: "+position);
-                         /*   selected = mAdapter.getRealPosition(position);
-
-                            mAdapter.setSelected(position);
-                            mAdapter.notifyDataSetChanged();*/
-
+                        Dialog dialog = new DialogGoalList(mContext, mRepository, mInterface, mGoalSettingList.get(position));
+                        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+                        dialog.show();
                     }
                     @Override
                     public void onItemLongClick(View view, int position) {

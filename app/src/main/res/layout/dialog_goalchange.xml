@@ -34,7 +34,7 @@
             android:orientation="horizontal"
             >
             <LinearLayout
-                android:id="@+id/linear"
+                android:id="@+id/linear1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
@@ -45,23 +45,71 @@
                     android:layout_height="wrap_content"
                     android:textSize="22sp"
                     android:textColor="@color/colorPrimary"
-                    android:text="Weekly Goals:"
+                    android:text="Weekly Goal:"
                     />
-
             </LinearLayout>
+            <LinearLayout
+                android:id="@+id/linear2"
+                android:layout_below="@+id/linear1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/my_recycler_view"
-                    android:layout_below="@+id/linear"
-                    android:fastScrollEnabled="false"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginBottom="5dp"
-                    android:layout_width="match_parent"
+            <EditText
+                android:padding="2dp"
+                android:id="@+id/text1"
+                android:textSize="20sp"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:text="-300"
+                android:layout_height="wrap_content"/>
+                <TextView
+                    android:id="@+id/text2"
+                    android:text=""
+                    android:textSize="24sp"
+                    android:gravity="center_horizontal"
+                    android:layout_width="0dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_weight="1"
+                    android:layout_alignParentRight="true"
                     android:layout_height="wrap_content"/>
 
+            <TextView
+                android:id="@+id/text4"
+                android:text="Protein"
+                android:textSize="18sp"
+                android:gravity="center_horizontal"
+                android:layout_width="0dp"
+                android:layout_marginRight="20dp"
+                android:layout_weight="3"
+                android:layout_alignParentRight="true"
+                android:layout_height="wrap_content"/>
+                <TextView
+                    android:id="@+id/text5"
+                    android:text=""
+                    android:textSize="24sp"
+                    android:gravity="center_horizontal"
+                    android:layout_width="0dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_weight="1"
+                    android:layout_alignParentRight="true"
+                    android:layout_height="wrap_content"/>
+            <EditText
+                android:id="@+id/text6"
+                android:text="300"
+                android:textSize="20sp"
+                android:inputType="numberDecimal"
+                android:gravity="center_horizontal"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_alignParentRight="true"
+                android:layout_height="wrap_content"/>
+            </LinearLayout>
+
             <LinearLayout
-                android:id="@+id/plusminus"
-                android:layout_below="@+id/my_recycler_view"
+                android:id="@+id/linear3"
+                android:layout_below="@+id/linear2"
                 android:layout_centerHorizontal="true"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
