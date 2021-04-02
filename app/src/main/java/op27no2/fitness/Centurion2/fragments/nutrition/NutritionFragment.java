@@ -47,6 +47,7 @@ import op27no2.fitness.Centurion2.Graphing.GraphView;
 import op27no2.fitness.Centurion2.Graphing.GraphViewSeries;
 import op27no2.fitness.Centurion2.Graphing.GraphViewStyle;
 import op27no2.fitness.Centurion2.Graphing.LineGraphView;
+import op27no2.fitness.Centurion2.MainActivity;
 import op27no2.fitness.Centurion2.MyAppWidgetProvider;
 import op27no2.fitness.Centurion2.R;
 import op27no2.fitness.Centurion2.RecyclerItemClickListener;
@@ -69,10 +70,8 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
     private NutritionAdapter mAdapter;
     private ArrayList<String> mNames = new ArrayList<String>(2);
     private ArrayList<Integer> mValues = new ArrayList<Integer>(2);
-    private ArrayList<GoalsDetail> mGoalList = new  ArrayList<GoalsDetail>(2);
     private ArrayList<GoalsDetail> mGoalTopList = new  ArrayList<GoalsDetail>(2);
-    private int mGoalType;
-    private Integer cals;
+    private ImageView settingsButton;
 
     //graphing
     public GraphView.GraphViewData[] data;
@@ -110,12 +109,8 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         View view = inflater.inflate(R.layout.fragment_nutrition, container, false);
         prefs = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
-        mGoalType = prefs.getInt("goaltype", 0);
         mInterface = (CalendarDialogInterface) this;
         mPickerInterface = this;
-
-        //TODO just setting here to test grpah
-        cals=-2200;
 
         mRepository = new Repository(getActivity());
         rabbit = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
@@ -160,12 +155,18 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                     @Override
                     public void onItemLongClick(View view, int position) {
                         System.out.println("long click triggered??: ");
-                        Dialog dialog = new EditDialog(view.getContext(), position, mValues.get(position), mPickerInterface);
+                        Dialog dialog = new EditDialog(view.getContext(), position, mValues.get(position), mNames.get(position), mNutritionDay.getGoalList().get(getGoalIndex(mNames.get(position))), mPickerInterface);
                         dialog.show();
                     }
                 })
         );
-
+        settingsButton = (ImageView) view.findViewById(R.id.settings);
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((MainActivity)getActivity()).goToActivitySettings();
+            }
+        });
 
         ImageView arrowLeft = (ImageView) view.findViewById(R.id.arrow_left);
         ImageView arrowRight = (ImageView) view.findViewById(R.id.arrow_right);
@@ -214,16 +215,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
             @Override
             public void onClick(View view) {
                 rabbit.vibrate(25);
-      /*          if(cals != null) {
-                    cals = cals + 100;
-                    mValues.set(0,cals);
-                    mNutritionDay.setValues(mValues);
-                    mRepository.updateNutrition(mNutritionDay);
-                    updateWidgets();
-                    mAdapter.notifyDataSetChanged();
-                    updateGraphView(formattedDate, cals);
 
-                }*/
                 int hold = mValues.get(selectedPosition);
                 if(selectedPosition == 0){
                     hold = hold +100;
@@ -243,15 +235,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
             @Override
             public void onClick(View view) {
                 rabbit.vibrate(25);
-               /* if(cals != null) {
-                    cals = cals - 100;
-                    mValues.set(0,cals);
-                    mNutritionDay.setValues(mValues);
-                    mRepository.updateNutrition(mNutritionDay);
-                    updateWidgets();
-                    mAdapter.notifyDataSetChanged();
-                    updateGraphView(formattedDate, cals);
-                }*/
+
                 int hold = mValues.get(selectedPosition);
                 if(selectedPosition == 0){
                     hold = hold -100;
@@ -270,16 +254,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
             @Override
             public void onClick(View view) {
                 rabbit.vibrate(25);
-      /*          if(cals != null) {
-                    cals = cals + 100;
-                    mValues.set(0,cals);
-                    mNutritionDay.setValues(mValues);
-                    mRepository.updateNutrition(mNutritionDay);
-                    updateWidgets();
-                    mAdapter.notifyDataSetChanged();
-                    updateGraphView(formattedDate, cals);
 
-                }*/
                 int hold = mValues.get(selectedPosition);
                 if(selectedPosition == 0){
                     hold = hold +10;
@@ -300,15 +275,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
             @Override
             public void onClick(View view) {
                 rabbit.vibrate(25);
-               /* if(cals != null) {
-                    cals = cals - 100;
-                    mValues.set(0,cals);
-                    mNutritionDay.setValues(mValues);
-                    mRepository.updateNutrition(mNutritionDay);
-                    updateWidgets();
-                    mAdapter.notifyDataSetChanged();
-                    updateGraphView(formattedDate, cals);
-                }*/
+
                 int hold = mValues.get(selectedPosition);
                 if(selectedPosition == 0){
                     hold = hold -10;
@@ -558,6 +525,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
 
         graphView.addSeries(exampleSeries); // data
         graphView2.addSeries(exampleSeries2); // data
+
         // graphView.addSeries(exampleSeries3);
         graphView.getGraphViewStyle().setNumVerticalLabels(7);
         graphView.getGraphViewStyle().setNumHorizontalLabels(1);
@@ -624,7 +592,6 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                 mValues.clear();
                 mNames.clear();
                 mDates.clear();
-                mGoalList.clear();
                 mNutritionDays.clear();
 
             }
@@ -641,7 +608,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                     System.out.println("nutrition day null create uid: "+mNutritionDay.getUid());
 
                     mNames.add("Cals");
-                    mValues.add(Integer.parseInt(prefs.getString("bmr", "-2000")));
+                    mValues.add(-(prefs.getInt("bmr", 2000)));
                     mNames.add("Protein");
                     mValues.add(0);
 
@@ -659,27 +626,6 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
 
                     if(formattedDate.equals(todayDate)){
                         System.out.println("creating goals");
-         /*               switch (mGoalType) {
-                            case 0:
-                                GoalsDetail mDetail = new GoalsDetail( "Cals", 0, prefs.getInt("deficit", -300), 0);
-                                mGoalList.add(mDetail);
-                                break;
-                            case 1:
-                                GoalsDetail mDetail2 = new GoalsDetail("Cals", 1, prefs.getInt("recomp", 300), prefs.getInt("recomp", 300));
-                                mGoalList.add(mDetail2);
-                                break;
-                            case 2:
-                                GoalsDetail mDetail3 = new GoalsDetail("Cals", 2,0, prefs.getInt("recomp", 300));
-                                mGoalList.add(mDetail3);
-                                break;
-                            default:
-                                break;
-                        }
-                        GoalsDetail mDetail4 = new GoalsDetail( "Protein", 2, 0,  (int) Math.floor(prefs.getFloat("protein", 0.6f) * prefs.getInt("weight", (int) 150)));
-                        mGoalList.add(mDetail4);
-                        GoalsDetail mDetail5 = new GoalsDetail( "Sets", 2, 0,  prefs.getInt("volume", 15));
-                        mGoalList.add(mDetail5);*/
-         
                         mNutritionDay.setGoalList(mGoalTopList);
                     }
 
@@ -690,8 +636,6 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
 
                     System.out.println("nutrition day after insertion uid: "+mNutritionDay.getUid());
 
-                    cals = mValues.get(0);
-
                 }else{
                     mNames = mNutritionDay.getNames();
                     mValues = mNutritionDay.getValues();
@@ -699,7 +643,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                     if(mNames.size() == 0 || mValues.size() == 0){
                         System.out.println("nutrition day found get names/values uid: "+mNutritionDay.getUid());
                         mNames.add("Cals");
-                        mValues.add(Integer.parseInt(prefs.getString("bmr", "-2000")));
+                        mValues.add(-(prefs.getInt("bmr", 2000)));
                         mNames.add("Protein");
                         mValues.add(0);
                         mNutritionDay.setNames(mNames);
@@ -712,35 +656,9 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                     if(mNutritionDay.getGoalList() == null || mNutritionDay.getGoalList().size() == 0) {
                         System.out.println("need to create goals if its today");
 
-                    //    if (formattedDate.equals(todayDate)) {
-              /*              System.out.println("creating goals");
-                            switch (mGoalType) {
-                                case 0:
-                                    GoalsDetail mDetail = new GoalsDetail("Cals", 0, prefs.getInt("deficit", -300), 0);
-                                    mGoalList.add(mDetail);
-                                    break;
-                                case 1:
-                                    GoalsDetail mDetail2 = new GoalsDetail("Cals", 1, prefs.getInt("recomp", 300), prefs.getInt("recomp", 300));
-                                    mGoalList.add(mDetail2);
-                                    break;
-                                case 2:
-                                    GoalsDetail mDetail3 = new GoalsDetail("Cals", 2, 0, prefs.getInt("recomp", 300));
-                                    mGoalList.add(mDetail3);
-                                    break;
-                                default:
-                                    break;
-                            }
-                            GoalsDetail mDetail4 = new GoalsDetail("Protein", 2, 0, (int) Math.floor(prefs.getFloat("protein", 0.6f) * prefs.getInt("weight", (int) 150)));
-                            mGoalList.add(mDetail4);
-                            GoalsDetail mDetail5 = new GoalsDetail("Sets", 2, 0, prefs.getInt("volume", 15));
-                            mGoalList.add(mDetail5);*/
-
                             mNutritionDay.setGoalList(mGoalTopList);
-                  //      }
                     }
                     mRepository.updateNutrition(mNutritionDay);
-
-                    cals = mValues.get(0);
 
                 }
 
@@ -797,7 +715,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
 
 
         //set data to recyclerview
-        mAdapter = new NutritionAdapter(mNames, mValues, mPickerInterface);
+        mAdapter = new NutritionAdapter(mNames, mValues, mGoalTopList,  mPickerInterface);
         mRecyclerView.setAdapter(mAdapter);
 
         ArrayList<Integer> setFlags = new ArrayList<Integer>();
@@ -1083,5 +1001,15 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         mAdapter.notifyDataSetChanged();
         updateGraphView(formattedDate, weight, selectedPosition);
 
+    }
+
+    private int getGoalIndex(String name){
+        int index = -1;
+        for(int i=0;i<mGoalTopList.size();i++){
+            if(mGoalTopList.get(i).getGoalName().equals(name)){
+                index = i;
+            }
+        }
+        return index;
     }
 }

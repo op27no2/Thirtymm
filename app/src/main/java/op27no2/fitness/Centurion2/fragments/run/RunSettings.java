@@ -1,15 +1,27 @@
 package op27no2.fitness.Centurion2.fragments.run;
 
+import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -30,6 +42,7 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 
 import op27no2.fitness.Centurion2.Database.AppDatabase;
+import op27no2.fitness.Centurion2.Database.Repository;
 import op27no2.fitness.Centurion2.R;
 import op27no2.fitness.Centurion2.RecyclerItemClickListener;
 
@@ -46,10 +59,15 @@ public class RunSettings extends Fragment {
     private RecyclerView mRecyclerView2;
     public LinearLayoutManager mLayoutManager2;
     private RunTypeAdapter mAdapter2;
-    private ArrayList<String> activeTypes = new ArrayList<String>();
-    private ArrayList<String> proposedTypes = new ArrayList<String>();
     private SharedPreferences prefs;
     private SharedPreferences.Editor edt;
+    private Repository mRepository;
+    private int selected = 1000;
+    private int selectedList = 3;
+
+    private  ArrayList<RunType> allRunTypes = new ArrayList<RunType>();
+    private  ArrayList<RunType> listedRunTypes = new ArrayList<RunType>();
+    private  ArrayList<RunType> storedRunTypes = new ArrayList<RunType>();
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -58,24 +76,52 @@ public class RunSettings extends Fragment {
         mContext = getActivity();
         prefs = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
+        mRepository = new Repository(getActivity());
 
-        activeTypes.add("Run");
-        activeTypes.add("Walking");
-        activeTypes.add("Rowing");
+        EditText mNameEdit = view.findViewById(R.id.edit_name);
+        Switch mSwitch = view.findViewById(R.id.list_switch);
+        Spinner mSpinnerDistance = view.findViewById(R.id.spinner_distance);
+        Spinner mSpinnerPace = view.findViewById(R.id.spinner_pace);
 
-        proposedTypes.add("Cycling");
-        proposedTypes.add("Kayaking");
-        proposedTypes.add("Skiing");
-        proposedTypes.add("Hiking");
-        proposedTypes.add("Tabata");
+        EditText mCalFactorEdit = view.findViewById(R.id.cal_factor);
+        Spinner mCalUnits = view.findViewById(R.id.cal_units);
+
+        if(prefs.getBoolean("setup_run_type", true) == true) {
+            System.out.println("first setup Run Settings");
+            RunType mtype1 = new RunType("Running", true);
+            RunType mtype2 = new RunType("Rowing", true);
+            RunType mtype3 = new RunType("Walking", true);
+            mRepository.insertRunType(mtype1);
+            mRepository.insertRunType(mtype2);
+            mRepository.insertRunType(mtype3);
+            listedRunTypes.add(mtype1);
+            listedRunTypes.add(mtype2);
+            listedRunTypes.add(mtype3);
+
+            RunType mtype4 = new RunType("Cycling", false);
+            RunType mtype5 = new RunType("Kayaking", false);
+            RunType mtype6 = new RunType("Intervals", false);
+            RunType mtype7 = new RunType("Hiking", false);
+            mRepository.insertRunType(mtype4);
+            mRepository.insertRunType(mtype5);
+            mRepository.insertRunType(mtype6);
+            mRepository.insertRunType(mtype7);
+            storedRunTypes.add(mtype4);
+            storedRunTypes.add(mtype5);
+            storedRunTypes.add(mtype6);
+            storedRunTypes.add(mtype7);
+
+            edt.putBoolean("setup_run_type", false);
+            edt.commit();
+        }else{
+            getSettingsData();
+        }
 
         mLayoutManager = new LinearLayoutManager(mContext);
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        mAdapter = new RunTypeAdapter(activeTypes);
+        mAdapter = new RunTypeAdapter(listedRunTypes);
         mRecyclerView = view.findViewById(R.id.my_recycler_view_active);
-        mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mLayoutManager);
-        mRecyclerView.setNestedScrollingEnabled(false);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.addOnItemTouchListener(
@@ -84,6 +130,30 @@ public class RunSettings extends Fragment {
                         System.out.println("segment item clicked: "+position);
                         mAdapter.setSelected(position);
                         mAdapter.notifyDataSetChanged();
+                        selected = position;
+                        selectedList=0;
+
+                        mAdapter2.clearSelected();
+                        mAdapter2.notifyDataSetChanged();
+
+                        if(listedRunTypes.get(position).getName() != null) {
+                            mNameEdit.setText(listedRunTypes.get(position).getName());
+                        }
+                        if(listedRunTypes.get(position).getActive() != null) {
+                            mSwitch.setChecked(listedRunTypes.get(position).getActive());
+                        }
+                        if(listedRunTypes.get(position).getDistanceUnits() != null) {
+                            mSpinnerDistance.setSelection(listedRunTypes.get(position).getDistanceUnits());
+                        }
+                        if(listedRunTypes.get(position).getPaceUnits() != null) {
+                            mSpinnerPace.setSelection(listedRunTypes.get(position).getPaceUnits());
+                        }
+                        if(listedRunTypes.get(position).getCalBurnValue() != null) {
+                            mCalFactorEdit.setText(Double.toString(listedRunTypes.get(position).getCalBurnValue()));
+                        }
+                        if(listedRunTypes.get(position).getCalBurnUnit() != null) {
+                            mCalUnits.setSelection(listedRunTypes.get(position).getCalBurnUnit());
+                        }
                     }
 
                     @Override
@@ -96,11 +166,9 @@ public class RunSettings extends Fragment {
 
         mLayoutManager2 = new LinearLayoutManager(mContext);
         mLayoutManager2.setOrientation(LinearLayoutManager.VERTICAL);
-        mAdapter2 = new RunTypeAdapter(activeTypes);
+        mAdapter2 = new RunTypeAdapter(storedRunTypes);
         mRecyclerView2 = view.findViewById(R.id.my_recycler_view_options);
-        mRecyclerView2.setHasFixedSize(true);
         mRecyclerView2.setLayoutManager(mLayoutManager2);
-        mRecyclerView2.setNestedScrollingEnabled(false);
         mRecyclerView2.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView2.setAdapter(mAdapter2);
         mRecyclerView2.addOnItemTouchListener(
@@ -109,6 +177,30 @@ public class RunSettings extends Fragment {
                         System.out.println("segment item clicked: "+position);
                         mAdapter2.setSelected(position);
                         mAdapter2.notifyDataSetChanged();
+                        selected = position;
+                        selectedList=1;
+
+                        if(storedRunTypes.get(position).getName() != null) {
+                            mNameEdit.setText(storedRunTypes.get(position).getName());
+                        }
+                        if(storedRunTypes.get(position).getActive() != null) {
+                            mSwitch.setChecked(storedRunTypes.get(position).getActive());
+                        }
+                        if(storedRunTypes.get(position).getDistanceUnits() != null) {
+                            mSpinnerDistance.setSelection(storedRunTypes.get(position).getDistanceUnits());
+                        }
+                        if(storedRunTypes.get(position).getPaceUnits() != null) {
+                            mSpinnerPace.setSelection(storedRunTypes.get(position).getPaceUnits());
+                        }
+                        if(storedRunTypes.get(position).getCalBurnValue() != null) {
+                            mCalFactorEdit.setText(Double.toString(storedRunTypes.get(position).getCalBurnValue()));
+                        }
+                        if(storedRunTypes.get(position).getCalBurnUnit() != null) {
+                            mCalUnits.setSelection(storedRunTypes.get(position).getCalBurnUnit());
+                        }
+
+                        mAdapter.clearSelected();
+                        mAdapter.notifyDataSetChanged();
                     }
 
                     @Override
@@ -134,7 +226,93 @@ public class RunSettings extends Fragment {
                 restoreDBIntent();
             }
         });
+        MaterialFancyButton deleteButton = view.findViewById(R.id.delete_button);
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final Dialog dialog = new Dialog(getActivity());
+                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                dialog.setContentView(R.layout.dialog_delete);
+                DisplayMetrics metrics = getActivity().getResources().getDisplayMetrics();
+                int width = metrics.widthPixels;
+                dialog.getWindow().setLayout((8 * width) / 9, LinearLayout.LayoutParams.WRAP_CONTENT);
+                TextView mText = dialog.findViewById(R.id.confirm_title);
+                mText.setText("Permanently Delete Activity Type?");
 
+                dialog.findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        System.out.println("deleting workout");
+                        //selected stores clicked position of either list
+                        //selectedList = 0 for active types, 1 for stored types
+                        if(selectedList==0) {
+                            mRepository.deleteRunType(listedRunTypes.get(selected));
+                            listedRunTypes.remove(selected);
+                        }else{
+                            mRepository.deleteRunType(storedRunTypes.get(selected));
+                            storedRunTypes.remove(selected);
+                        }
+                        mAdapter.notifyDataSetChanged();
+                        mAdapter2.notifyDataSetChanged();
+                       /* new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                //set to location
+
+                            }
+                        }, 500);
+*/
+
+
+                        dialog.dismiss();
+                    }
+                });
+                dialog.findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                dialog.show();
+
+            }
+        });
+
+        MaterialFancyButton saveButton = view.findViewById(R.id.save_button);
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                RunType mType = null;
+
+                   if(selectedList==0) {
+                       mType =listedRunTypes.get(selected);
+                       mType.setName(mNameEdit.getText().toString());
+                       if(!mSwitch.isChecked()){
+                            listedRunTypes.remove(selected);
+                            storedRunTypes.add(mType);
+                       }
+                   }else if(selectedList ==1){
+                       mType =storedRunTypes.get(selected);
+                       mType.setName(mNameEdit.getText().toString());
+                       if(mSwitch.isChecked()){
+                           listedRunTypes.add(mType);
+                           storedRunTypes.remove(selected);
+                       }
+                   }
+
+                    mType.setActive(mSwitch.isChecked());
+                    mType.setName(mNameEdit.getText().toString());
+                    mType.setDistanceUnits(mSpinnerDistance.getSelectedItemPosition());
+                    mType.setPaceUnits(mSpinnerPace.getSelectedItemPosition());
+                    mType.setCalBurnValue(Double.parseDouble(mCalFactorEdit.getText().toString()));
+                    mType.setCalBurnUnit(mCalUnits.getSelectedItemPosition());
+
+                    mAdapter.notifyDataSetChanged();
+                    mAdapter2.notifyDataSetChanged();
+                    mRepository.updateRunType(mType);
+            }
+        });
 
 
 
@@ -342,6 +520,45 @@ public class RunSettings extends Fragment {
         if (directory.exists()) {
             directory.delete();
         }
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private void getSettingsData() {
+        new AsyncTask<Void, Void, Void>() {
+            //Get today's workout => finishUI
+            //get today's workout, if it doesn't exist create it
+
+            protected void onPreExecute() {
+                System.out.println("GETTING RUN TYPE SETTINGS");
+            }
+
+            protected Void doInBackground(Void... unused) {
+                //nutritionDay and formatted day change with selected day up top, used to edit values
+                allRunTypes = new ArrayList<RunType>(AppDatabase.getAppDatabase(getActivity()).rtDAO().getAll());
+                for(int i=0; i<allRunTypes.size(); i++){
+                    if(allRunTypes.get(i).getActive()){
+                        listedRunTypes.add(allRunTypes.get(i));
+                        System.out.println("listed run types: "+allRunTypes.get(i).getName());
+                    }else{
+                        storedRunTypes.add(allRunTypes.get(i));
+                        System.out.println("stored run types: "+allRunTypes.get(i).getName());
+                    }
+                }
+
+
+                return null;
+            }
+
+            protected void onPostExecute(Void unused) {
+                // Post Code
+                finishUI();
+            }
+        }.execute();
+    }
+
+    public void finishUI(){
+        mAdapter.notifyDataSetChanged();
+        mAdapter2.notifyDataSetChanged();
     }
 
 

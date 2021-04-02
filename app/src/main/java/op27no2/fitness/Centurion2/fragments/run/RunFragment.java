@@ -44,6 +44,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -111,6 +114,7 @@ import op27no2.fitness.Centurion2.Database.Repository;
 import op27no2.fitness.Centurion2.MainActivity;
 import op27no2.fitness.Centurion2.MyAppWidgetProvider;
 import op27no2.fitness.Centurion2.R;
+import op27no2.fitness.Centurion2.RecyclerItemClickListener;
 import op27no2.fitness.Centurion2.fragments.nutrition.NutritionDay;
 import op27no2.fitness.Centurion2.upload.TcxHelper;
 import retrofit2.Call;
@@ -144,6 +148,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private double maxalt;
     private double minalt;
     private NutritionDay mNutritionDay;
+    private ArrayList<RunType> mActivityTypes = new ArrayList<RunType>();
 
     private Style mStyle;
     private TextView timerText;
@@ -195,6 +200,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private static final int RQ_LOGIN = 1001;
     private static final String REDIRECT_URI = "http://op27no2.fitness/callback/";
     private Boolean mapReady = false;
+
+
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -1460,15 +1467,14 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
     public void saveDialog(){
 
-        final Dialog dialog = new Dialog(getActivity());
 
+        final Dialog dialog = new Dialog(getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.dialog_save_run);
-
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         int width = metrics.widthPixels;
-
         dialog.getWindow().setLayout((8 * width) / 9, LinearLayout.LayoutParams.WRAP_CONTENT);
+
 
         TextView mText = dialog.findViewById(R.id.confirm_title);
         TextView mTextDate = dialog.findViewById(R.id.date);
@@ -1645,7 +1651,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
                     saveDistance = (int) Math.floor(Float.parseFloat(mEditDistance.getText().toString()) * 1609.34400);
                     saveCals = Integer.parseInt(mEditCals.getText().toString());
-                    saveTime = (Integer.parseInt(mEditTime1.getText().toString())*60*60)+(Integer.parseInt(mEditTime1.getText().toString())*60)+(Integer.parseInt(mEditTime1.getText().toString()));
+                    saveTime = (Integer.parseInt(mEditTime1.getText().toString())*60*60)+(Integer.parseInt(mEditTime2.getText().toString())*60)+(Integer.parseInt(mEditTime3.getText().toString()));
                     saveDescription = mEditDescription.getText().toString();
                     saveTitle = mEditTitle.getText().toString();
                     stravaCheckBox = mStravaCheck.isChecked();
@@ -1710,7 +1716,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         }*/
 
 
-        mRunWorkout.setDuration((int) saveTime);
+        mRunWorkout.setDuration(saveTime);
+        System.out.println("save duration: " + saveTime);
         mRunWorkout.setDistance((int) saveDistance);
         mRunWorkout.setCalories(saveCals);
         mRunWorkout.setDescription(saveDescription);
@@ -1842,6 +1849,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             protected Void doInBackground(Void... unused) {
                 //nutritionDay and formatted day change with selected day up top, used to edit values
                 mNutritionDay = AppDatabase.getAppDatabase(getActivity()).ntDAO().findByDate(formattedDate);
+                mActivityTypes = new ArrayList<RunType>(AppDatabase.getAppDatabase(getActivity()).rtDAO().getAllActive());
 
                 if (mNutritionDay == null) {
                     mNutritionDay = new NutritionDay();
@@ -1916,7 +1924,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                 return ((minutesDisplay + ":" + secondsDisplay));
             }
         }
-
     }
 
     private void updateWidgets(){
@@ -1954,6 +1961,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
     }
 
+    @SuppressLint("StaticFieldLeak")
     public void finishStrava() {
         System.out.println("trackedpoints size2 "+mPoints.size());
 
@@ -2040,8 +2048,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
     }
 
-
-
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
@@ -2051,6 +2057,16 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         }
         return false;
     }
+
+    private void setRunTypes(){
+        //if first run
+        RunType mType1 = new RunType("Running", true);
+        RunType mType2 = new RunType("Rowing", true);
+        RunType mType3 = new RunType("Walking", true);
+
+
+    }
+
 
 
 }

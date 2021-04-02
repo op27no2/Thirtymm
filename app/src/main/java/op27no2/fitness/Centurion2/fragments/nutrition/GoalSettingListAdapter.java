@@ -76,25 +76,30 @@ public class GoalSettingListAdapter extends RecyclerView.Adapter<GoalSettingList
         TextView mText = holder.mView.findViewById(R.id.text1);
         mText.setText(mGoalSettingList.get(position).getGoalName());
 
+
         TextView mText2 = holder.mView.findViewById(R.id.text2);
+        TextView mText3 = holder.mView.findViewById(R.id.text3);
+        TextView mText4 = holder.mView.findViewById(R.id.text4);
+        mText2.setText("");
+        mText4.setText("");
+
+
         if(mGoalSettingList.get(position).getGoalType() == 1) {
             mText2.setText(Integer.toString(mGoalSettingList.get(position).getGoalLimitLow()));
         }else if(mGoalSettingList.get(position).getGoalType() == 2){
-            mText2.setText(Integer.toString(mGoalSettingList.get(position).getGoalLimitHigh()));
+            mText2.setText(Integer.toString(mGoalSettingList.get(position).getGoalLimitLow()));
         }
 
-        TextView mText3 = holder.mView.findViewById(R.id.text3);
         if(mGoalSettingList.get(position).getGoalType() == 0) {
-            mText3.setText("  per week <");
+            mText3.setText("   per week <");
         }else if(mGoalSettingList.get(position).getGoalType() == 1){
             mText3.setText("< per week <");
         }else if(mGoalSettingList.get(position).getGoalType() == 2){
-            mText3.setText("< per week  ");
+            mText3.setText("< per week   ");
         }
 
-        TextView mText4 = holder.mView.findViewById(R.id.text4);
         if(mGoalSettingList.get(position).getGoalType() == 0) {
-            mText4.setText(Integer.toString(mGoalSettingList.get(position).getGoalLimitLow()));
+            mText4.setText(Integer.toString(mGoalSettingList.get(position).getGoalLimitHigh()));
         }else if(mGoalSettingList.get(position).getGoalType() == 1){
             mText4.setText(Integer.toString(mGoalSettingList.get(position).getGoalLimitHigh()));
         }

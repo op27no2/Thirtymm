@@ -7,6 +7,8 @@ import androidx.room.PrimaryKey;
 @Entity(tableName = "goallist")
 public class GoalsDetail {
 
+    //used as both a list for each nutrition day, but also as a global list for storing goal settings.
+
     @PrimaryKey(autoGenerate = true)
     private int uid;
 
@@ -68,8 +70,8 @@ public class GoalsDetail {
     public Float getWeekTotal(){
         return weekTotal;
     }
-    public void setWeekTotal(Float weekTotal){
-        weekTotal = weekTotal;
+    public void setWeekTotal(Float week){
+        weekTotal = week;
     }
 
 /*

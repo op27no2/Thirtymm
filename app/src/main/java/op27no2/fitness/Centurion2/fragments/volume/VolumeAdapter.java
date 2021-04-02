@@ -1,6 +1,8 @@
 package op27no2.fitness.Centurion2.fragments.volume;
 
 import android.app.Dialog;
+import android.content.Context;
+import android.icu.text.DecimalFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +11,7 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import op27no2.fitness.Centurion2.Database.Repository;
@@ -20,8 +23,12 @@ import op27no2.fitness.Centurion2.R;
 
 public class VolumeAdapter extends RecyclerView.Adapter<VolumeAdapter.ViewHolder>  {
     private ArrayList<Map.Entry<String, Integer>> mData;
+    private HashMap<String, Double> muscleVolumes;
+    private ArrayList<String> muscleNames;
     private DialogVolumeMapnterface passThisInterface;
     private Repository mRepository;
+    private int mState;
+    private Context mContext;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -36,10 +43,15 @@ public class VolumeAdapter extends RecyclerView.Adapter<VolumeAdapter.ViewHolder
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public VolumeAdapter(ArrayList<Map.Entry<String, Integer>> volume, Repository repository, DialogVolumeMapnterface pass) {
+    public VolumeAdapter(Context context, ArrayList<Map.Entry<String, Integer>> volume, Repository repository, DialogVolumeMapnterface pass, HashMap<String, Double> muscVolumes, ArrayList<String> muscNames, int recyclerState) {
         mData = volume;
         passThisInterface = pass;
         mRepository = repository;
+        muscleVolumes = muscVolumes;
+        mContext = context;
+        //0 = list of lifts, 1 = list of muscles
+        mState = recyclerState;
+        muscleNames = muscNames;
     }
 
     // Create new views (invoked by the layout manager)
@@ -66,18 +78,26 @@ public class VolumeAdapter extends RecyclerView.Adapter<VolumeAdapter.ViewHolder
 
         TextView mText1 = holder.mView.findViewById(R.id.volume_lift);
         TextView mText2 = holder.mView.findViewById(R.id.volume_sets);
+        int pos = holder.getAdapterPosition();
 
-        mText1.setText(mData.get(position).getKey());
-        mText2.setText(Integer.toString(mData.get(position).getValue()));
+        if(mState == 0) {
+            mText1.setText(mData.get(pos).getKey());
+            mText2.setText(Integer.toString(mData.get(pos).getValue()));
+        }else if(mState ==1){
+            mText1.setText(muscleNames.get(pos));
+           // mText2.setText(Double.toString(muscleVolumes.get(muscleNames.get(pos))));
+            mText2.setText(new DecimalFormat("#.##").format(muscleVolumes.get(muscleNames.get(pos))));
+        }
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Dialog dialog = new DialogVolumeMap(view.getContext(), mRepository, mData.get(position).getKey(), passThisInterface);
-
-                dialog.show();
-
+                if(mState == 0 ) {
+                    Dialog dialog = new DialogVolumeMap(view.getContext(), mRepository, mData.get(position).getKey(), passThisInterface);
+                    dialog.show();
+                }
             }
         });
+
 
     }
 
@@ -93,7 +113,14 @@ public class VolumeAdapter extends RecyclerView.Adapter<VolumeAdapter.ViewHolder
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return mData.size();
+        int size = 0;
+        if(mState == 0){
+            size = mData.size();
+        }else{
+            size = muscleNames.size();
+        }
+
+        return size;
     }
 }
 

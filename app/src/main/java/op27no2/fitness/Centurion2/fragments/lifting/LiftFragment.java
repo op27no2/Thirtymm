@@ -57,6 +57,7 @@ import java.util.Date;
 import op27no2.fitness.Centurion2.Database.AppDatabase;
 import op27no2.fitness.Centurion2.Database.Repository;
 import op27no2.fitness.Centurion2.DialogCalendar;
+import op27no2.fitness.Centurion2.MainActivity;
 import op27no2.fitness.Centurion2.R;
 import op27no2.fitness.Centurion2.fragments.nutrition.CalendarDialogInterface;
 
@@ -125,6 +126,15 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
         ImageView arrowRight = (ImageView) view.findViewById(R.id.arrow_right);
         ImageView saveButton = (ImageView) view.findViewById(R.id.save);
         ImageView uploadButton = (ImageView) view.findViewById(R.id.upload);
+        ImageView settingsButton = (ImageView) view.findViewById(R.id.settings);
+
+        settingsButton = (ImageView) view.findViewById(R.id.settings);
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((MainActivity)getActivity()).goToActivitySettings();
+            }
+        });
 
         arrowLeft.setAlpha(0.8f);
         arrowRight.setAlpha(0.8f);

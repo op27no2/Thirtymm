@@ -12,6 +12,8 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,19 +42,21 @@ import java.util.Set;
 
 import op27no2.fitness.Centurion2.Database.AppDatabase;
 import op27no2.fitness.Centurion2.Database.Repository;
+import op27no2.fitness.Centurion2.DialogCalendar;
 import op27no2.fitness.Centurion2.MainActivity;
 import op27no2.fitness.Centurion2.R;
-import op27no2.fitness.Centurion2.DialogCalendar;
 import op27no2.fitness.Centurion2.fragments.lifting.Lift;
 import op27no2.fitness.Centurion2.fragments.lifting.LiftMap;
 import op27no2.fitness.Centurion2.fragments.lifting.LiftingWorkout;
 import op27no2.fitness.Centurion2.fragments.nutrition.CalendarDialogInterface;
+import op27no2.fitness.Centurion2.fragments.nutrition.NutritionDay;
 
 import static android.graphics.Color.argb;
 
 public class VolumeFragment extends Fragment implements DialogVolumeMapnterface, CalendarDialogInterface {
     private SharedPreferences prefs;
     private SharedPreferences.Editor edt;
+    private Vibrator rabbit;
     private ArrayList<LiftingWorkout> weeksWorkouts = new ArrayList<LiftingWorkout>();
     private ArrayList<LiftMap> mLiftMaps = new ArrayList<LiftMap>();
     private SimpleDateFormat df;
@@ -85,9 +89,18 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
     private String formattedDate;
     private TextView dateText2;
     private TextView dateText1;
+    private TextView recyclerTitle;
+    private Integer recyclerState = 0;
+    private ArrayList<String> muscleNames;
+    private Context mContext;
+
+    private Double goalSets;
+    private NutritionDay mNutritionDay;
+
+
     private CalendarDialogInterface mCalendarInterface;
     private String gender = "Prometheus";
-
+    //TODO get goal for sets from goallist
 
     @SuppressLint("StaticFieldLeak")
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -96,6 +109,9 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
         view = inflater.inflate(R.layout.fragment_volume, container, false);
         prefs = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
+        rabbit = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
+        mContext = getActivity();
+        muscleNames = new ArrayList(Arrays.asList((mContext.getResources().getStringArray(R.array.full_muscle_list))));
         mCalendarInterface = this;
 
         df= new SimpleDateFormat("EEE, MMM d, ''yy");
@@ -116,6 +132,8 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
 
         dateText1 = view.findViewById(R.id.toolbar_date1);
         dateText2 = view.findViewById(R.id.toolbar_date2);
+        recyclerTitle = view.findViewById(R.id.recycler_title);
+
         dateText1.setText(day1 +" - ");
         dateText2.setText(day2);
         dateText1.setOnClickListener(new View.OnClickListener() {
@@ -130,6 +148,33 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
             public void onClick(View view) {
                 Dialog dialog = new DialogCalendar(view.getContext(), mCalendarInterface, cal);
                 dialog.show();
+            }
+        });
+        recyclerTitle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(recyclerState == 0){
+                    recyclerState = 1;
+                    vibrate(10);
+                    recyclerTitle.setText("Weekly Volume\nSets Per Muscle:");
+                    mAdapter = new VolumeAdapter(mContext, listOfLiftNamesAndSets, mRepository, mInterface, muscleVolumes, muscleNames, recyclerState);
+                    mRecyclerView.setAdapter(mAdapter);
+                    mAdapter.notifyDataSetChanged();
+                }else if(recyclerState ==1){
+                    recyclerState = 0;
+                    vibrate(10);
+                    recyclerTitle.setText("Weekly Volume\nSets Per Lift:");
+                    mAdapter = new VolumeAdapter(mContext, listOfLiftNamesAndSets, mRepository, mInterface, muscleVolumes, muscleNames, recyclerState);
+                    mRecyclerView.setAdapter(mAdapter);
+                    mAdapter.notifyDataSetChanged();
+                }
+            }
+        });
+        settingsButton = (ImageView) view.findViewById(R.id.settings);
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((MainActivity)getActivity()).goToActivitySettings();
             }
         });
 
@@ -175,13 +220,6 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
 
         mRepository = new Repository(getActivity());
 
-        settingsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ((MainActivity)getActivity()).goToSettings();
-            }
-        });
-
 
 
 
@@ -196,6 +234,13 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
                 String formattedDate = df.format(date);
                 LiftingWorkout mLiftingWorkout = AppDatabase.getAppDatabase(getActivity()).lwDAO().findByDate(formattedDate);
                 mLiftMaps = (ArrayList<LiftMap>) AppDatabase.getAppDatabase(getActivity()).lmDAO().getAll();
+                mNutritionDay = AppDatabase.getAppDatabase(getActivity()).ntDAO().findByDate(formattedDate);
+                for(int i=0; i<mNutritionDay.getGoalList().size(); i++){
+                    if(mNutritionDay.getGoalList().get(i).getGoalName().equals("Sets")){
+                        goalSets = (double) mNutritionDay.getGoalList().get(i).getGoalLimitLow();
+                        System.out.println("goal sets found: "+goalSets);
+                    }
+                }
 
                 weeksWorkouts.add(mLiftingWorkout);
 
@@ -214,6 +259,7 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
                 return null;
             }
             protected void onPostExecute(Void unused) {
+
                 // Post Code
                 otherStuff();
             }
@@ -256,7 +302,7 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
         listOfLiftNamesAndSets = new ArrayList<Map.Entry<String, Integer>>(entrySet);
 
         //set lift data to recyclerview
-        mAdapter = new VolumeAdapter(listOfLiftNamesAndSets, mRepository, mInterface);
+        mAdapter = new VolumeAdapter(mContext, listOfLiftNamesAndSets, mRepository, mInterface, muscleVolumes,muscleNames, recyclerState);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setNestedScrollingEnabled(false);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -281,9 +327,11 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
             for (int i = 0; i < darray.length; i++) {
                 if (muscleVolumes.get(topMuscleList.get(0).get(i)) != null) {
                     //get set goals per week and convert to scale of 100;
-                    double sets = (double) prefs.getInt("volume", 20);
-                    double factor = 100/sets;
+                   // double sets = (double) prefs.getInt("volume", 20);
+
+                    double factor = 100/ goalSets;
                     double vol = muscleVolumes.get(topMuscleList.get(0).get(i)) * factor;
+                    System.out.println("volume =" +vol+" factor ="+factor);
                     if (vol > 100) {
                         vol = 100;
                     }
@@ -321,8 +369,8 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
             }
             for (int i = 0; i < darray2.length; i++) {
                 if (muscleVolumes.get(topMuscleList.get(1).get(i)) != null) {
-                    double sets = (double) prefs.getInt("volume", 20);
-                    double factor = 100/sets;
+                  //  double sets = (double) prefs.getInt("volume", 20);
+                    double factor = 100/goalSets;
                     double vol = muscleVolumes.get(topMuscleList.get(1).get(i)) * factor;
                     if (vol > 100) {
                         vol = 100;
@@ -362,8 +410,8 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
         }else if(prefs.getString("gender","Prometheus").equals("Artemis")){
             for (int i = 0; i < darray.length; i++) {
                 if (muscleVolumes.get(topMuscleList.get(2).get(i)) != null) {
-                    double sets = (double) prefs.getInt("volume", 20);
-                    double factor = 100/sets;
+                  //  double sets = (double) prefs.getInt("volume", 20);
+                    double factor = 100/goalSets;
                     double vol = muscleVolumes.get(topMuscleList.get(2).get(i)) * factor;
                     if (vol > 100) {
                         vol = 100;
@@ -403,8 +451,8 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
             }
             for (int i = 0; i < darray2.length; i++) {
                 if (muscleVolumes.get(topMuscleList.get(3).get(i)) != null) {
-                    double sets = (double) prefs.getInt("volume", 20);
-                    double factor = 100/sets;
+               //     double sets = (double) prefs.getInt("volume", 20);
+                    double factor = 100/goalSets;
                     double vol = muscleVolumes.get(topMuscleList.get(3).get(i)) * factor;
                     if (vol > 100) {
                         vol = 100;
@@ -581,6 +629,14 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
     @Override
     public void onDialogDismiss(CalendarDay m) {
 
+    }
+
+    private void vibrate(long time){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            rabbit.vibrate(VibrationEffect.createOneShot(time, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            rabbit.vibrate(time);
+        }
     }
 }
 

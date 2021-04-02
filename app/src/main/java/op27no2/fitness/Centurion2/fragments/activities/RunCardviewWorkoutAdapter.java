@@ -173,7 +173,7 @@ public class RunCardviewWorkoutAdapter extends RecyclerView.Adapter<RunCardviewW
         return String.format("%.2f", i * 0.000621371192f);
     }
 
-    private String getDuration(long elapsedTime){
+/*    private String getDuration(long elapsedTime){
         long micro = elapsedTime / 100000;
         long elapsedSeconds = elapsedTime / 1000;
         long secondsDisplay = elapsedSeconds % 60;
@@ -184,8 +184,28 @@ public class RunCardviewWorkoutAdapter extends RecyclerView.Adapter<RunCardviewW
         } else {
             return((minutesDisplay + ":" + secondsDisplay));
         }
-    }
+    }*/
+    private String getDuration(long elapsedTime){
+        long elapsedSeconds = elapsedTime;
+        long secondsDisplay = elapsedSeconds % 60;
+        long elapsedMinutes = elapsedSeconds / 60;
+        long minutesDisplay = elapsedMinutes % 60;
+        long hoursDisplay = (int) Math.floor(elapsedMinutes / 60);
+        if(hoursDisplay>0) {
+            if (secondsDisplay < 10) {
+                return ((hoursDisplay + ":" + minutesDisplay + ":0" + secondsDisplay));
+            } else {
+                return ((hoursDisplay + ":" + minutesDisplay + ":" + secondsDisplay));
+            }
+        }else{
+            if (secondsDisplay < 10) {
+                return ((minutesDisplay + ":0" + secondsDisplay));
+            } else {
+                return ((minutesDisplay + ":" + secondsDisplay));
+            }
+        }
 
+    }
 
 
 

@@ -26,6 +26,7 @@ import java.util.Calendar;
 
 import op27no2.fitness.Centurion2.Database.AppDatabase;
 import op27no2.fitness.Centurion2.Database.Repository;
+import op27no2.fitness.Centurion2.fragments.activities.GoalsDetail;
 import op27no2.fitness.Centurion2.fragments.nutrition.NutritionDay;
 
 public class MyAppWidgetProvider extends AppWidgetProvider {
@@ -38,6 +39,8 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
     private ArrayList<String> mNames = new ArrayList<String>(2);
     private ArrayList<Integer> mValues = new ArrayList<Integer>(2);
     private Vibrator rabbit;
+    private ArrayList<GoalsDetail> mGoalTopList = new  ArrayList<GoalsDetail>(2);
+
 
 
     @SuppressLint("StaticFieldLeak")
@@ -93,7 +96,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                         mDay = new NutritionDay();
                         System.out.println("nutrition day null create uid: "+mDay.getUid());
                         mNames.add("Cals");
-                        mValues.add(Integer.parseInt(prefs.getString("bmr", "-2000")));
+                        mValues.add(-(prefs.getInt("bmr", 2000)));
                         mNames.add("Protein");
                         mValues.add(0);
                         mDay.setNames(mNames);
@@ -113,7 +116,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                         if(mNames.size() == 0 || mValues.size() == 0){
                             System.out.println("nutrition day found get names/values uid: "+mDay.getUid());
                             mNames.add("Cals");
-                            mValues.add(Integer.parseInt(prefs.getString("bmr", "-2000")));
+                            mValues.add(-(prefs.getInt("bmr", 2000)));
                             mNames.add("Protein");
                             mValues.add(0);
                             mDay.setNames(mNames);
@@ -215,29 +218,56 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                 }
                 protected Void doInBackground(Void... unused) {
                     mDay = AppDatabase.getAppDatabase(context).ntDAO().findByDate(date);
+                    mGoalTopList = new ArrayList<GoalsDetail>(AppDatabase.getAppDatabase(context).glDAO().getAll());
+
+                    Calendar cal = Calendar.getInstance();
 
                  //   if(mDay == null || mDay.getValues() == null || mDay.getValues().size() == 0){
                     if(mDay == null){
                         mDay = new NutritionDay();
                         System.out.println("day null should create");
                         mNames.add("Cals");
-                        mValues.add(Integer.parseInt(prefs.getString("bmr", "-2000")));
+                        mValues.add(-(prefs.getInt("bmr", 2000)));
                         mNames.add("Protein");
                         mValues.add(0);
                         mDay.setNames(mNames);
                         mDay.setValues(mValues);
                         mDay.setDate(date);
+                        mDay.setDateMillis(cal.getTimeInMillis());
                         mRepository.insertNutrition(mDay);
 
                         long id = AppDatabase.getAppDatabase(context).ntDAO().insert(mDay);
                         mDay = AppDatabase.getAppDatabase(context).ntDAO().findById((int) id);
 
+                        System.out.println("creating goals");
+                        mDay.setGoalList(mGoalTopList);
+
 
                     }else{
                         mNames = mDay.getNames();
                         mValues = mDay.getValues();
+
+                        if(mNames.size() == 0 || mValues.size() == 0){
+                            System.out.println("nutrition day found get names/values uid: "+mDay.getUid());
+                            mNames.add("Cals");
+                            mValues.add(-(prefs.getInt("bmr", 2000)));
+                            mNames.add("Protein");
+                            mValues.add(0);
+                            mDay.setNames(mNames);
+                            mDay.setValues(mValues);
+                            System.out.println(mNames.get(0)+" "+mValues.get(1));
+                        }else {
+                            System.out.println("mNames size not zero "+mNames.get(0)+" "+mValues.get(0));
+                        }
+
+                        if(mDay.getGoalList() == null || mDay.getGoalList().size() == 0) {
+                            System.out.println("need to create goals if its today");
+                            mDay.setGoalList(mGoalTopList);
+                        }
+                        mRepository.updateNutrition(mDay);
                     }
 
+                    //TODO change to search for index
                     cals = mValues.get(0);
                     protein = mValues.get(1);
 

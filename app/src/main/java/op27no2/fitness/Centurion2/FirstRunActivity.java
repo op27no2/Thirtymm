@@ -361,8 +361,8 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
                 int myValue = (int) -(Math.abs(value));
                 buttonDeficit.setText("Deficit Goal\n"+Integer.toString(myValue)+" Calories per Day\n (= "+Integer.toString(myValue*7)+ " per Week)");
                 mGoalList.get(getGoalIndex("Cals")).setGoalType(0);
-                mGoalList.get(getGoalIndex("Cals")).setGoalLimitLow(myValue*7);
-                mRepository.updateGoalList(mGoalList);
+                mGoalList.get(getGoalIndex("Cals")).setGoalLimitHigh(myValue*7);
+                mRepository.updateGoalSettingList(mGoalList);
 
                 //TODO remove prefs we dont need once we confirm its working, but not for weight, gender, units
                 edt.putInt("deficit",(int) value);
@@ -374,17 +374,17 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
                 mGoalList.get(getGoalIndex("Cals")).setGoalType(1);
                 mGoalList.get(getGoalIndex("Cals")).setGoalLimitLow((int) value*7);
                 mGoalList.get(getGoalIndex("Cals")).setGoalLimitHigh((int) value*7);
-                mRepository.updateGoalList(mGoalList);
+                mRepository.updateGoalSettingList(mGoalList);
 
                 edt.putInt("recomp",(int) value);
                 edt.putInt("goaltype", 1);
                 edt.apply();
                 break;
             case 2:
-                buttonSurplus.setText("Surplus Goal:\n"+Integer.toString((int) value)+"+ Calories per Day\n (= "+Integer.toString((int) value*7)+ "per Week)");
+                buttonSurplus.setText("Surplus Goal:\n"+Integer.toString((int) value)+"+ Calories per Day\n (= "+Integer.toString((int) value*7)+ " per Week)");
                 mGoalList.get(getGoalIndex("Cals")).setGoalType(2);
-                mGoalList.get(getGoalIndex("Cals")).setGoalLimitHigh((int) value*7);
-                mRepository.updateGoalList(mGoalList);
+                mGoalList.get(getGoalIndex("Cals")).setGoalLimitLow((int) value*7);
+                mRepository.updateGoalSettingList(mGoalList);
 
                 edt.putInt("bulk",(int) value);
                 edt.putInt("goaltype", 2);
@@ -393,8 +393,8 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
             case 3:
                 buttonVolume.setText("Volume Goal:\n(Sets per Muscle per Week):\n"+Integer.toString((int) value));
                 mGoalList.get(getGoalIndex("Sets")).setGoalType(2);
-                mGoalList.get(getGoalIndex("Sets")).setGoalLimitHigh((int) value);
-                mRepository.updateGoalList(mGoalList);
+                mGoalList.get(getGoalIndex("Sets")).setGoalLimitLow((int) value);
+                mRepository.updateGoalSettingList(mGoalList);
 
                 edt.putInt("volume",(int) value);
                 edt.apply();
@@ -402,16 +402,19 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
             case 4:
                 buttonWeight.setText("Weight:\n"+Integer.toString((int) value)+" lbs");
                 mGoalList.get(getGoalIndex("Protein")).setGoalType(2);
-                mGoalList.get(getGoalIndex("Protein")).setGoalLimitHigh((int) Math.floor((value*prefs.getFloat("protein",0.6f)*7)));
-                mRepository.updateGoalList(mGoalList);
+                mGoalList.get(getGoalIndex("Protein")).setGoalLimitLow((int) Math.floor((value*prefs.getFloat("protein",0.6f)*7)));
+                mRepository.updateGoalSettingList(mGoalList);
                 edt.putInt("weight",(int) value);
+                Integer bmr = (int) Math.floor(value*11.363);
+                if(bmr<1300){bmr = 1300;}
+                edt.putInt("bmr",bmr);
                 edt.apply();
                 break;
             case 5:
                 buttonProtein.setText("Protein:\n"+Float.toString(value)+"g per lb per day");
                 mGoalList.get(getGoalIndex("Protein")).setGoalType(2);
-                mGoalList.get(getGoalIndex("Protein")).setGoalLimitHigh((int) value*prefs.getInt("weight",150)*7);
-                mRepository.updateGoalList(mGoalList);
+                mGoalList.get(getGoalIndex("Protein")).setGoalLimitLow((int) value*prefs.getInt("weight",150)*7);
+                mRepository.updateGoalSettingList(mGoalList);
                 edt.putFloat("protein", value);
                 edt.apply();
                 break;
@@ -429,10 +432,10 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
         buttonWeight.setText("Weight:\n"+Integer.toString(prefs.getInt("weight",180))+" lbs");
         buttonProtein.setText("Protein:\n"+Float.toString(prefs.getFloat("protein",0.6f))+"g per lb");*/
 
-        buttonDeficit.setText("Deficit Goal\n"+mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow()/7+" Calories per Day\n (= "+mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow()+" per Week)");
+        buttonDeficit.setText("Deficit Goal\n"+mGoalList.get(getGoalIndex("Cals")).getGoalLimitHigh()/7+" Calories per Day\n (= "+mGoalList.get(getGoalIndex("Cals")).getGoalLimitHigh()+" per Week)");
         buttonMaintenance.setText("Maintenance Goal:\n"+"Base Cals +/- "+mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow()/7 +" per Day\n"+ "(= +/-" +mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow() +" per Week");
-        buttonSurplus.setText("Surplus Goal:\n"+mGoalList.get(getGoalIndex("Cals")).getGoalLimitHigh()/7+"+ Calories per Day\n (= "+mGoalList.get(getGoalIndex("Cals")).getGoalLimitHigh()+ "per Week)");
-        buttonVolume.setText("Volume Goal:\n(Sets per Muscle per Week):\n"+mGoalList.get(getGoalIndex("Sets")).getGoalLimitHigh());
+        buttonSurplus.setText("Surplus Goal:\n"+mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow()/7+"+ Calories per Day\n (= "+mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow()+ "per Week)");
+        buttonVolume.setText("Volume Goal:\n(Sets per Muscle per Week):\n"+mGoalList.get(getGoalIndex("Sets")).getGoalLimitLow());
         buttonWeight.setText("Weight:\n"+Integer.toString(prefs.getInt("weight",180))+" lbs");
         buttonProtein.setText("Protein:\n"+Float.toString(prefs.getFloat("protein",0.6f))+"g per lb");
 

@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:fancy="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:animateLayoutChanges="false"
+    android:layout_height="match_parent">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:animateLayoutChanges="false"
+    android:orientation="vertical"
     android:layout_height="match_parent">
 
     <RelativeLayout
@@ -26,6 +33,11 @@
 
     </RelativeLayout>
 
+
+
+<androidx.core.widget.NestedScrollView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
 <LinearLayout
     android:layout_below="@+id/toolbar"
@@ -177,43 +189,149 @@
                     android:layout_marginBottom="2dp"
                     android:layout_height="1dp"></ImageView>
 
-                <Spinner
-                    android:id="@+id/spinner_pace"
-                    android:layout_marginTop="5dp"
+                <LinearLayout
+                    android:id="@+id/name_layout"
+                    android:gravity="bottom"
                     android:layout_below="@+id/divider3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:drawSelectorOnTop="true"
-                    android:textSize="22sp"
-                    android:entries="@array/workout_paces"
-                    />
-
+                    android:orientation="horizontal"
+                    android:padding="5dp"
+                    >
+                    <TextView
+                        android:layout_marginRight="10dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="22sp"
+                        android:text="Activity Name:"
+                        android:textColor="#000000"
+                        />
+                    <EditText
+                        android:id="@+id/edit_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp"
+                        android:text="Running"
+                        android:textColor="#000000"
+                        />
+                </LinearLayout>
                 <LinearLayout
-                    android:layout_below="@+id/spinner_pace"
+                    android:id="@+id/active_lin"
+                    android:gravity="bottom"
+                    android:layout_below="@+id/name_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:padding="10dp"
+                    android:padding="5dp"
+                    >
+                    <TextView
+                        android:layout_marginRight="10dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="22sp"
+                        android:text="List on Main Page:"
+                        android:textColor="#000000"
+                        />
+                    <Switch
+                        android:id="@+id/list_switch"
+                        android:inputType="numberDecimal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp"
+                        android:textColor="#000000"
+                        />
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/spinners1"
+                    android:gravity="bottom"
+                    android:layout_below="@+id/active_lin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="5dp"
+                    >
+                    <TextView
+                        android:layout_marginRight="10dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="22sp"
+                        android:text="Distance Units:"
+                        android:textColor="#000000"
+                        />
+                    <Spinner
+                        android:id="@+id/spinner_distance"
+                        android:layout_marginTop="5dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawSelectorOnTop="true"
+                        android:textSize="22sp"
+                        android:entries="@array/distance_array"
+                        />
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/spinners2"
+                    android:gravity="bottom"
+                    android:layout_below="@+id/spinners1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="5dp"
+                    >
+                    <TextView
+                        android:layout_marginRight="10dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="22sp"
+                        android:text="Pace Units:"
+                        android:textColor="#000000"
+                        />
+                    <Spinner
+                        android:id="@+id/spinner_pace"
+                        android:layout_marginTop="5dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawSelectorOnTop="true"
+                        android:textSize="22sp"
+                        android:entries="@array/workout_paces"
+                        />
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/spinner3"
+                    android:layout_below="@+id/spinners2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="5dp"
                     >
                     <TextView
                         android:layout_marginRight="10dp"
                         android:id="@+id/distance"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="22sp"
+                        android:textSize="16sp"
                         android:text="Calorie Burn:"
                         android:textColor="#000000"
                         />
                     <EditText
-                        android:id="@+id/distance_value"
+                        android:id="@+id/cal_factor"
                         android:inputType="numberDecimal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="20sp"
+                        android:textSize="16sp"
                         android:text="1.62"
                         android:textColor="#000000"
                         />
+                    <TextView
+                        android:layout_marginRight="10dp"
+                        android:id="@+id/weight_factor"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp"
+                        android:text="x Weight lbs:"
+                        android:textColor="#000000"
+                        />
                     <Spinner
+                        android:id="@+id/cal_units"
                         android:layout_marginTop="5dp"
                         android:textSize="22sp"
                         android:layout_below="@+id/divider3"
@@ -223,56 +341,113 @@
                         android:entries="@array/calorie_burn_type"
                         />
                 </LinearLayout>
+                <com.rilixtech.materialfancybutton.MaterialFancyButton
+                    android:id="@+id/delete_button"
+                    android:layout_below="@+id/spinner3"
+                    android:layout_width="100dp"
+                    android:layout_height="50dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:paddingBottom="5dp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:paddingTop="5dp"
+                    android:elevation="5dp"
+                    fancy:mfb_borderColor="@color/black"
+                    fancy:mfb_borderWidth="1dp"
+                    fancy:mfb_defaultColor="@color/white"
+                    fancy:mfb_focusColor="@color/colorPrimaryDark"
+                    fancy:mfb_iconFont="fontawesome.ttf"
+                    fancy:mfb_iconPosition="left"
+                    fancy:mfb_radius="1dp"
+                    fancy:mfb_textSize="18sp"
+                    fancy:mfb_text="Delete"
+                    fancy:mfb_textColor="@color/black" />
 
+                <com.rilixtech.materialfancybutton.MaterialFancyButton
+                    android:id="@+id/save_button"
+                    android:layout_below="@+id/spinner3"
+                    android:layout_toRightOf="@+id/delete_button"
+                    android:layout_width="100dp"
+                    android:layout_height="50dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:paddingBottom="5dp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:paddingTop="5dp"
+                    android:elevation="5dp"
+                    fancy:mfb_borderColor="@color/black"
+                    fancy:mfb_borderWidth="1dp"
+                    fancy:mfb_defaultColor="@color/white"
+                    fancy:mfb_focusColor="@color/colorPrimaryDark"
+                    fancy:mfb_iconFont="fontawesome.ttf"
+                    fancy:mfb_iconPosition="left"
+                    fancy:mfb_radius="1dp"
+                    fancy:mfb_textSize="18sp"
+                    fancy:mfb_text="Save"
+                    fancy:mfb_textColor="@color/black" />
             </RelativeLayout>
+
         </androidx.cardview.widget.CardView>
 
     </LinearLayout>
-    <com.rilixtech.materialfancybutton.MaterialFancyButton
-        android:id="@+id/backup_database"
+    <LinearLayout
         android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@+id/start_run"
-        android:layout_width="100dp"
-        android:layout_height="50dp"
-        android:layout_margin="10dp"
-        android:paddingBottom="5dp"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:paddingTop="5dp"
-        android:elevation="5dp"
-        fancy:mfb_borderColor="@color/black"
-        fancy:mfb_borderWidth="1dp"
-        fancy:mfb_defaultColor="@color/white"
-        fancy:mfb_focusColor="@color/colorPrimaryDark"
-        fancy:mfb_iconFont="fontawesome.ttf"
-        fancy:mfb_iconPosition="left"
-        fancy:mfb_radius="1dp"
-        fancy:mfb_textSize="18sp"
-        fancy:mfb_text="Backup"
-        fancy:mfb_textColor="@color/black" />
-    <com.rilixtech.materialfancybutton.MaterialFancyButton
-        android:id="@+id/restore_database"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@+id/start_run"
-        android:layout_width="100dp"
-        android:layout_height="50dp"
-        android:layout_margin="10dp"
-        android:paddingBottom="5dp"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:paddingTop="5dp"
-        android:elevation="5dp"
-        fancy:mfb_borderColor="@color/black"
-        fancy:mfb_borderWidth="1dp"
-        fancy:mfb_defaultColor="@color/white"
-        fancy:mfb_focusColor="@color/colorPrimaryDark"
-        fancy:mfb_iconFont="fontawesome.ttf"
-        fancy:mfb_iconPosition="left"
-        fancy:mfb_radius="1dp"
-        fancy:mfb_textSize="18sp"
-        fancy:mfb_text="Restore"
-        fancy:mfb_textColor="@color/black" />
+        android:layout_below="@+id/spinner_pace"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+        <com.rilixtech.materialfancybutton.MaterialFancyButton
+            android:id="@+id/backup_database"
+            android:layout_width="100dp"
+            android:layout_height="50dp"
+            android:layout_margin="10dp"
+            android:paddingBottom="5dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="5dp"
+            android:elevation="5dp"
+            fancy:mfb_borderColor="@color/black"
+            fancy:mfb_borderWidth="1dp"
+            fancy:mfb_defaultColor="@color/white"
+            fancy:mfb_focusColor="@color/colorPrimaryDark"
+            fancy:mfb_iconFont="fontawesome.ttf"
+            fancy:mfb_iconPosition="left"
+            fancy:mfb_radius="1dp"
+            fancy:mfb_textSize="18sp"
+            fancy:mfb_text="Backup"
+            fancy:mfb_textColor="@color/black" />
+        <com.rilixtech.materialfancybutton.MaterialFancyButton
+            android:id="@+id/restore_database"
+            android:layout_toRightOf="@+id/start_run"
+            android:layout_width="100dp"
+            android:layout_height="50dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:paddingBottom="5dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="5dp"
+            android:elevation="5dp"
+            fancy:mfb_borderColor="@color/black"
+            fancy:mfb_borderWidth="1dp"
+            fancy:mfb_defaultColor="@color/white"
+            fancy:mfb_focusColor="@color/colorPrimaryDark"
+            fancy:mfb_iconFont="fontawesome.ttf"
+            fancy:mfb_iconPosition="left"
+            fancy:mfb_radius="1dp"
+            fancy:mfb_textSize="18sp"
+            fancy:mfb_text="Restore"
+            fancy:mfb_textColor="@color/black" />
+    </LinearLayout>
 
+</LinearLayout>
+</androidx.core.widget.NestedScrollView>
 
 </LinearLayout>
 

@@ -24,7 +24,7 @@ public class RunTypeAdapter extends RecyclerView.Adapter<RunTypeAdapter.ViewHold
     private SharedPreferences prefs;
     private SharedPreferences.Editor edt;
     private int selected = 1000;
-    private ArrayList<String> mRunTypes;
+    private ArrayList<RunType> mRunTypes;
     private Context mContext;
 
 
@@ -41,7 +41,7 @@ public class RunTypeAdapter extends RecyclerView.Adapter<RunTypeAdapter.ViewHold
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public RunTypeAdapter(ArrayList<String> types) {
+    public RunTypeAdapter(ArrayList<RunType> types) {
         mRunTypes = types;
 
     }
@@ -52,7 +52,7 @@ public class RunTypeAdapter extends RecyclerView.Adapter<RunTypeAdapter.ViewHold
                                                         int viewType) {
         // create a new view
         View v = (View) LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.row_view, parent, false);
+                .inflate(R.layout.row_view_wrapped, parent, false);
         // set the view's size, margins, paddings and layout parameters
 
         mContext = v.getContext();
@@ -68,13 +68,13 @@ public class RunTypeAdapter extends RecyclerView.Adapter<RunTypeAdapter.ViewHold
         // - replace the contents of the view with that element
         TextView text1 = holder.mView.findViewById(R.id.row_text);
 
-
+        int pos = holder.getAdapterPosition();
         //TextView mText = holder.mView.findViewById(R.id.workout_name);
        // CardView mCard = holder.mView.findViewById(R.id.card_view);
-        text1.setText(mRunTypes.get(position));
+        text1.setText(mRunTypes.get(pos).getName());
 
         if(position == selected){
-            holder.mView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.lightgrey));
+            holder.mView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorPrimary));
         }else{
             holder.mView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.white));
         }
@@ -89,6 +89,10 @@ public class RunTypeAdapter extends RecyclerView.Adapter<RunTypeAdapter.ViewHold
     }
     public int getSelected(){
         return selected;
+    }
+
+    public void clearSelected(){
+        selected = 1000;
     }
 
     // Return the size of your dataset (invoked by the layout manager)

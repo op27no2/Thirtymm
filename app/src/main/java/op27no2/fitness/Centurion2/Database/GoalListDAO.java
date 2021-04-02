@@ -26,10 +26,10 @@ public interface GoalListDAO {
 
 
     @Update
-    void updateGoal(GoalsDetail... goalsDetail);
+    void updateGoalSetting(GoalsDetail... goalsDetail);
 
     @Update
-    void updateGoalList(ArrayList<GoalsDetail> goalsDetail);
+    void updateGoalSettingList(ArrayList<GoalsDetail> goalsDetail);
 
     @Delete
     void delete(GoalsDetail goalsDetail);

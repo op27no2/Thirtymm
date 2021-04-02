@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fancy="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FAFAFA"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+    <TextView
+        android:id="@+id/title_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:text="Select Avatar"
+        android:textColor="@color/colorPrimary"
+        android:layout_marginTop="14dp"
+        android:layout_marginBottom="10dp"
+      />
+
+    </LinearLayout>
+    <RadioGroup
+        android:id="@+id/avatar"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <RadioButton
+            android:id="@+id/prometheus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Prometheus"
+            android:textSize="20sp"
+            />
+        <RadioButton
+            android:id="@+id/artemis"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Artemis"
+            android:textSize="20sp"
+            />
+    </RadioGroup>
+    <!--
+        android:text="Only recent orders are currently displayed, would you like to load additional orders?" -->
+
+    <!--
+        android:text="Selecting 'Today's Orders' will also display the date range filter to load longer time periods " -->
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#FFFFFF"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+
+        <com.rilixtech.materialfancybutton.MaterialFancyButton
+            android:id="@+id/cancel_button"
+            android:padding="10dp"
+            android:layout_width="0dp"
+            android:layout_weight="0.3"
+            android:layout_height="50dp"
+            android:layout_margin="10dp"
+            android:paddingBottom="10dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="10dp"
+            android:elevation="5dp"
+            fancy:mfb_borderColor="@color/black"
+            fancy:mfb_borderWidth="1dp"
+            fancy:mfb_defaultColor="@color/white"
+            fancy:mfb_focusColor="@color/colorPrimaryDark"
+            fancy:mfb_iconPosition="left"
+            fancy:mfb_radius="1dp"
+            fancy:mfb_textSize="18sp"
+            fancy:mfb_text="Cancel"
+            fancy:mfb_textColor="@color/black">
+        </com.rilixtech.materialfancybutton.MaterialFancyButton>
+        <com.rilixtech.materialfancybutton.MaterialFancyButton
+            android:id="@+id/save_button"
+            android:padding="10dp"
+            android:layout_width="0dp"
+            android:layout_weight="0.3"
+            android:layout_height="50dp"
+            android:layout_margin="10dp"
+            android:paddingBottom="10dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="10dp"
+            android:elevation="5dp"
+            fancy:mfb_borderColor="@color/black"
+            fancy:mfb_borderWidth="1dp"
+            fancy:mfb_defaultColor="@color/white"
+            fancy:mfb_focusColor="@color/colorPrimaryDark"
+            fancy:mfb_iconPosition="left"
+            fancy:mfb_radius="1dp"
+            fancy:mfb_textSize="18sp"
+            fancy:mfb_text="Save"
+            fancy:mfb_textColor="@color/black">
+        </com.rilixtech.materialfancybutton.MaterialFancyButton>
+
+
+    </LinearLayout>
+</LinearLayout>

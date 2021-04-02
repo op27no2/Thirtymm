@@ -7,15 +7,17 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.Window;
-import android.view.inputmethod.InputMethodManager;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
 import com.rilixtech.materialfancybutton.MaterialFancyButton;
 
 import op27no2.fitness.Centurion2.R;
+import op27no2.fitness.Centurion2.fragments.activities.GoalsDetail;
 import op27no2.fitness.Centurion2.fragments.lifting.PickerDialogInterface;
 
 public class EditDialog extends Dialog  {
@@ -26,18 +28,22 @@ public class EditDialog extends Dialog  {
         private Context mContext;
         private EditText mEdit;
         //passed from lift fragment adapter, keep track to  to correct row
-        private float value;
+        private Integer mValue;
+        private String mName;
+        private GoalsDetail mGoalsDetail;
         private int position;
 
 
 
 
-    public EditDialog(@NonNull Context context,int pos, float mValue, PickerDialogInterface dialogInterface) {
+    public EditDialog(@NonNull Context context, int pos, Integer value, String name, GoalsDetail goalsDetail, PickerDialogInterface dialogInterface) {
         super(context);
         c = context;
         mInterface = dialogInterface;
         mContext = context;
-        value = mValue;
+        this.mValue = value;
+        mName = name;
+        mGoalsDetail = goalsDetail;
         position = pos;
     }
 
@@ -50,16 +56,31 @@ public class EditDialog extends Dialog  {
             requestWindowFeature(Window.FEATURE_NO_TITLE);
             setContentView(R.layout.dialog_edittext);
             mEdit = (EditText) findViewById(R.id.value);
-            mEdit.setText(Float.toString(value));
-            mEdit.requestFocus();
-            mEdit.setText("500");
-            mEdit.selectAll();
-
-
-            InputMethodManager inputMethodManager = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-            if(inputMethodManager.isAcceptingText()) {
-                inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+            TextView titleText = findViewById(R.id.title_text);
+            int type = mGoalsDetail.getGoalType();
+            switch (type) {
+                case 0:
+                    titleText.setText("Goal:\n" +mGoalsDetail.getGoalName()+"<"+ mGoalsDetail.getGoalLimitHigh() + "/week = <"+mGoalsDetail.getGoalLimitHigh()/7+"/day" );
+                    break;
+                case 1:
+                    titleText.setText("Goal:\n" + mGoalsDetail.getGoalLimitLow()+"<"+mGoalsDetail.getGoalName()+"<"+ mGoalsDetail.getGoalLimitHigh() + "/week = " +mGoalsDetail.getGoalLimitLow()/7+ "<"+mGoalsDetail.getGoalName()+"<"+mGoalsDetail.getGoalLimitHigh()/7+"/day" );
+                    break;
+                case 2:
+                    titleText.setText("Goal:\n" +mGoalsDetail.getGoalName()+">"+ mGoalsDetail.getGoalLimitHigh() + "/week = >"+mGoalsDetail.getGoalLimitHigh()/7+"/day" );
+                    break;
+                default:
+                    break;
             }
+
+
+
+
+
+            mEdit.setText(Integer.toString(mValue));
+            mEdit.selectAll();
+            mEdit.requestFocus();
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+
 
         MaterialFancyButton mButton = findViewById(R.id.save);
             mButton.setOnClickListener(new View.OnClickListener() {
@@ -71,7 +92,7 @@ public class EditDialog extends Dialog  {
 
             DisplayMetrics metrics = mContext.getResources().getDisplayMetrics();
             int width = metrics.widthPixels;
-            getWindow().setLayout((7 * width) / 11, LinearLayout.LayoutParams.WRAP_CONTENT);
+            getWindow().setLayout((9 * width) / 11, LinearLayout.LayoutParams.WRAP_CONTENT);
 
         }
 

@@ -62,6 +62,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="18sp"
+                android:textColor="#000000"
                 />
 
             <androidx.recyclerview.widget.RecyclerView
@@ -94,6 +95,7 @@
                 android:gravity="center_vertical"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
+                android:textColor="#000000"
                 android:textSize="18sp"
                 />
 
@@ -115,9 +117,28 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:textSize="18sp"
+                android:textColor="#000000"
                 />
         </RelativeLayout>
-
+        <RelativeLayout
+            android:id="@+id/bmr_layout"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_below="@+id/avatar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize">
+            <TextView
+                android:id="@+id/bmr_text"
+                android:text="BMR: "
+                android:layout_marginLeft="20dp"
+                android:gravity="center_vertical"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:textSize="18sp"
+                android:textColor="#000000"
+                />
+        </RelativeLayout>
 
 
     </RelativeLayout>

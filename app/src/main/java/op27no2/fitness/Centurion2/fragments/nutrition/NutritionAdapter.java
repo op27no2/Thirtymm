@@ -13,6 +13,7 @@ import java.util.ArrayList;
 
 import op27no2.fitness.Centurion2.Database.Repository;
 import op27no2.fitness.Centurion2.R;
+import op27no2.fitness.Centurion2.fragments.activities.GoalsDetail;
 import op27no2.fitness.Centurion2.fragments.lifting.PickerDialogInterface;
 
 /**
@@ -22,6 +23,7 @@ import op27no2.fitness.Centurion2.fragments.lifting.PickerDialogInterface;
 public class NutritionAdapter extends RecyclerView.Adapter<NutritionAdapter.ViewHolder>  {
     private ArrayList<String> mNames;
     private ArrayList<Integer> mValues;
+    private ArrayList<GoalsDetail> mGoalTopList;
     private int selected;
     private Repository mRepository;
     private PickerDialogInterface passThisInterface;
@@ -40,9 +42,10 @@ public class NutritionAdapter extends RecyclerView.Adapter<NutritionAdapter.View
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public NutritionAdapter(ArrayList<String> names, ArrayList<Integer> values, PickerDialogInterface mInterface ) {
+    public NutritionAdapter(ArrayList<String> names, ArrayList<Integer> values, ArrayList<GoalsDetail> goalTopList, PickerDialogInterface mInterface ) {
         mNames = names;
         mValues = values;
+        mGoalTopList = goalTopList;
         passThisInterface = mInterface;
     }
 
@@ -67,13 +70,15 @@ public class NutritionAdapter extends RecyclerView.Adapter<NutritionAdapter.View
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
 
+        int pos = holder.getAdapterPosition();
 
         TextView mText1 = holder.mView.findViewById(R.id.volume_lift);
         TextView mText2 = holder.mView.findViewById(R.id.volume_sets);
 
 
-        mText1.setText(mNames.get(position));
-        mText2.setText(Integer.toString(mValues.get(position)));
+        mText1.setText(mNames.get(pos));
+        mText2.setText(Integer.toString(mValues.get(pos)));
+
         mText2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -84,7 +89,7 @@ public class NutritionAdapter extends RecyclerView.Adapter<NutritionAdapter.View
         });
 
 
-        if(position == selected){
+        if(pos == selected){
             holder.mView.setBackgroundColor(ColorUtils.setAlphaComponent(ContextCompat.getColor(holder.mView.getContext(), R.color.lightgrey),200));
         }else{
             holder.mView.setBackgroundColor(ContextCompat.getColor(holder.mView.getContext(), R.color.white));
@@ -108,6 +113,35 @@ public class NutritionAdapter extends RecyclerView.Adapter<NutritionAdapter.View
     }
 
 
+
+    //meh I didn't like adding goals on the list
+    private int getGoalIndex(String name){
+        int index = -1;
+        for(int i=0;i<mGoalTopList.size();i++){
+            if(mGoalTopList.get(i).getGoalName().equals(name)){
+                index = i;
+            }
+        }
+        return index;
+    }
+
+    private String getGoalString(String name) {
+        String mGoal = "";
+        int type = mGoalTopList.get(getGoalIndex(name)).getGoalType();
+        switch (type) {
+            case 0:
+                mGoal = "[goal: <" + mGoalTopList.get(getGoalIndex(name)).getGoalLimitHigh() + "/week";
+                return mGoal;
+            case 1:
+                mGoal = "[goal: " + mGoalTopList.get(getGoalIndex(name)).getGoalLimitLow() + "</week<" + mGoalTopList.get(getGoalIndex(name)).getGoalLimitHigh();
+                return mGoal;
+            case 2:
+                mGoal = "[goal: >" + mGoalTopList.get(getGoalIndex(name)).getGoalLimitLow() + "/week";
+                return mGoal;
+            default:
+                return mGoal;
+        }
+    }
 
 
 

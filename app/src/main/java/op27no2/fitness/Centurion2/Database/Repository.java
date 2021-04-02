@@ -12,6 +12,7 @@ import op27no2.fitness.Centurion2.fragments.lifting.LiftMap;
 import op27no2.fitness.Centurion2.fragments.lifting.LiftingWorkout;
 import op27no2.fitness.Centurion2.fragments.lifting.NamedWorkout;
 import op27no2.fitness.Centurion2.fragments.nutrition.NutritionDay;
+import op27no2.fitness.Centurion2.fragments.run.RunType;
 import op27no2.fitness.Centurion2.fragments.run.RunWorkout;
 
 public class Repository {
@@ -21,6 +22,7 @@ public class Repository {
     private NamedWorkoutDAO mNamedWorkoutDAO;
     private LiftMapDAO mLiftMapDao;
     private GoalListDAO mGoalListDao;
+    private RunTypeDAO mRunTypeDao;
     private LiftingWorkout liftWorkout;
 
     public Repository(Context context) {
@@ -31,6 +33,7 @@ public class Repository {
         this.mLiftMapDao = dataRoombase.lmDAO();
         this.mGoalListDao = dataRoombase.glDAO();
         this.mRunDao = dataRoombase.rwDAO();
+        this.mRunTypeDao = dataRoombase.rtDAO();
     }
 
     LiftingWorkout getTodaysWorkout(String date) {
@@ -147,12 +150,41 @@ public class Repository {
         });
     }
 
-    public void updateGoalList(ArrayList<GoalsDetail> mGoalList) {
+    public void updateGoalSettingList(ArrayList<GoalsDetail> mGoalList) {
         Executor myExecutor = Executors.newSingleThreadExecutor();
         myExecutor.execute(() -> {
-            mGoalListDao.updateGoalList(mGoalList);
+            mGoalListDao.updateGoalSettingList(mGoalList);
         });
     }
+
+    public void updateGoalSetting(GoalsDetail mGoalSetting) {
+        Executor myExecutor = Executors.newSingleThreadExecutor();
+        myExecutor.execute(() -> {
+            mGoalListDao.updateGoalSetting(mGoalSetting);
+        });
+    }
+
+    public void updateRunType(RunType mRunType) {
+        Executor myExecutor = Executors.newSingleThreadExecutor();
+        myExecutor.execute(() -> {
+            mRunTypeDao.updateRunType(mRunType);
+        });
+    }
+
+    public void insertRunType(RunType mRunType) {
+        Executor myExecutor = Executors.newSingleThreadExecutor();
+        myExecutor.execute(() -> {
+            mRunTypeDao.insertAll(mRunType);
+        });
+    }
+    public void deleteRunType(RunType mRunType) {
+        Executor myExecutor = Executors.newSingleThreadExecutor();
+        myExecutor.execute(() -> {
+            mRunTypeDao.delete(mRunType);
+        });
+    }
+
+
 
 
 

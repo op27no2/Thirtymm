@@ -131,12 +131,20 @@ public class ChildProgressFragment extends Fragment {
 
 
 
-        getDayData();
+
 
         return view;
     }
 
 
+    public void onResume(){
+        super.onResume();
+        mBigGoalsDetail.clear();
+        calendarWeeks.clear();
+        goalChangePositions.clear();
+
+        getDayData();
+    }
 
 
     @SuppressLint("StaticFieldLeak")
@@ -163,6 +171,7 @@ public class ChildProgressFragment extends Fragment {
              }
 
              //so for new algorithm, we are storing the weeks goals on NutrtionDay, so once Sunday is reached, Goal will be locked in
+            //not collecting GoalsDetail every day backwards, just goal data to add to the gaolsdetail weektotal, goaldetail stays Sundays, or first day.
              //look to Sundays for the weeks goal, and total weeks values to see if they were met
              //not necessarily opened every week, so keep goal until new goal on Sunday detected.
              Calendar mCal = Calendar.getInstance();
@@ -181,9 +190,10 @@ public class ChildProgressFragment extends Fragment {
 
                 //loop backwards till we get to day zero
                 while(!fmt.format(mCal.getTime()).equals(fmt.format(dateZero))){
+
                     //TODO change this to mDay.getvalues.Size()?
                     if(weekTotals.size() == 0){
-                        for(int i=0; i<2;i++){ //change to i<mvalues.size()
+                        for(int i=0; i<3;i++){ //change to i<mvalues.size()
                             weekTotals.add(0);
                         }
                     }
@@ -230,15 +240,14 @@ public class ChildProgressFragment extends Fragment {
                     mcal2.setTime(today);
 
 
-                    if( goalsForWeekFound == false){
+                    if(goalsForWeekFound == false){
 
+                        //should be today on first loop, Sundays thereafter.
                         mGoalList = mDay.getGoalList();
+                        System.out.println("iterate day test: "+ mDay.getDate());
                         if(mGoalList != null) {
                             System.out.println("goal list not null");
                             System.out.println("goal list size: "+mGoalList.size());
-                            for (int i = 0; i < mGoalList.size(); i++) {
-                                System.out.println("goal: " + mGoalList.get(i).getGoalName());
-                            }
                             goalsForWeekFound = true;
                         }else{
                             System.out.println("goal list null");
@@ -276,9 +285,11 @@ public class ChildProgressFragment extends Fragment {
                             int index = mDay.getNames().indexOf(name);
                             if(index>=0) {
                                 mGoalList.get(i).setWeekTotal((float) weekTotals.get(index));
+                                System.out.println("nametest setting week total= "+weekTotals.get(index));
                             }
                             System.out.println("nametest = "+name);
                             System.out.println("nametest index= "+index);
+                            System.out.println("nametest week get= "+mGoalList.get(i).getWeekTotal());
 
 
                         }
@@ -342,7 +353,7 @@ public class ChildProgressFragment extends Fragment {
                         System.out.println("Goals Size Same");
                         boolean checkSame = true;
                        for(int j=0; j<mBigGoalsDetail.get(i).size();j++){
-                           System.out.println("goal 1 name:"+mBigGoalsDetail.get(i).get(j).getGoalName());
+                        /*   System.out.println("goal 1 name:"+mBigGoalsDetail.get(i).get(j).getGoalName());
                            System.out.println("goal 2 name:"+mBigGoalsDetail.get(i+1).get(j).getGoalName());
                            if(mBigGoalsDetail.get(i).get(j).getGoalName().equals(mBigGoalsDetail.get(i+1).get(j).getGoalName())){
                                System.out.println("true");
@@ -369,7 +380,7 @@ public class ChildProgressFragment extends Fragment {
                                System.out.println("true");
                            }else{
                                System.out.println("false");
-                           }
+                           }*/
 
 
                            if(mBigGoalsDetail.get(i).get(j).getGoalName().equals(mBigGoalsDetail.get(i+1).get(j).getGoalName()) && mBigGoalsDetail.get(i).get(j).getGoalType().equals(mBigGoalsDetail.get(i+1).get(j).getGoalType()) &&
@@ -481,6 +492,7 @@ public class ChildProgressFragment extends Fragment {
             grid.setNumColumns(titles.size());
             grid.setAdapter(gridAdapter);
 
+        mProgressAdapter.notifyDataSetChanged();
 
     }
 
@@ -523,14 +535,17 @@ public class ChildProgressFragment extends Fragment {
                 ArrayList<Integer> ratios = mMap.getRatios();
                 if (mMap.getRatios() != null) {
                     for (int i = 0; i < mMap.getRatios().size(); i++) {
-                        if (muscleVolumes.containsKey(names.get(i))) {
-                            Double hold = muscleVolumes.get(names.get(i));
-                            //dividing by 10 because stored as integers
-                            hold = hold +  ((double) ratios.get(i)/10) * numSets;
-                            muscleVolumes.put(names.get(i), hold);
-                        } else {
-                            //dividing by 10 because stored as integers
-                            muscleVolumes.put(names.get(i), ((double) ratios.get(i)/10) * numSets);
+                        //TODO probably better to just remove these from list than check during iteration
+                        if(!names.get(i).equals("Chest") && !names.get(i).equals("Back")&& !names.get(i).equals("Core")&& !names.get(i).equals("Arms")&& !names.get(i).equals("Legs")) {
+                            if (muscleVolumes.containsKey(names.get(i))) {
+                                Double hold = muscleVolumes.get(names.get(i));
+                                //dividing by 10 because stored as integers
+                                hold = hold + ((double) ratios.get(i) / 10) * numSets;
+                                muscleVolumes.put(names.get(i), hold);
+                            } else {
+                                //dividing by 10 because stored as integers
+                                muscleVolumes.put(names.get(i), ((double) ratios.get(i) / 10) * numSets);
+                            }
                         }
                     }
                 }

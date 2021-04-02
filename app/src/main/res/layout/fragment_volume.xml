@@ -55,7 +55,7 @@
 
 
         <ImageView
-            android:id="@+id/save"
+            android:id="@+id/settings"
             android:padding="20dp"
             android:layout_centerVertical="true"
             android:layout_alignParentRight="true"
@@ -82,7 +82,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="18sp"
                 android:textColor="@color/colorPrimary"
-                android:text="Weekly Volume: Sets"
+                android:text="Weekly Volume\n Sets Per Lift:"
                 android:layout_marginTop="10dp"
                 android:layout_marginLeft="10dp"
                 android:layout_marginBottom="5dp"
