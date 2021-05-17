@@ -22,9 +22,6 @@ public class RunType {
     @ColumnInfo(name = "active")
     private Boolean mActive = true;
 
-    @ColumnInfo(name = "weightfactor")
-    private Boolean weightFactor = true;
-
     @ColumnInfo(name = "burnvalue")
     private Double calBurnValue;
 
@@ -59,13 +56,6 @@ public class RunType {
         return mActive;
     }
 
-    public void setWeightFactor(Boolean wf){
-        weightFactor = wf;
-    }
-    public Boolean getWeightFactor(){
-        return weightFactor;
-    }
-
     public void setCalBurnValue(Double bv){
         calBurnValue = bv;
     }
@@ -94,6 +84,9 @@ public class RunType {
         return distanceUnits;
     }
 
-
+    @Override
+    public String toString() {
+        return mName;
+    }
 
 }

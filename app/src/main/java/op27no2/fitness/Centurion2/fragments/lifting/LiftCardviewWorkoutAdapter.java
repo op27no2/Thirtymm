@@ -4,12 +4,17 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Vibrator;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
@@ -308,11 +313,37 @@ public class LiftCardviewWorkoutAdapter extends RecyclerView.Adapter<LiftCardvie
             mCard.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
-                    System.out.println("lift long click");
-                    notifyItemRemoved(position);
-                    notifyItemRangeChanged(position, getItemCount());
-                    mLiftingWorkout.removeLift(position);
-                    mRepository.updateWorkout(mLiftingWorkout);
+                    final Dialog dialog = new Dialog(mContext);
+                    dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                    dialog.setContentView(R.layout.dialog_delete);
+                    DisplayMetrics metrics = mContext.getResources().getDisplayMetrics();
+                    int width = metrics.widthPixels;
+                    dialog.getWindow().setLayout((8 * width) / 9, LinearLayout.LayoutParams.WRAP_CONTENT);
+                    TextView mText = dialog.findViewById(R.id.confirm_title);
+                    mText.setText("Delete?");
+
+                    dialog.findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+
+                            System.out.println("lift long click");
+                            notifyItemRemoved(position);
+                            notifyItemRangeChanged(position, getItemCount());
+                            mLiftingWorkout.removeLift(position);
+                            mRepository.updateWorkout(mLiftingWorkout);
+
+                            dialog.dismiss();
+                        }
+                    });
+                    dialog.findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            dialog.dismiss();
+                        }
+                    });
+                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                    dialog.show();
+
                     return false;
                 }
             });

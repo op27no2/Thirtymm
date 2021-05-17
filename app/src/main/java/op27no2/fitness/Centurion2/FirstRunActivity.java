@@ -78,8 +78,8 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
         buttonSurplus = findViewById(R.id.goal_surplus);
         buttonVolume = findViewById(R.id.goal_sets);
 
-        buttonImperial = findViewById(R.id.imperial);
-        buttonMetric = findViewById(R.id.metric);
+        buttonImperial = findViewById(R.id.pounds);
+        buttonMetric = findViewById(R.id.kilograms);
 
         buttonMale = findViewById(R.id.male);
         buttonFemale = findViewById(R.id.female);
@@ -154,9 +154,6 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
                 dialog.show();
             }
         });
-
-
-
 
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -318,11 +315,21 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
                 buttonImperial.setBorderColor(ResourcesCompat.getColor(getResources(), R.color.darkgrey, null));
                 buttonImperial.setTextColor(ResourcesCompat.getColor(getResources(), R.color.darkgrey, null));
                 buttonImperial.setBorderWidth(10);
+                buttonWeight.setText("Weight:\n180 lbs");
+                buttonProtein.setText("Protein:\n0.6g per lb");
+                edt.putInt("weight", 180);
+                edt.putFloat("protein", 0.6f);
+                edt.commit();
                 break;
             case 1:
                 buttonMetric.setBorderColor(ResourcesCompat.getColor(getResources(), R.color.darkgrey, null));
                 buttonMetric.setTextColor(ResourcesCompat.getColor(getResources(), R.color.darkgrey, null));
                 buttonMetric.setBorderWidth(10);
+                buttonWeight.setText("Weight:\n80 kgs");
+                buttonProtein.setText("Protein:\n1g per kg");
+                edt.putInt("weight", 80);
+                edt.putFloat("protein", 1.0f);
+                edt.commit();
                 break;
         }
     }
@@ -356,6 +363,7 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
     @Override
     public void onValueDialogDismiss(float value, int position) {
         System.out.println("dialog position: "+position+" value: "+value);
+        String unit = prefs.getInt("units",0) == 0 ? "lbs" : "kg";
         switch(position){
             case 0:
                 int myValue = (int) -(Math.abs(value));
@@ -400,7 +408,7 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
                 edt.apply();
                 break;
             case 4:
-                buttonWeight.setText("Weight:\n"+Integer.toString((int) value)+" lbs");
+                buttonWeight.setText("Weight:\n"+Integer.toString((int) value)+unit);
                 mGoalList.get(getGoalIndex("Protein")).setGoalType(2);
                 mGoalList.get(getGoalIndex("Protein")).setGoalLimitLow((int) Math.floor((value*prefs.getFloat("protein",0.6f)*7)));
                 mRepository.updateGoalSettingList(mGoalList);
@@ -411,7 +419,7 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
                 edt.apply();
                 break;
             case 5:
-                buttonProtein.setText("Protein:\n"+Float.toString(value)+"g per lb per day");
+                buttonProtein.setText("Protein:\n"+Float.toString(value)+"g per "+unit);
                 mGoalList.get(getGoalIndex("Protein")).setGoalType(2);
                 mGoalList.get(getGoalIndex("Protein")).setGoalLimitLow((int) value*prefs.getInt("weight",150)*7);
                 mRepository.updateGoalSettingList(mGoalList);
@@ -431,13 +439,14 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
         buttonVolume.setText("Volume Goal:\n(Sets/Muscle/Week):\n"+Integer.toString(prefs.getInt("volume",15)));
         buttonWeight.setText("Weight:\n"+Integer.toString(prefs.getInt("weight",180))+" lbs");
         buttonProtein.setText("Protein:\n"+Float.toString(prefs.getFloat("protein",0.6f))+"g per lb");*/
+        String unit = prefs.getInt("units",0) == 0 ? "lbs" : "kg";
 
         buttonDeficit.setText("Deficit Goal\n"+mGoalList.get(getGoalIndex("Cals")).getGoalLimitHigh()/7+" Calories per Day\n (= "+mGoalList.get(getGoalIndex("Cals")).getGoalLimitHigh()+" per Week)");
         buttonMaintenance.setText("Maintenance Goal:\n"+"Base Cals +/- "+mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow()/7 +" per Day\n"+ "(= +/-" +mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow() +" per Week");
         buttonSurplus.setText("Surplus Goal:\n"+mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow()/7+"+ Calories per Day\n (= "+mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow()+ "per Week)");
         buttonVolume.setText("Volume Goal:\n(Sets per Muscle per Week):\n"+mGoalList.get(getGoalIndex("Sets")).getGoalLimitLow());
-        buttonWeight.setText("Weight:\n"+Integer.toString(prefs.getInt("weight",180))+" lbs");
-        buttonProtein.setText("Protein:\n"+Float.toString(prefs.getFloat("protein",0.6f))+"g per lb");
+        buttonWeight.setText("Weight:\n"+Integer.toString(prefs.getInt("weight",180))+" "+unit);
+        buttonProtein.setText("Protein:\n"+Float.toString(prefs.getFloat("protein",0.6f))+"g per "+unit);
 
     }
 

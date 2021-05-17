@@ -28,25 +28,28 @@ import android.os.Vibrator;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -78,6 +81,7 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.snapshotter.MapSnapshot;
 import com.mapbox.mapboxsdk.snapshotter.MapSnapshotter;
 import com.mapbox.mapboxsdk.style.layers.FillExtrusionLayer;
 import com.mapbox.mapboxsdk.style.layers.Layer;
@@ -114,7 +118,6 @@ import op27no2.fitness.Centurion2.Database.Repository;
 import op27no2.fitness.Centurion2.MainActivity;
 import op27no2.fitness.Centurion2.MyAppWidgetProvider;
 import op27no2.fitness.Centurion2.R;
-import op27no2.fitness.Centurion2.RecyclerItemClickListener;
 import op27no2.fitness.Centurion2.fragments.nutrition.NutritionDay;
 import op27no2.fitness.Centurion2.upload.TcxHelper;
 import retrofit2.Call;
@@ -174,11 +177,15 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private long finalTime;
     private MapSnapshotter mapSnapshotter;
     private FrameLayout mFrame;
+    private Spinner mSpinnerTop;
 
     private EditText mEditDuration;
     private EditText mEditDistance;
     private EditText mEditPace;
     private EditText mEditCals;
+    private EditText mEditTitle;
+    private TextView mTextviewDistanceUnits;
+    private TextView mTextviewPaceUnits;
 
     private Integer saveTime;
     private float saveDistance;
@@ -200,6 +207,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private static final int RQ_LOGIN = 1001;
     private static final String REDIRECT_URI = "http://op27no2.fitness/callback/";
     private Boolean mapReady = false;
+
 
 
 
@@ -239,11 +247,29 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             }
         });
 
+        System.out.println("default selection top: "+prefs.getInt("default_activity", 0));
+
+
+        mSpinnerTop = view.findViewById(R.id.top_type);
+        mSpinnerTop.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                edt.putInt("default_activity",position);
+                edt.apply();
+                System.out.println("default selection set: "+prefs.getInt("default_activity", 0));
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+
+            }
+
+        });
 
         mapView = view.findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
-
 
         startButton = view.findViewById(R.id.start_run);
         startButton.setOnClickListener(view1 -> {
@@ -295,14 +321,52 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         eraseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                routeCoordinates.clear();
-                mPoints.clear();
-                clearExtrusion();
-                try {
-                    updateLine();
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    if(timerService != null){
+                        final Dialog dialog = new Dialog(getActivity());
+                        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                        dialog.setContentView(R.layout.dialog_delete);
+                        DisplayMetrics metrics = getActivity().getResources().getDisplayMetrics();
+                        int width = metrics.widthPixels;
+                        dialog.getWindow().setLayout((8 * width) / 9, LinearLayout.LayoutParams.WRAP_CONTENT);
+                        TextView mText = dialog.findViewById(R.id.confirm_title);
+                        mText.setText("Are you sure you want to clear the run path?");
+
+                        dialog.findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                routeCoordinates.clear();
+                                mPoints.clear();
+                                clearExtrusion();
+                                try {
+                                    updateLine();
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                                dialog.dismiss();
+                            }
+                        });
+                        dialog.findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                dialog.dismiss();
+                            }
+                        });
+                        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                        dialog.show();
+
                 }
+                else{
+                    routeCoordinates.clear();
+                    mPoints.clear();
+                    clearExtrusion();
+                    try {
+                        updateLine();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+
             }
         });
 
@@ -1480,16 +1544,26 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         TextView mTextDate = dialog.findViewById(R.id.date);
         mTextDate.setText(formattedDate);
 
-        EditText mEditDistance = dialog.findViewById(R.id.distance_value);
-        EditText mEditPace = dialog.findViewById(R.id.pace_value);
-        EditText mEditCals = dialog.findViewById(R.id.cals_value);
-        EditText mEditTitle = dialog.findViewById(R.id.workout_title);
+        Spinner mSpinner = dialog.findViewById(R.id.type);
+        ArrayAdapter<RunType> adapter =
+                new ArrayAdapter<RunType>(getApplicationContext(),  android.R.layout.simple_spinner_dropdown_item, mActivityTypes);
+        adapter.setDropDownViewResource( android.R.layout.simple_spinner_dropdown_item);
+        mSpinner.setAdapter(adapter);
+
+        mEditDistance = dialog.findViewById(R.id.distance_value);
+        mEditPace = dialog.findViewById(R.id.pace_value);
+        mEditCals = dialog.findViewById(R.id.cals_value);
+        mEditTitle = dialog.findViewById(R.id.workout_title);
+        mTextviewDistanceUnits = dialog.findViewById((R.id.distance_units));
+        mTextviewPaceUnits = dialog.findViewById((R.id.pace_units));
         EditText mEditDescription = dialog.findViewById(R.id.workout_description);
         CheckBox mStravaCheck = (CheckBox) dialog.findViewById(R.id.strava_checkbox);
         CheckBox mMapCheck = (CheckBox) dialog.findViewById(R.id.map_checkbox);
 
 
         //set initial texts, can edit then save
+
+        //calc total distance and pace
         final float[] total = {0f};
         for (int i = 0; i < routeCoordinates.size() - 1; i++) {
             float[] distance = new float[2];
@@ -1497,16 +1571,65 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             total[0] = total[0] + distance[0];
         }
         long pace = (long) (finalTime /(total[0] *0.000621371192f));
+        System.out.println("initial total: "+total[0]);
 
 
+        mSpinner.setSelection(prefs.getInt("default_activity",mActivityTypes.size()-1));
+        setDialogText(mActivityTypes.get(prefs.getInt("default_activity",0)), total);
+        setPaceAndCalText(mActivityTypes.get(prefs.getInt("default_activity",0)),total);
 
-        mEditDistance.setText(getMiles(total[0]));
+
+        mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                setDialogText(mActivityTypes.get(position), total);
+                setPaceAndCalText(mActivityTypes.get(position), total);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+
+            }
+
+        });
+
         mEditPace.setText(getDuration(pace)+" /mi");
 
+        //TODO edit cals calc, setCals method?
         mEditCals.setText(Integer.toString(((int) Math.floor(total[0] *0.000621371192f*prefs.getInt("weight",215)*0.63))));
+        mEditCals.setOnEditorActionListener(new TextView.OnEditorActionListener(){
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE)) {
+                    View view = getActivity().getCurrentFocus();
+                    if (view != null) {
+                        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    }
+                }
+                return false;
+            }
+        });
+
+
         mEditDistance.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
+                //total[0] is equal to a number of miles or kilometers,
+                float newTotal = 0;
+                if(!mEditDistance.getText().toString().equals("") && !mEditDistance.getText().toString().equals(".")) {
+
+                    double factor = (mActivityTypes.get(mSpinner.getSelectedItemPosition()).getDistanceUnits() == 0) ? .000621371192f : .001;
+                    newTotal = Float.parseFloat(mEditDistance.getText().toString());
+                    //have to adjust total since you edited distance
+                    total[0] = (float) Math.floor(newTotal / factor);
+                    setPaceAndCalText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+                }else{
+                    System.out.println("string empty savecals 0");
+                    saveCals = 0;
+                    mEditCals.setText(Integer.toString(saveCals));
+                    setPaceAndCalText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+                }
             }
 
             @Override
@@ -1517,17 +1640,17 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             @Override
             public void onTextChanged(CharSequence s, int start,
                                       int before, int count) {
-                if(!s.toString().equals("")) {
-                    total[0] = Float.parseFloat(s.toString());
-                    System.out.println("total = " + total[0]);
-                    saveCals = (((int) Math.floor(total[0] * prefs.getInt("weight", 215) * 0.63f)));
-                    System.out.println("save Cals = " + saveCals);
-                    mEditCals.setText(Integer.toString(saveCals));
-                }else{
-                    System.out.println("string empty savecals 0");
-                    saveCals = 0;
-                    mEditCals.setText(Integer.toString(saveCals));
+
+            }
+        });
+        mEditDistance.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE)) {
+                    System.out.println("event test");
+                    mEditCals.requestFocus();
                 }
+                return false;
             }
         });
 
@@ -1580,9 +1703,9 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         if(minutes<10) {
             mEditTime2.setText("0"+Integer.toString(minutes));
         }
-  /*      else if (minutes>0){
+        else if (minutes>0){
             mEditTime2.setText(Integer.toString(minutes));
-        }*/
+        }
 
         if(seconds<10) {
             mEditTime3.setText("0"+Integer.toString(seconds));
@@ -1595,6 +1718,10 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             public void afterTextChanged(Editable s) {
                 if(s.length()==1){
                     mEditTime2.requestFocus();
+                    finalTime = ((Integer.parseInt(mEditTime1.getText().toString())*60*60)+(Integer.parseInt(mEditTime2.getText().toString())*60)+(Integer.parseInt(mEditTime3.getText().toString())))*1000;
+
+                    // setDialogText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+                    setPaceAndCalText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
                 }
             }
             @Override
@@ -1605,12 +1732,17 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         mEditTime2.addTextChangedListener(new TextWatcher(){
             @Override
             public void afterTextChanged(Editable s) {
-                if(s.length()==2){
+                if(s.length()==2) {
                     mEditTime3.requestFocus();
                 }
+                    finalTime = ((Integer.parseInt(mEditTime1.getText().toString())*60*60)+(Integer.parseInt(mEditTime2.getText().toString())*60)+(Integer.parseInt(mEditTime3.getText().toString())))*1000;
+                    //  setDialogText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+                    setPaceAndCalText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+
             }
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {}
         });
@@ -1618,6 +1750,12 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         mEditTime3.addTextChangedListener(new TextWatcher(){
             @Override
             public void afterTextChanged(Editable s) {
+                if(s.length()==2) {
+                    mEditDistance.requestFocus();
+                }
+                finalTime = ((Integer.parseInt(mEditTime1.getText().toString())*60*60)+(Integer.parseInt(mEditTime2.getText().toString())*60)+(Integer.parseInt(mEditTime3.getText().toString())))*1000;
+                //  setDialogText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+                setPaceAndCalText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
             }
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -1703,18 +1841,115 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         dialog.show();
     }
 
+    private void setDialogText(RunType activity, float[] total){
+        mEditTitle.setText("Daily "+activity.getName());
+        switch(activity.getDistanceUnits()){
+            case 0:
+                //Miles
+                mEditDistance.setText(getMiles(total[0]));
+                mTextviewDistanceUnits.setText("miles");
+                break;
+            case 1:
+                //Kilometers
+                double Kilometers = total[0]/1000;
+                mEditDistance.setText(String.format("%.2f",Kilometers));
+                mTextviewDistanceUnits.setText("km");
+                break;
+
+        }
+    }
+
+    //this uses total[0]
+    private void setPaceAndCalText(RunType activity, float[] total){
+        System.out.println("pace total: "+total[0]);
+
+        if(!mEditDistance.getText().toString().equals("") || !mEditDistance.getText().toString().equals(".")  || Integer.parseInt(mEditDistance.getText().toString()) != 0) {
+            long pace = 0;
+            float miles = total[0] * 0.000621371192f;
+            float kilometers = total[0] / 1000;
+            float five = total[0] / 500;
+            float one = total[0]/100;
+
+            //will downfactor calculations in pounds to kg
+            double factorUnit = prefs.getInt("units",0) == 0 ? 1 : (1/2.2);
+            double factorCal = activity.getCalBurnValue();
+            int weight = prefs.getInt("weight",180);
+
+            int calValue = 0;
+            switch (activity.getCalBurnUnit()) {
+                case 0:
+                    //Per Minute
+                    calValue = (int) Math.floor((finalTime/1000/60)*weight*factorUnit*factorCal);
+                    break;
+                case 1:
+                    //Per Mile
+                    System.out.println("miles: "+miles+" weight: "+weight+" funit: "+factorUnit+" fcal: "+factorCal);
+                    calValue = (int) Math.floor(miles*weight*factorUnit*factorCal);
+                    break;
+                case 2:
+                    //Per Kilometer
+                    System.out.println("kilo: "+kilometers+" weight: "+weight+" funit: "+factorUnit+" fcal: "+factorCal);
+                    calValue = (int) Math.floor(kilometers*weight*factorUnit*factorCal);
+                    break;
+                case 3:
+                    //Per Hour
+                    calValue = (int) Math.floor((finalTime/1000/60/60)*weight*factorUnit*factorCal);
+                    break;
+            }
+            mEditCals.setText(Integer.toString(calValue));
+
+            switch (activity.getPaceUnits()) {
+                case 0:
+                    //minutes per mile
+                    if(miles!=0) {
+                        pace = (long) (finalTime / (miles));
+                    }
+                    mEditPace.setText(getDuration(pace));
+                    mTextviewPaceUnits.setText("/mi");
+                    break;
+                case 1:
+                    //per kilometer
+                    if(kilometers!=0) {
+                        pace = (long) (finalTime / (kilometers));
+                    }
+                    mEditPace.setText(getDuration(pace));
+                    mTextviewPaceUnits.setText("/km");
+                    break;
+                case 2:
+                    //per 500m
+
+                    if(five!=0) {
+                        pace = (long) (finalTime / (five));
+                    }
+                    mEditPace.setText(getDuration(pace));
+                    mTextviewPaceUnits.setText("/500m");
+                    break;
+                case 3:
+                    //per 100m
+                    if(one!=0) {
+                        pace = (long) (finalTime / (one));
+                    }
+                    mEditPace.setText(getDuration(pace));
+                    mTextviewPaceUnits.setText("/100m");
+                    break;
+                case 4:
+                    //miles per hour
+                    float mpace = 0;
+                    if(miles!=0) {
+                        mpace = (float) ((miles ) / ((float) finalTime / 3600000f));
+                    }
+                    mEditPace.setText(String.format("%.2f", mpace));
+                    mTextviewPaceUnits.setText("mph");
+                    break;
+            }
+        }
+    }
+
+
 
     public void saveRun(Bitmap bMap){
         RunWorkout mRunWorkout = new RunWorkout();
         mRunWorkout.setWorkoutDate(saveDate);
-
-   /*     float total = 0f;
-        for (int i = 0; i < routeCoordinates.size() - 1; i++) {
-            float[] distance = new float[2];
-            Location.distanceBetween(routeCoordinates.get(i).latitude(), routeCoordinates.get(i).longitude(), routeCoordinates.get(i + 1).latitude(), routeCoordinates.get(i + 1).longitude(), distance);
-            total = total + distance[0];
-        }*/
-
 
         mRunWorkout.setDuration(saveTime);
         System.out.println("save duration: " + saveTime);
@@ -1755,6 +1990,28 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
 
     private void startSnapShot() {
+        MapSnapshotter.Options snapShotOptions = new MapSnapshotter.Options(500, 500);
+
+        snapShotOptions.withRegion(mapboxMap.getProjection().getVisibleRegion().latLngBounds);
+
+        snapShotOptions.withStyle(mapboxMap.getStyle().getUri());
+
+        mapSnapshotter = new MapSnapshotter(getActivity(), snapShotOptions);
+        mapSnapshotter.start(new MapSnapshotter.SnapshotReadyCallback() {
+            @Override
+            public void onSnapshotReady(MapSnapshot snapshot) {
+
+                // Display, share, or use bitmap image how you'd like
+                System.out.println("ss ready");
+                Bitmap bitmapImage = snapshot.getBitmap();
+                saveRun(bitmapImage);
+
+
+            }
+        });
+
+        //TODO map snapshot not working?
+       /*
         MapboxMap.SnapshotReadyCallback snapCallback = new MapboxMap.SnapshotReadyCallback() {
             @Override
             public void onSnapshotReady(@NonNull Bitmap snapshot) {
@@ -1763,7 +2020,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                 //
             }
         };
-        mapboxMap.snapshot(snapCallback);
+        mapboxMap.snapshot(snapCallback);*/
     }
 
 
@@ -1879,6 +2136,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
             protected void onPostExecute(Void unused) {
                 // Post Code
+                finishUI();
             }
         }.execute();
     }
@@ -1905,12 +2163,17 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
 
     private String getDuration(long elapsedTime){
+        //input is milliseconds
         long micro = elapsedTime / 100000;
         long elapsedSeconds = elapsedTime / 1000;
         long secondsDisplay = elapsedSeconds % 60;
         long elapsedMinutes = elapsedSeconds / 60;
         long minutesDisplay = elapsedMinutes % 60;
         long hoursDisplay = (int) Math.floor(elapsedMinutes / 60);
+        if(hoursDisplay>999){
+            hoursDisplay = 999;
+        }
+
         if(hoursDisplay>0) {
             if (secondsDisplay < 10) {
                 return ((hoursDisplay + ":" + minutesDisplay + ":0" + secondsDisplay));
@@ -2058,15 +2321,27 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         return false;
     }
 
-    private void setRunTypes(){
-        //if first run
-        RunType mType1 = new RunType("Running", true);
-        RunType mType2 = new RunType("Rowing", true);
-        RunType mType3 = new RunType("Walking", true);
+    private void finishUI(){
+        ArrayAdapter<RunType> adapter =
+                new ArrayAdapter<RunType>(getApplicationContext(), R.layout.spinner_color, mActivityTypes);
+        adapter.setDropDownViewResource( android.R.layout.simple_spinner_dropdown_item);
+        mSpinnerTop.setAdapter(adapter);
+        System.out.println("default selection loaded: "+prefs.getInt("default_activity", 0));
+
+        int spinnerSize= 0;
+        for(int i=0; i<mActivityTypes.size();i++) {
+            if(mActivityTypes.get(0).getActive()){
+                spinnerSize++;
+            }
+        }
+        if(prefs.getInt("default_activity",0) >= spinnerSize){
+            edt.putInt("default_activity", 0);
+            edt.commit();
+        }
+        mSpinnerTop.setSelection(prefs.getInt("default_activity", 0));
 
 
     }
-
 
 
 }

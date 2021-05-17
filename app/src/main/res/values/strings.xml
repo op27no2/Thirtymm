@@ -10,8 +10,8 @@
     <string name="cut">Cut</string>
     <string name="recomp">Maintain</string>
     <string name="bulk">Bulk</string>
-    <string name="imperial">Imperial</string>
-    <string name="metric">Metric</string>
+    <string name="imperial">Pounds</string>
+    <string name="metric">Kilos</string>
     <string name="male">Male</string>
     <string name="female">Female</string>
     <string name="preferences">Preferences:</string>

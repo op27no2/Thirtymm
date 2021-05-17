@@ -232,7 +232,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
         <com.rilixtech.materialfancybutton.MaterialFancyButton
-            android:id="@+id/imperial"
+            android:id="@+id/pounds"
             android:layout_width="100dp"
             android:layout_height="50dp"
             android:layout_marginTop="5dp"
@@ -252,7 +252,7 @@
             fancy:mfb_text="@string/imperial"
             fancy:mfb_textColor="@color/colorPrimary" />
         <com.rilixtech.materialfancybutton.MaterialFancyButton
-            android:id="@+id/metric"
+            android:id="@+id/kilograms"
             android:layout_width="100dp"
             android:layout_height="50dp"
             android:layout_marginTop="5dp"

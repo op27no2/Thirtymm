@@ -14,17 +14,17 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize">
 
-        <TextView
-            android:id="@+id/toolbar_title"
+
+        <Spinner
             android:layout_marginLeft="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Run"
-            android:textSize="20sp"
-            android:textColor="#FFFFFF"
-            android:layout_alignParentLeft="true"
+            android:id="@+id/top_type"
+            android:layout_width="150dp"
             android:layout_centerVertical="true"
-            />
+            android:layout_alignParentLeft="true"
+            android:entries="@array/workout_types"
+            android:background="@null"
+            android:layout_height="wrap_content" />
+
         <ImageView
             android:id="@+id/freeze"
             android:padding="15dp"

@@ -1,10 +1,16 @@
 package op27no2.fitness.Centurion2.fragments.lifting;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -104,12 +110,36 @@ public class MyDialogAdapter extends RecyclerView.Adapter<MyDialogAdapter.ViewHo
         holder.mView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                System.out.println("lift dialog long click");
-                //TODO create dialog to confirm this delete code
-                LiftMap row = liftMapArrayList.get(holder.getAdapterPosition());
-                mRepository.deleteLiftMap(row);
-                liftMapArrayList.remove(holder.getAdapterPosition());
-                notifyDataSetChanged();
+                final Dialog dialog = new Dialog(mContext);
+                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                dialog.setContentView(R.layout.dialog_delete);
+                DisplayMetrics metrics = mContext.getResources().getDisplayMetrics();
+                int width = metrics.widthPixels;
+                dialog.getWindow().setLayout((8 * width) / 9, LinearLayout.LayoutParams.WRAP_CONTENT);
+                TextView mText = dialog.findViewById(R.id.confirm_title);
+                mText.setText("Are you sure you want to clear the run path?");
+
+                dialog.findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        LiftMap row = liftMapArrayList.get(holder.getAdapterPosition());
+                        mRepository.deleteLiftMap(row);
+                        liftMapArrayList.remove(holder.getAdapterPosition());
+                        notifyDataSetChanged();
+
+                        dialog.dismiss();
+                    }
+                });
+                dialog.findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                dialog.show();
+
+
 
                 return false;
             }

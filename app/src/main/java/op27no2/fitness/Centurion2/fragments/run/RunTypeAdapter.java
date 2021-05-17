@@ -52,7 +52,7 @@ public class RunTypeAdapter extends RecyclerView.Adapter<RunTypeAdapter.ViewHold
                                                         int viewType) {
         // create a new view
         View v = (View) LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.row_view_wrapped, parent, false);
+                .inflate(R.layout.row_view, parent, false);
         // set the view's size, margins, paddings and layout parameters
 
         mContext = v.getContext();
@@ -74,7 +74,7 @@ public class RunTypeAdapter extends RecyclerView.Adapter<RunTypeAdapter.ViewHold
         text1.setText(mRunTypes.get(pos).getName());
 
         if(position == selected){
-            holder.mView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorPrimary));
+            holder.mView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.lightgrey));
         }else{
             holder.mView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.white));
         }

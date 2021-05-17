@@ -300,6 +300,7 @@
                     android:layout_below="@+id/spinners2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:gravity="bottom"
                     android:orientation="horizontal"
                     android:padding="5dp"
                     >
@@ -308,8 +309,8 @@
                         android:id="@+id/distance"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:text="Calorie Burn:"
+                        android:textSize="22sp"
+                        android:text="Cal Burn:"
                         android:textColor="#000000"
                         />
                     <EditText
@@ -322,12 +323,12 @@
                         android:textColor="#000000"
                         />
                     <TextView
-                        android:layout_marginRight="10dp"
+                        android:layout_marginRight="5dp"
                         android:id="@+id/weight_factor"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:text="x Weight lbs:"
+                        android:textSize="14sp"
+                        android:text="x Bodyweight:"
                         android:textColor="#000000"
                         />
                     <Spinner

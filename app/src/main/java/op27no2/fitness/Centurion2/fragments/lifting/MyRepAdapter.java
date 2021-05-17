@@ -1,14 +1,19 @@
 package op27no2.fitness.Centurion2.fragments.lifting;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Vibrator;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -147,14 +152,34 @@ public class MyRepAdapter extends RecyclerView.Adapter<MyRepAdapter.ViewHolder>{
         mText2.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                System.out.println("lift long click");
+                final Dialog dialog = new Dialog(view.getContext());
+                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                dialog.setContentView(R.layout.dialog_delete);
+                DisplayMetrics metrics = view.getContext().getResources().getDisplayMetrics();
+                int width = metrics.widthPixels;
+                dialog.getWindow().setLayout((8 * width) / 9, LinearLayout.LayoutParams.WRAP_CONTENT);
+                TextView mText = dialog.findViewById(R.id.confirm_title);
+                mText.setText("Delete?");
 
-                mLiftingWorkout.getMyLifts().get(parentPosition).removeSet(position);
-                mRepository.updateWorkout(mLiftingWorkout);
-           /*     notifyItemRemoved(position);
-                notifyItemRangeChanged(position, getItemCount());
-                view.getParent();*/
-                notifyDataSetChanged();
+                dialog.findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mLiftingWorkout.getMyLifts().get(parentPosition).removeSet(position);
+                        mRepository.updateWorkout(mLiftingWorkout);
+
+                        notifyDataSetChanged();
+                        dialog.dismiss();
+                    }
+                });
+                dialog.findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                dialog.show();
+
                 return false;
             }
         });

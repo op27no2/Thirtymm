@@ -165,6 +165,8 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     private EditText mEditDistance;
     private EditText mEditPace;
     private EditText mEditCals;
+    private TextView mTextviewDistanceUnits;
+    private TextView mTextviewPaceUnits;
 
     private Integer saveTime;
     private float saveDistance;
@@ -186,6 +188,10 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     private int runWorkoutID;
     private RunWorkout mRunWorkout;
     private int initialCals;
+    private Boolean hasMap = false;
+
+    private ImageView zoomIn;
+    private ImageView zoomOut;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -223,9 +229,24 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
         mapView = view.findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
-        mapView.getMapAsync(this);
 
-        zoomBar = view.findViewById(R.id.zoom_bar);
+        ImageView angle = view.findViewById(R.id.view_angle);
+        angle.setOnTouchListener(handleTouch);
+
+        ImageView rotation = view.findViewById(R.id.view_rotation);
+        rotation.setOnTouchListener(handle360left);
+
+        ImageView rotation2 = view.findViewById(R.id.view_rotation2);
+        rotation2.setOnTouchListener(handle360);
+
+        zoom1 = view.findViewById(R.id.view_zoom);
+        zoom1.setOnTouchListener(handleZoom);
+
+        zoomIn = view.findViewById(R.id.view_zoom_in);
+        zoomIn.setOnTouchListener(handleZoomIn);
+
+        zoomOut = view.findViewById(R.id.view_zoom_out);
+        zoomOut.setOnTouchListener(handleZoomOut);
 
 
         // TextView mText = holder.mView.findViewById(R.id.text_lift);
@@ -236,6 +257,8 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         mEditCals = view.findViewById(R.id.cals_value);
         mEditTitle = view.findViewById(R.id.workout_title);
         mEditDescription = view.findViewById(R.id.workout_description);
+        mTextviewDistanceUnits = view.findViewById((R.id.distance_units));
+        mTextviewPaceUnits = view.findViewById((R.id.pace_units));
 
 
 
@@ -305,9 +328,6 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                 float add = (float) (height*(1f - ((16f-13f)/7f)));
                 System.out.println("add: "+add);
 
-                zoomBar.setY(bar+add);
-                //zoomBar.setY((float) (bar+(height*(16/22))));
-
             }
         });
 
@@ -339,14 +359,6 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
             }
         });
 
-        ImageView angle = view.findViewById(R.id.view_angle);
-        angle.setOnTouchListener(handleTouch);
-
-        ImageView rotation = view.findViewById(R.id.view_rotation);
-        rotation.setOnTouchListener(handle360left);
-
-        ImageView rotation2 = view.findViewById(R.id.view_rotation2);
-        rotation2.setOnTouchListener(handle360);
 
         zoom1 = view.findViewById(R.id.view_zoom);
         zoom1.setOnTouchListener(handleZoom);
@@ -365,91 +377,8 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     }
 
 
-/*
-    private Handler handler = new Handler();
-    private Runnable runnable = new Runnable() {
-        @Override
-        public void run() {
-            updateTime();
-            handler.postDelayed(this, 100);
-        }
-    };
-*/
-
-/*    public void updateTime() {
-
-        long elapsedTime = System.currentTimeMillis() - startTime;
-        long micro = elapsedTime / 100000;
-        long elapsedSeconds = elapsedTime / 1000;
-        long secondsDisplay = elapsedSeconds % 60;
-        long elapsedMinutes = elapsedSeconds / 60;
-        long minutesDisplay = elapsedMinutes % 60;
-        if (secondsDisplay < 10) {
-            timerText.setText(minutesDisplay + ":0" + secondsDisplay);
-        } else {
-            timerText.setText(minutesDisplay + ":" + secondsDisplay);
-        }
-
-        LocationComponent locationComponent = mapboxMap.getLocationComponent();
-        Location mloc = locationComponent.getLastKnownLocation();
-        routeCoordinates.add(Point.fromLngLat(mloc.getLongitude(), mloc.getLatitude(), mloc.getAltitude()));
-        System.out.println(routeCoordinates.get(routeCoordinates.size() - 1));
-        try {
-            updateLine();
-        } catch (JSONException e) {
-            e.printStackTrace();
-            System.out.println("JSON error: " + e.getMessage());
-        }
-    }*/
-
-    public void startRun() {
-        //used for bearing updates
-        isPaused = false;
-
-        secondHold = 0;
-        System.out.println("start click2");
-        startButton.setText("Pause");
-        startTime = System.currentTimeMillis();
-
-        //start timer service
-        notifyMeIntent = new Intent(getActivity(), TimerService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            System.out.println("start foreground service (act)");
-            getActivity().startForegroundService(notifyMeIntent);
-        } else {
-            System.out.println("start service (act)");
-            getActivity().startService(notifyMeIntent);
-        }
-        getActivity().bindService(notifyMeIntent, serviceConnection, Context.BIND_AUTO_CREATE);
-
-    }
-
-    public void pauseRun() {
-        isPaused = true;
-        startButton.setText("Resume");
-
-    }
-
-    public void continueRun() {
-        isPaused = false;
 
 
-    }
-
-
-    public void stopRun() {
-        if(timerService != null) {
-            if (!isPaused) {
-                isPaused = true;
-                timerService.pauseService();
-                startButton.setText("Resume");
-            }
-
-        }
-        saveDialog();
-
-
-    }
 
     private void updateLine() throws JSONException {
         //     System.out.println("update line called "+routeCoordinates);
@@ -1197,6 +1126,86 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         }
     };
 
+    private View.OnTouchListener handleZoomIn = new View.OnTouchListener() {
+        Handler handler = new Handler();
+
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            switch(motionEvent.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+
+                    int delay = 10; //milliseconds
+
+                    handler.postDelayed(new Runnable(){
+                        public void run(){
+
+                            double mapzoom = mapboxMap.getCameraPosition().zoom;
+                            mapzoom = mapzoom*1.01;
+                            System.out.println("new zoom"+mapzoom);
+                            CameraPosition position = new CameraPosition.Builder()
+                                    .zoom(mapzoom)
+                                    .build();
+                            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 100);
+                            handler.postDelayed(this, delay);
+                        }
+                    }, delay);
+
+
+
+                    break;
+
+                case MotionEvent.ACTION_MOVE:
+                    // touch move code
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                    // touch up code
+                    handler.removeCallbacksAndMessages(null);
+                    break;
+            }
+
+
+            return true;
+        }
+    };
+
+
+    private View.OnTouchListener handleZoomOut = new View.OnTouchListener() {
+        Handler handler = new Handler();
+
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            switch(motionEvent.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+
+                    int delay = 10; //milliseconds
+                    handler.postDelayed(new Runnable(){
+                        public void run(){
+                            double mapzoom = mapboxMap.getCameraPosition().zoom;
+                            mapzoom = mapzoom*.99;
+                            System.out.println("new zoom"+mapzoom);
+                            CameraPosition position = new CameraPosition.Builder()
+                                    .zoom(mapzoom)
+                                    .build();
+                            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 100);
+                            handler.postDelayed(this, delay);
+                        }
+                    }, delay);
+                    break;
+
+                case MotionEvent.ACTION_MOVE:
+                    // touch move code
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                    // touch up code
+                    handler.removeCallbacksAndMessages(null);
+                    break;
+            }
+
+            return true;
+        }
+    };
 
 
 
@@ -1377,7 +1386,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     }
 
 
-
+/*
     public void saveDialog(){
 
         final Dialog dialog = new Dialog(getActivity());
@@ -1538,7 +1547,114 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         dialog.show();
+    }*/
+
+
+    private void setDialogText(RunType activity, float[] total){
+        mEditTitle.setText("Daily "+activity.getName());
+        switch(activity.getDistanceUnits()){
+            case 0:
+                //Miles
+                mEditDistance.setText(getMiles(total[0]));
+                mTextviewDistanceUnits.setText("miles");
+                break;
+            case 1:
+                //Kilometers
+                double Kilometers = total[0]/1000;
+                mEditDistance.setText(String.format("%.2f",Kilometers));
+                mTextviewDistanceUnits.setText("km");
+                break;
+
+        }
     }
+
+    //this uses total[0]
+    private void setPaceAndCalText(RunType activity, float[] total){
+        System.out.println("pace total: "+total[0]);
+
+        if(!mEditDistance.getText().toString().equals("") || !mEditDistance.getText().toString().equals(".")  || Integer.parseInt(mEditDistance.getText().toString()) != 0) {
+            long pace = 0;
+            float miles = total[0] * 0.000621371192f;
+            float kilometers = total[0] / 1000;
+            float five = total[0] / 500;
+            float one = total[0]/100;
+
+            //will downfactor calculations in pounds to kg
+            double factorUnit = prefs.getInt("units",0) == 0 ? 1 : (1/2.2);
+            double factorCal = activity.getCalBurnValue();
+            int weight = prefs.getInt("weight",180);
+
+            int calValue = 0;
+            switch (activity.getCalBurnUnit()) {
+                case 0:
+                    //Per Minute
+                    calValue = (int) Math.floor((finalTime/1000/60)*weight*factorUnit*factorCal);
+                    break;
+                case 1:
+                    //Per Mile
+                    System.out.println("miles: "+miles+" weight: "+weight+" funit: "+factorUnit+" fcal: "+factorCal);
+                    calValue = (int) Math.floor(miles*weight*factorUnit*factorCal);
+                    break;
+                case 2:
+                    //Per Kilometer
+                    System.out.println("kilo: "+kilometers+" weight: "+weight+" funit: "+factorUnit+" fcal: "+factorCal);
+                    calValue = (int) Math.floor(kilometers*weight*factorUnit*factorCal);
+                    break;
+                case 3:
+                    //Per Hour
+                    calValue = (int) Math.floor((finalTime/1000/60/60)*weight*factorUnit*factorCal);
+                    break;
+            }
+            mEditCals.setText(Integer.toString(calValue));
+
+            switch (activity.getPaceUnits()) {
+                case 0:
+                    //minutes per mile
+                    if(miles!=0) {
+                        pace = (long) (finalTime / (miles));
+                    }
+                    mEditPace.setText(getDuration(pace));
+                    mTextviewPaceUnits.setText("/mi");
+                    break;
+                case 1:
+                    //per kilometer
+                    if(kilometers!=0) {
+                        pace = (long) (finalTime / (kilometers));
+                    }
+                    mEditPace.setText(getDuration(pace));
+                    mTextviewPaceUnits.setText("/km");
+                    break;
+                case 2:
+                    //per 500m
+
+                    if(five!=0) {
+                        pace = (long) (finalTime / (five));
+                    }
+                    mEditPace.setText(getDuration(pace));
+                    mTextviewPaceUnits.setText("/500m");
+                    break;
+                case 3:
+                    //per 100m
+                    if(one!=0) {
+                        pace = (long) (finalTime / (one));
+                    }
+                    mEditPace.setText(getDuration(pace));
+                    mTextviewPaceUnits.setText("/100m");
+                    break;
+                case 4:
+                    //miles per hour
+                    float mpace = 0;
+                    if(miles!=0) {
+                        mpace = (float) ((miles ) / ((float) finalTime / 3600000f));
+                    }
+                    mEditPace.setText(String.format("%.2f", mpace));
+                    mTextviewPaceUnits.setText("mph");
+                    break;
+            }
+        }
+    }
+
+
 
 
     public void saveRun(Bitmap bMap){
@@ -1729,7 +1845,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
             protected Void doInBackground(Void... unused) {
                 //nutritionDay and formatted day change with selected day up top, used to edit values
                 mRunWorkout = AppDatabase.getAppDatabase(getActivity()).rwDAO().findById(runWorkoutID);
-
+                hasMap = mRunWorkout.getSaveMap();
 
                 System.out.println("check run exec1");
 
@@ -1766,17 +1882,32 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     }
 
     private String getDuration(long elapsedTime){
+        //input is milliseconds
         long micro = elapsedTime / 100000;
         long elapsedSeconds = elapsedTime / 1000;
         long secondsDisplay = elapsedSeconds % 60;
         long elapsedMinutes = elapsedSeconds / 60;
         long minutesDisplay = elapsedMinutes % 60;
-        if (secondsDisplay < 10) {
-            return((minutesDisplay + ":0" + secondsDisplay));
-        } else {
-            return((minutesDisplay + ":" + secondsDisplay));
+        long hoursDisplay = (int) Math.floor(elapsedMinutes / 60);
+        if(hoursDisplay>999){
+            hoursDisplay = 999;
+        }
+
+        if(hoursDisplay>0) {
+            if (secondsDisplay < 10) {
+                return ((hoursDisplay + ":" + minutesDisplay + ":0" + secondsDisplay));
+            } else {
+                return ((hoursDisplay + ":" + minutesDisplay + ":" + secondsDisplay));
+            }
+        }else{
+            if (secondsDisplay < 10) {
+                return ((minutesDisplay + ":0" + secondsDisplay));
+            } else {
+                return ((minutesDisplay + ":" + secondsDisplay));
+            }
         }
     }
+
 
 
 
@@ -1789,7 +1920,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
             mEditTitle.setText(mRunWorkout.getTitle());
             mEditDistance.setText(getMiles(distance));
-            mEditDuration.setText(getDuration(duration));
+//            mEditDuration.setText(getDuration(duration));
             mEditPace.setText(getDuration(pace) + " /mi");
             mText4.setText(mRunWorkout.getWorkoutDate());
             mEditCals.setText(Integer.toString(mRunWorkout.getCalories()));
@@ -1800,6 +1931,12 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
             System.out.println("cood uid"+mRunWorkout.getCoordinates());
             System.out.println("retrieve coords"+routeCoordinates);
 
+            if(hasMap) {
+                mapView.getMapAsync(this);
+                mCardView.setVisibility(View.VISIBLE);
+            }
+
+            //TODO do I still need this, now that getMapAsync is moved to just above isntead of at start of code
             new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                 @Override
                 public void run() {

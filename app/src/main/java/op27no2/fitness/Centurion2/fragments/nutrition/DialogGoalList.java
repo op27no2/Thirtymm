@@ -106,6 +106,9 @@ public class DialogGoalList extends Dialog  {
             proteinEdit1.setText(Float.toString(prot[0]));
             proteinText2.setText("g/lb = "+ (int) Math.floor(7*weight* prot[0])+" grams");
         }
+
+
+
         proteinEdit1.addTextChangedListener(new TextWatcher() {
 
             public void afterTextChanged(Editable s) {
@@ -123,6 +126,7 @@ public class DialogGoalList extends Dialog  {
         });
 
         switch(mGoalSettingDetail.getGoalType()){
+
             case 0:
                 edit5.setText(Integer.toString(mGoalSettingDetail.getGoalLimitHigh()));
                 stateOne = false;
@@ -154,34 +158,39 @@ public class DialogGoalList extends Dialog  {
         text2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(stateOne == true && stateTwo != false){
-                    stateOne = false;
-                    text2.setTextColor(ContextCompat.getColor(mContext, R.color.lightgrey));
-                }else if(stateOne == true && stateTwo == false){
-                    stateOne = false;
-                    stateTwo = true;
-                    text2.setTextColor(ContextCompat.getColor(mContext, R.color.lightgrey));
-                    text4.setTextColor(ContextCompat.getColor(mContext, R.color.black));
-                }else if(stateOne == false){
-                    stateOne = true;
-                    text2.setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                if(!mGoalSettingDetail.getGoalName().equals("Sets")) {
+
+                    if (stateOne == true && stateTwo != false) {
+                        stateOne = false;
+                        text2.setTextColor(ContextCompat.getColor(mContext, R.color.lightgrey));
+                    } else if (stateOne == true && stateTwo == false) {
+                        stateOne = false;
+                        stateTwo = true;
+                        text2.setTextColor(ContextCompat.getColor(mContext, R.color.lightgrey));
+                        text4.setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                    } else if (stateOne == false) {
+                        stateOne = true;
+                        text2.setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                    }
                 }
             }
         });
         text4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(stateTwo == true && stateOne != false){
-                    stateTwo = false;
-                    text4.setTextColor(ContextCompat.getColor(mContext, R.color.lightgrey));
-                }else if(stateTwo == true && stateOne == false) {
-                    stateOne = true;
-                    stateTwo = false;
-                    text2.setTextColor(ContextCompat.getColor(mContext, R.color.black));
-                    text4.setTextColor(ContextCompat.getColor(mContext, R.color.lightgrey));
-                }else if(stateTwo == false){
-                    stateTwo = true;
-                    text4.setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                if(!mGoalSettingDetail.getGoalName().equals("Sets")) {
+                    if (stateTwo == true && stateOne != false) {
+                        stateTwo = false;
+                        text4.setTextColor(ContextCompat.getColor(mContext, R.color.lightgrey));
+                    } else if (stateTwo == true && stateOne == false) {
+                        stateOne = true;
+                        stateTwo = false;
+                        text2.setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                        text4.setTextColor(ContextCompat.getColor(mContext, R.color.lightgrey));
+                    } else if (stateTwo == false) {
+                        stateTwo = true;
+                        text4.setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                    }
                 }
             }
         });

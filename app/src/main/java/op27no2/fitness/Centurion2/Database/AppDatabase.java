@@ -17,7 +17,7 @@ import op27no2.fitness.Centurion2.fragments.nutrition.NutritionDay;
 import op27no2.fitness.Centurion2.fragments.run.RunType;
 import op27no2.fitness.Centurion2.fragments.run.RunWorkout;
 
-@Database(entities = {LiftingWorkout.class, NutritionDay.class, LiftMap.class, RunWorkout.class, NamedWorkout.class, GoalsDetail.class, RunType.class}, version = 7)
+@Database(entities = {LiftingWorkout.class, NutritionDay.class, LiftMap.class, RunWorkout.class, NamedWorkout.class, GoalsDetail.class, RunType.class}, version = 8)
 @TypeConverters({Converters.class})
 
 public abstract class AppDatabase extends RoomDatabase {
@@ -36,7 +36,7 @@ public abstract class AppDatabase extends RoomDatabase {
         if (INSTANCE == null) {
             INSTANCE = Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, "user-database")
                    // .build();
-                    .addMigrations(MIGRATION_1_2).addMigrations(MIGRATION_2_3).addMigrations(MIGRATION_3_4).addMigrations(MIGRATION_4_5).addMigrations(MIGRATION_5_6).addMigrations(MIGRATION_6_7).build();
+                    .addMigrations(MIGRATION_1_2).addMigrations(MIGRATION_2_3).addMigrations(MIGRATION_3_4).addMigrations(MIGRATION_4_5).addMigrations(MIGRATION_5_6).addMigrations(MIGRATION_6_7).addMigrations(MIGRATION_7_8).build();
 
                             // allow queries on the main thread.
                             // Don't do this on a real app! See PersistenceBasicSample for an example.
@@ -96,6 +96,15 @@ public abstract class AppDatabase extends RoomDatabase {
                     database.execSQL("INSERT INTO runtypes_temporary(uid, name, active, weightfactor, burnvalue, burnunit, paceunits, distanceunits) SELECT uid, name, active, weightfactor, burnvalue, burnunit, paceunits, distanceunits FROM runtypes");
                     database.execSQL("DROP TABLE runtypes");
                     database.execSQL("ALTER TABLE runtypes_temporary RENAME TO runtypes");
+        }
+    };
+    static final Migration MIGRATION_7_8 = new Migration(7, 8) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("CREATE TABLE IF NOT EXISTS `runtypes_temporary` (`uid` INTEGER NOT NULL, name TEXT , active INTEGER, burnvalue REAL, burnunit INTEGER, paceunits INTEGER, distanceunits INTEGER, PRIMARY KEY(`uid`))");
+            database.execSQL("INSERT INTO runtypes_temporary(uid, name, active, burnvalue, burnunit, paceunits, distanceunits) SELECT uid, name, active, burnvalue, burnunit, paceunits, distanceunits FROM runtypes");
+            database.execSQL("DROP TABLE runtypes");
+            database.execSQL("ALTER TABLE runtypes_temporary RENAME TO runtypes");
         }
     };
 
