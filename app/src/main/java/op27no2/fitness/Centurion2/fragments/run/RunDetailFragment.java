@@ -1,42 +1,35 @@
 package op27no2.fitness.Centurion2.fragments.run;
 
 import android.annotation.SuppressLint;
-import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.RectF;
-import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Looper;
 import android.os.Vibrator;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.widget.DatePicker;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -124,7 +117,7 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth;
 
 
-public class RunDetailFragment extends Fragment implements OnMapReadyCallback, PermissionsListener, TimerInterface {
+public class RunDetailFragment extends Fragment implements OnMapReadyCallback, PermissionsListener {
     private String mapboxToken = "pk.eyJ1Ijoib3AyN25vMiIsImEiOiJjazJ0cmxvdGswejJ5M2NsN3g0ZzNucTMzIn0.SvSJkId0jesW0T3aM92q0Q";
     private MapView mapView;
     private PermissionsManager permissionsManager;
@@ -156,7 +149,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     private Repository mRepository;
     private Calendar cal;
     private String formattedDate;
-    private long finalTIme;
+    private long finalTime;
     private MapSnapshotter mapSnapshotter;
 
     private EditText mEditTitle;
@@ -192,6 +185,13 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
     private ImageView zoomIn;
     private ImageView zoomOut;
+    private EditText mEditTime1;
+    private EditText mEditTime2;
+    private EditText mEditTime3;
+    private Spinner mSpinner;
+    private ArrayList<RunType> mActivityTypes = new ArrayList<RunType>();
+    private RunType saveType;
+
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -260,6 +260,10 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         mTextviewDistanceUnits = view.findViewById((R.id.distance_units));
         mTextviewPaceUnits = view.findViewById((R.id.pace_units));
 
+        mEditTime1 = view.findViewById(R.id.duration_hours);
+        mEditTime2 = view.findViewById(R.id.duration_minutes);
+        mEditTime3 = view.findViewById(R.id.duration_seconds);
+        mSpinner = view.findViewById(R.id.type);
 
 
         lockWindowButton = view.findViewById(R.id.lock_window);
@@ -639,9 +643,9 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     @Override
     public void onResume() {
         super.onResume();
-        if(prefs.getBoolean("service_running", false) == true){
+ /*       if(prefs.getBoolean("service_running", false) == true){
             bindTimerService();
-        }
+        }*/
 
         mapView.onResume();
     }
@@ -649,9 +653,9 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     @Override
     public void onPause() {
         super.onPause();
-        if(prefs.getBoolean("service_running", false) == true){
+        /*if(prefs.getBoolean("service_running", false) == true){
             unbindTimerService();
-        }
+        }*/
         mapView.onPause();
     }
 
@@ -690,7 +694,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     public void onExplanationNeeded(List<String> permissionsToExplain) {
         Toast.makeText(getActivity(), "location permission is needed for gps feautres", Toast.LENGTH_LONG).show();
     }
-
+/*
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
 
@@ -738,7 +742,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     public void getData(long timestamp, long elapsedTime, ArrayList<Point> rCoordinates, double min, double max, ArrayList<TrackedPoint> mPoints) {
 
         System.out.println("elapsedTime:" + elapsedTime);
-        finalTIme = elapsedTime;
+        finalTime = elapsedTime;
         long micro = elapsedTime / 100000;
         long elapsedSeconds = elapsedTime / 1000;
         long secondsDisplay = elapsedSeconds % 60;
@@ -753,12 +757,12 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         maxalt = max;
         minalt = min;
 
-        /*float total=0f;
+        *//*float total=0f;
         for(int i=0; i<rCoordinates.size()-1;i++) {
             float[] distance = new float[2];
             Location.distanceBetween(rCoordinates.get(i).latitude(), rCoordinates.get(i).longitude(), rCoordinates.get(i+1).latitude(), rCoordinates.get(i+1).longitude(), distance);
             total = total+distance[0];
-        }*/
+        }*//*
 
         //  distanceText.setText(Float.toString(total));
         routeCoordinates = rCoordinates;
@@ -777,7 +781,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         }
 
 
-    }
+    }*/
 
     private View.OnTouchListener customOnTouchListener = new View.OnTouchListener() {
         @Override
@@ -1416,9 +1420,9 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
             Location.distanceBetween(routeCoordinates.get(i).latitude(), routeCoordinates.get(i).longitude(), routeCoordinates.get(i + 1).latitude(), routeCoordinates.get(i + 1).longitude(), distance);
             total[0] = total[0] + distance[0];
         }
-        long pace = (long) (finalTIme/(total[0] *0.000621371192f));
+        long pace = (long) (finalTime/(total[0] *0.000621371192f));
 
-        mEditDuration.setText(getDuration(finalTIme));
+        mEditDuration.setText(getDuration(finalTime));
         mEditDistance.setText(getMiles(total[0]));
         mEditPace.setText(getDuration(pace)+" /mi");
         mEditCals.setText(Integer.toString(((int) Math.floor(total[0] *0.000621371192f*prefs.getInt("weight",215)*0.63))));
@@ -1658,7 +1662,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
 
     public void saveRun(Bitmap bMap){
-
+        //TODO MAKE SURE WE ARE GETTING ALL THESE LIKE RUN IS
         saveDate = mText4.getText().toString();
         saveTime = getIntFromDuration(mEditDuration.getText().toString());
         saveDistance = (int) Math.floor(Float.parseFloat(mEditDistance.getText().toString()) * 1609.34400);
@@ -1672,6 +1676,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         mRunWorkout.setCalories(saveCals);
         mRunWorkout.setDescription(saveDescription);
         mRunWorkout.setTitle(saveTitle);
+        mRunWorkout.setWorkoutType(saveType);
 
 
         int cals = mNutritionDay.getValues().get(0);
@@ -1845,6 +1850,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
             protected Void doInBackground(Void... unused) {
                 //nutritionDay and formatted day change with selected day up top, used to edit values
                 mRunWorkout = AppDatabase.getAppDatabase(getActivity()).rwDAO().findById(runWorkoutID);
+                mActivityTypes = new ArrayList<RunType>(AppDatabase.getAppDatabase(getActivity()).rtDAO().getAllActive());
                 hasMap = mRunWorkout.getSaveMap();
 
                 System.out.println("check run exec1");
@@ -1918,14 +1924,159 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
             long pace = (long) (duration / (distance * 0.000621371192f));
 
+            RunType mActivityType = mRunWorkout.getWorkoutType();
+            float[] total = new float[1];
+            total[0] = distance;
+
+            setDialogText(mActivityType,total);
+            setPaceAndCalText(mActivityType, total);
+            finalTime = duration;
+            System.out.println("FINAL base duration: "+duration);
+            System.out.println("FINAL TIME: "+finalTime);
+
+            long elapsedSeconds = finalTime / 1000;
+            long secondsDisplay = elapsedSeconds % 60;
+            long elapsedMinutes = elapsedSeconds / 60;
+            long minutesDisplay = elapsedMinutes % 60;
+            long hoursDisplay = elapsedMinutes / 60;
+
+            int hours = (int)  Math.floor(hoursDisplay);
+            int minutes = (int)  Math.floor(minutesDisplay);
+            int seconds = (int)  Math.floor(secondsDisplay);
+
+            //   if(hours>0) {
+            mEditTime1.setText(Integer.toString(hours));
+            //   }
+            if(minutes<10) {
+                mEditTime2.setText("0"+Integer.toString(minutes));
+            }
+            else if (minutes>0){
+                mEditTime2.setText(Integer.toString(minutes));
+            }
+
+            if(seconds<10) {
+                mEditTime3.setText("0"+Integer.toString(seconds));
+            }else{
+                mEditTime3.setText(Integer.toString(seconds));
+            }
+
+            mEditTime1.addTextChangedListener(new TextWatcher(){
+                @Override
+                public void afterTextChanged(Editable s) {
+                    if(s.length()==1){
+                        mEditTime2.requestFocus();
+                        finalTime = ((Integer.parseInt(mEditTime1.getText().toString())*60*60)+(Integer.parseInt(mEditTime2.getText().toString())*60)+(Integer.parseInt(mEditTime3.getText().toString())))*1000;
+
+                        // setDialogText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+                        setPaceAndCalText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+                    }
+                }
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            });
+            mEditTime2.addTextChangedListener(new TextWatcher(){
+                @Override
+                public void afterTextChanged(Editable s) {
+                    if(s.length()==2) {
+                        mEditTime3.requestFocus();
+                    }
+                    finalTime = ((Integer.parseInt(mEditTime1.getText().toString())*60*60)+(Integer.parseInt(mEditTime2.getText().toString())*60)+(Integer.parseInt(mEditTime3.getText().toString())))*1000;
+                    //  setDialogText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+                    setPaceAndCalText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+
+                }
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            });
+
+            mEditTime3.addTextChangedListener(new TextWatcher(){
+                @Override
+                public void afterTextChanged(Editable s) {
+                    if(s.length()==2) {
+                        mEditDistance.requestFocus();
+                    }
+                    finalTime = ((Integer.parseInt(mEditTime1.getText().toString())*60*60)+(Integer.parseInt(mEditTime2.getText().toString())*60)+(Integer.parseInt(mEditTime3.getText().toString())))*1000;
+                    //  setDialogText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+                    setPaceAndCalText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+                }
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            });
+
+
             mEditTitle.setText(mRunWorkout.getTitle());
-            mEditDistance.setText(getMiles(distance));
-//            mEditDuration.setText(getDuration(duration));
-            mEditPace.setText(getDuration(pace) + " /mi");
             mText4.setText(mRunWorkout.getWorkoutDate());
-            mEditCals.setText(Integer.toString(mRunWorkout.getCalories()));
             initialCals = mRunWorkout.getCalories();
             mEditDescription.setText(mRunWorkout.getDescription());
+            ArrayAdapter<RunType> adapter =
+                    new ArrayAdapter<RunType>(getApplicationContext(),  android.R.layout.simple_spinner_dropdown_item, mActivityTypes);
+            adapter.setDropDownViewResource( android.R.layout.simple_spinner_dropdown_item);
+            mSpinner.setAdapter(adapter);
+            mSpinner.setSelection(prefs.getInt("default_activity",mActivityTypes.size()-1));
+            saveType = mActivityTypes.get(mSpinner.getSelectedItemPosition());
+
+            setDialogText(mActivityTypes.get(prefs.getInt("default_activity",0)), total);
+            setPaceAndCalText(mActivityTypes.get(prefs.getInt("default_activity",0)),total);
+
+            //Still set calls after pace and caltext code, as user-set cals should take precedence, but setPaceandCal gets called on edit so will change if they change distance etc
+            mEditCals.setText(Integer.toString(mRunWorkout.getCalories()));
+
+
+            mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                    setDialogText(mActivityTypes.get(position), total);
+                    setPaceAndCalText(mActivityTypes.get(position), total);
+                    saveType = mActivityTypes.get(position);
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parentView) {
+
+                }
+
+            });
+
+            mEditDistance.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void afterTextChanged(Editable s) {
+                    //total[0] is equal to a number of miles or kilometers,
+                    float newTotal = 0;
+                    if(!mEditDistance.getText().toString().equals("") && !mEditDistance.getText().toString().equals(".")) {
+
+                        double factor = (mActivityTypes.get(mSpinner.getSelectedItemPosition()).getDistanceUnits() == 0) ? .000621371192f : .001;
+                        newTotal = Float.parseFloat(mEditDistance.getText().toString());
+                        //have to adjust total since you edited distance
+                        total[0] = (float) Math.floor(newTotal / factor);
+                        setPaceAndCalText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+                    }else{
+                        System.out.println("string empty savecals 0");
+                        saveCals = 0;
+                        mEditCals.setText(Integer.toString(saveCals));
+                        setPaceAndCalText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+                    }
+                }
+
+                @Override
+                public void beforeTextChanged(CharSequence s, int start,
+                                              int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start,
+                                          int before, int count) {
+
+                }
+            });
+
+
 
             routeCoordinates = getCoordinates(mRunWorkout.getCoordinates());
             System.out.println("cood uid"+mRunWorkout.getCoordinates());

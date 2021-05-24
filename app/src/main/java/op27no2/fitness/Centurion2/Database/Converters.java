@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 import op27no2.fitness.Centurion2.fragments.activities.GoalsDetail;
 import op27no2.fitness.Centurion2.fragments.lifting.Lift;
+import op27no2.fitness.Centurion2.fragments.run.RunType;
 
 public class Converters {
     @TypeConverter
@@ -92,6 +93,18 @@ public class Converters {
         return json;
     }
 
+    @TypeConverter
+    public static RunType fromString7(String value) {
+        Type listType = new TypeToken<RunType>() {}.getType();
+        return new Gson().fromJson(value, listType);
+    }
+
+    @TypeConverter
+    public static String fromRunType(RunType type) {
+        Gson gson = new Gson();
+        String json = gson.toJson(type);
+        return json;
+    }
 
 
 

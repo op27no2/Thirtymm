@@ -193,6 +193,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private String saveDescription;
     private String saveTitle;
     private String saveDate;
+    private RunType saveType;
     private Boolean stravaCheckBox;
     private Boolean saveMap;
 
@@ -257,7 +258,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                 edt.putInt("default_activity",position);
                 edt.apply();
                 System.out.println("default selection set: "+prefs.getInt("default_activity", 0));
-
+                saveType = mActivityTypes.get(position);
             }
 
             @Override
@@ -1575,6 +1576,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
 
         mSpinner.setSelection(prefs.getInt("default_activity",mActivityTypes.size()-1));
+        saveType = mActivityTypes.get(mSpinner.getSelectedItemPosition());
+
         setDialogText(mActivityTypes.get(prefs.getInt("default_activity",0)), total);
         setPaceAndCalText(mActivityTypes.get(prefs.getInt("default_activity",0)),total);
 
@@ -1584,6 +1587,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 setDialogText(mActivityTypes.get(position), total);
                 setPaceAndCalText(mActivityTypes.get(position), total);
+                saveType = mActivityTypes.get(position);
             }
 
             @Override
@@ -1593,10 +1597,10 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
         });
 
-        mEditPace.setText(getDuration(pace)+" /mi");
+      //  mEditPace.setText(getDuration(pace)+" /mi");
 
         //TODO edit cals calc, setCals method?
-        mEditCals.setText(Integer.toString(((int) Math.floor(total[0] *0.000621371192f*prefs.getInt("weight",215)*0.63))));
+      //  mEditCals.setText(Integer.toString(((int) Math.floor(total[0] *0.000621371192f*prefs.getInt("weight",215)*0.63))));
         mEditCals.setOnEditorActionListener(new TextView.OnEditorActionListener(){
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -1787,9 +1791,11 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
                     //get fields from EditTexts
 
-                    saveDistance = (int) Math.floor(Float.parseFloat(mEditDistance.getText().toString()) * 1609.34400);
+                    //
+                    //saveDistance = (int) Math.floor(Float.parseFloat(mEditDistance.getText().toString()) * 1609.34400);
+                    saveDistance = total[0];
                     saveCals = Integer.parseInt(mEditCals.getText().toString());
-                    saveTime = (Integer.parseInt(mEditTime1.getText().toString())*60*60)+(Integer.parseInt(mEditTime2.getText().toString())*60)+(Integer.parseInt(mEditTime3.getText().toString()));
+                    saveTime = 1000*((Integer.parseInt(mEditTime1.getText().toString())*60*60)+(Integer.parseInt(mEditTime2.getText().toString())*60)+(Integer.parseInt(mEditTime3.getText().toString())));
                     saveDescription = mEditDescription.getText().toString();
                     saveTitle = mEditTitle.getText().toString();
                     stravaCheckBox = mStravaCheck.isChecked();
@@ -1950,7 +1956,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     public void saveRun(Bitmap bMap){
         RunWorkout mRunWorkout = new RunWorkout();
         mRunWorkout.setWorkoutDate(saveDate);
-
+        mRunWorkout.setWorkoutType(saveType);
         mRunWorkout.setDuration(saveTime);
         System.out.println("save duration: " + saveTime);
         mRunWorkout.setDistance((int) saveDistance);

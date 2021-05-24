@@ -15,7 +15,7 @@ public class RunWorkout {
     private String workoutDate;
 
     @ColumnInfo(name = "type")
-    private String workoutType;
+    private RunType workoutType;
 
     @ColumnInfo(name = "duration")
     private Integer duration;
@@ -74,11 +74,11 @@ public class RunWorkout {
         this.title = tit;
     }
 
-    public String getWorkoutType() {
+    public RunType getWorkoutType() {
         return workoutType;
     }
 
-    public void setWorkoutType(String typ) {
+    public void setWorkoutType(RunType typ) {
         this.workoutType = typ;
     }
 

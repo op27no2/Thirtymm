@@ -186,12 +186,16 @@ public class RunCardviewWorkoutAdapter extends RecyclerView.Adapter<RunCardviewW
         }
     }*/
     private String getDuration(long elapsedTime){
-        long elapsedSeconds = elapsedTime;
+        long elapsedSeconds = elapsedTime/1000;
         long secondsDisplay = elapsedSeconds % 60;
         long elapsedMinutes = elapsedSeconds / 60;
         long minutesDisplay = elapsedMinutes % 60;
-        long hoursDisplay = (int) Math.floor(elapsedMinutes / 60);
-        if(hoursDisplay>0) {
+        long hoursDisplay =   elapsedMinutes / 60;
+        int hours = (int)  Math.floor(hoursDisplay);
+        int minutes = (int)  Math.floor(minutesDisplay);
+        int seconds = (int)  Math.floor(secondsDisplay);
+
+/*        if(hoursDisplay>0) {
             if (secondsDisplay < 10) {
                 return ((hoursDisplay + ":" + minutesDisplay + ":0" + secondsDisplay));
             } else {
@@ -203,8 +207,27 @@ public class RunCardviewWorkoutAdapter extends RecyclerView.Adapter<RunCardviewW
             } else {
                 return ((minutesDisplay + ":" + secondsDisplay));
             }
-        }
+        }*/
 
+        String mhours = "";
+        String mminutes = "";
+        String mseconds = "";
+        //   }
+        if(hours>0){
+            mhours = Integer.toString(hours)+":";
+        }
+        if(minutes<10) {
+            mminutes = "0"+Integer.toString(minutes);
+        }
+        else if (minutes>0){
+            mminutes = Integer.toString(minutes);
+        }
+        if(seconds<10) {
+            mseconds = "0"+Integer.toString(seconds);
+        }else{
+            mseconds = (Integer.toString(seconds));
+        }
+        return mhours+mminutes+":"+mseconds;
     }
 
 
