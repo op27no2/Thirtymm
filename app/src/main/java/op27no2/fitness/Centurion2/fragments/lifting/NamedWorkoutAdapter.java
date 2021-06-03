@@ -107,14 +107,29 @@ public class NamedWorkoutAdapter extends RecyclerView.Adapter<NamedWorkoutAdapte
 
                 mLiftingWorkout.getMyLifts().get(position).setRepNumber(size-1,  prefs.getInt("default_reps"+mLiftingWorkout.getMyLifts().get(position).getName(),0));
 */
+                // names in template workout
                 ArrayList<String> liftNames = mWorkouts.get(position).getLifts();
+
+                //returns template names that have matches in the current workout
+                ArrayList<ArrayList<Integer>> indices  = findMatches(liftNames, mLiftingWorkout);
+                ArrayList<Lift> mLifts = mLiftingWorkout.getMyLifts();
+
                 for(int i=0; i<liftNames.size(); i++){
-                    String name =liftNames.get(i);
-                    Lift mLift = new Lift(name, prefs.getInt("last_weight"+name, 225));
-                    mLift.addSet();
-                    mLift.setRepNumber(0, prefs.getInt("default_reps" + name, 0));
-                    mLiftingWorkout.addLift(mLift);
+                    String name = liftNames.get(i);
+                    if(indices.get(0).contains(i)){
+                        int liftindex = indices.get(1).get(indices.get(0).indexOf(i));
+                        mLifts.get(liftindex).addSet();
+                        mLifts.get(liftindex).setRepNumber(mLifts.get(liftindex).getReps().size()-1, prefs.getInt("default_reps" + name, 0));
+                    }else{
+                        Lift mLift = new Lift(name, prefs.getInt("last_weight" + name, 225));
+                        mLift.addSet();
+                        mLift.setRepNumber(0, prefs.getInt("default_reps" + name, 0));
+                        mLiftingWorkout.addLift(mLift);
+                    }
+
                 }
+
+                mLiftingWorkout.setMyLifts(mLifts);
 
                 /*ArrayList<Lift> existingLifts = mLiftingWorkout.getMyLifts();
                 existingLifts.addAll(liftsToAdd);
@@ -162,14 +177,39 @@ public class NamedWorkoutAdapter extends RecyclerView.Adapter<NamedWorkoutAdapte
             }
         });
 
-
       /*  if(position == selected){
             mFB.setBackgroundColor(ResourcesCompat.getColor(res, R.color.colorAccent, null));
         }else{
             mFB.setBackgroundColor(ResourcesCompat.getColor(res, R.color.colorPrimary, null));
         }*/
 
+    }
 
+
+    private ArrayList<ArrayList<Integer>> findMatches(ArrayList<String> liftNames, LiftingWorkout mWorkout) {
+        ArrayList<ArrayList<Integer>> map = new ArrayList<ArrayList<Integer>>();
+        ArrayList<Integer> indicesTemplate = new ArrayList<Integer>();
+        ArrayList<Integer> indicesWorkout = new ArrayList<Integer>();
+        ArrayList<Lift> mLifts = mWorkout.getMyLifts();
+
+        for (int i = 0; i < liftNames.size(); i++) {
+            String name = liftNames.get(i);
+            //TODO CHANGE THIS TO FIND MATCHES THEN UPDATE, ITERATING IS CAUSING ISSUES
+            //check current workotu for the liftname, if its present add a set, otherwise add the lift. If no lifts yet (size=0), add lift.
+            if (mWorkout.getMyLifts().size() > 0) {
+                for (int j = 0; j < mWorkout.getMyLifts().size(); j++) {
+                    if (mLifts.get(j).getName().equals(name)) {
+                        indicesTemplate.add(i);
+                        indicesWorkout.add(j);
+                    }
+                }
+            }
+
+        }
+
+        map.add(indicesTemplate);
+        map.add(indicesWorkout);
+        return map;
     }
 
 

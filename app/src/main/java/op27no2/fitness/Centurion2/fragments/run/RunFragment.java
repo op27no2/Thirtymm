@@ -1872,9 +1872,9 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         if(!mEditDistance.getText().toString().equals("") || !mEditDistance.getText().toString().equals(".")  || Integer.parseInt(mEditDistance.getText().toString()) != 0) {
             long pace = 0;
             float miles = total[0] * 0.000621371192f;
-            float kilometers = total[0] / 1000;
-            float five = total[0] / 500;
-            float one = total[0]/100;
+            float kilometers = total[0] / 1000f;
+            float five = total[0] / 500f;
+            float one = total[0]/100f;
 
             //will downfactor calculations in pounds to kg
             double factorUnit = prefs.getInt("units",0) == 0 ? 1 : (1/2.2);
@@ -1885,7 +1885,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             switch (activity.getCalBurnUnit()) {
                 case 0:
                     //Per Minute
-                    calValue = (int) Math.floor((finalTime/1000/60)*weight*factorUnit*factorCal);
+                    calValue = (int) Math.floor((finalTime/1000f/60f)*weight*factorUnit*factorCal);
                     break;
                 case 1:
                     //Per Mile
@@ -1899,7 +1899,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                     break;
                 case 3:
                     //Per Hour
-                    calValue = (int) Math.floor((finalTime/1000/60/60)*weight*factorUnit*factorCal);
+                    calValue = (int) Math.floor((finalTime/1000f/60f/60f)*weight*factorUnit*factorCal);
                     break;
             }
             mEditCals.setText(Integer.toString(calValue));
@@ -1996,44 +1996,44 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
 
     private void startSnapShot() {
-        MapSnapshotter.Options snapShotOptions = new MapSnapshotter.Options(500, 500);
+        Style.Builder builder1 = new Style.Builder()
+                .fromUri(mapboxMap.getStyle().getUri())
+                .withSource(new GeoJsonSource("line-source",
+                        FeatureCollection.fromFeatures(new Feature[]{Feature.fromGeometry(
+                                LineString.fromLngLats(routeCoordinates)
+                        )})))
+                .withLayer(new LineLayer("linelayer", "line-source").withProperties(
+                        lineWidth(5f),
+                        lineColor(Color.parseColor("#e55e5e"))
+                ));
 
-        snapShotOptions.withRegion(mapboxMap.getProjection().getVisibleRegion().latLngBounds);
-
-        snapShotOptions.withStyle(mapboxMap.getStyle().getUri());
+        MapSnapshotter.Options snapShotOptions = new MapSnapshotter.Options(500, 500)
+                .withCameraPosition(mapboxMap.getCameraPosition())
+                .withRegion(mapboxMap.getProjection().getVisibleRegion().latLngBounds)
+                .withStyleBuilder(builder1);
 
         mapSnapshotter = new MapSnapshotter(getActivity(), snapShotOptions);
+
         mapSnapshotter.start(new MapSnapshotter.SnapshotReadyCallback() {
             @Override
             public void onSnapshotReady(MapSnapshot snapshot) {
-
                 // Display, share, or use bitmap image how you'd like
                 System.out.println("ss ready");
                 Bitmap bitmapImage = snapshot.getBitmap();
                 saveRun(bitmapImage);
 
-
             }
         });
 
-        //TODO map snapshot not working?
-       /*
-        MapboxMap.SnapshotReadyCallback snapCallback = new MapboxMap.SnapshotReadyCallback() {
-            @Override
-            public void onSnapshotReady(@NonNull Bitmap snapshot) {
-//
-                saveRun(snapshot);
-                //
-            }
-        };
-        mapboxMap.snapshot(snapCallback);*/
+
     }
+
 
 
     public String saveBitmap(Bitmap bitmapImage, String filename){
             ContextWrapper cw = new ContextWrapper(getApplicationContext());
             // path to /data/data/yourapp/app_data/imageDir
-            File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+            File directory = cw.getDir("imageDir2", Context.MODE_PRIVATE);
             // Create imageDir
             File mypath=new File(directory,filename+".jpg");
 
@@ -2043,11 +2043,13 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                 // Use the compress method on the BitMap object to write image to the OutputStream
                 bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
             } catch (Exception e) {
+                System.out.println("bitmap error?:"+ e.getMessage());
                 e.printStackTrace();
             } finally {
                 try {
                     fos.close();
                 } catch (IOException e) {
+                    System.out.println("bitmap error?:"+ e.getMessage());
                     e.printStackTrace();
                 }
             }

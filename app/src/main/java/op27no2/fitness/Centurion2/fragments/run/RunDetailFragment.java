@@ -1579,9 +1579,9 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         if(!mEditDistance.getText().toString().equals("") || !mEditDistance.getText().toString().equals(".")  || Integer.parseInt(mEditDistance.getText().toString()) != 0) {
             long pace = 0;
             float miles = total[0] * 0.000621371192f;
-            float kilometers = total[0] / 1000;
-            float five = total[0] / 500;
-            float one = total[0]/100;
+            float kilometers = total[0] / 1000f;
+            float five = total[0] / 500f;
+            float one = total[0]/100f;
 
             //will downfactor calculations in pounds to kg
             double factorUnit = prefs.getInt("units",0) == 0 ? 1 : (1/2.2);
@@ -1592,7 +1592,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
             switch (activity.getCalBurnUnit()) {
                 case 0:
                     //Per Minute
-                    calValue = (int) Math.floor((finalTime/1000/60)*weight*factorUnit*factorCal);
+                    calValue = (int) Math.floor((finalTime/1000f/60f)*weight*factorUnit*factorCal);
                     break;
                 case 1:
                     //Per Mile
@@ -1606,7 +1606,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                     break;
                 case 3:
                     //Per Hour
-                    calValue = (int) Math.floor((finalTime/1000/60/60)*weight*factorUnit*factorCal);
+                    calValue = (int) Math.floor((finalTime/1000f/60f/60f)*weight*factorUnit*factorCal);
                     break;
             }
             mEditCals.setText(Integer.toString(calValue));

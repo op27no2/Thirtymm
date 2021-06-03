@@ -86,7 +86,9 @@ public class VolumeAdapter extends RecyclerView.Adapter<VolumeAdapter.ViewHolder
         }else if(mState ==1){
             mText1.setText(muscleNames.get(pos));
            // mText2.setText(Double.toString(muscleVolumes.get(muscleNames.get(pos))));
-            mText2.setText(new DecimalFormat("#.##").format(muscleVolumes.get(muscleNames.get(pos))));
+            if(muscleVolumes.get(muscleNames.get(pos)) != null) {
+                mText2.setText(new DecimalFormat("#.##").format(muscleVolumes.get(muscleNames.get(pos))));
+            }
         }
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override

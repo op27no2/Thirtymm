@@ -285,11 +285,11 @@ public class ChildProgressFragment extends Fragment {
                             int index = mDay.getNames().indexOf(name);
                             if(index>=0) {
                                 mGoalList.get(i).setWeekTotal((float) weekTotals.get(index));
-                                System.out.println("nametest setting week total= "+weekTotals.get(index));
+   //                             System.out.println("nametest setting week total= "+weekTotals.get(index));
                             }
-                            System.out.println("nametest = "+name);
-                            System.out.println("nametest index= "+index);
-                            System.out.println("nametest week get= "+mGoalList.get(i).getWeekTotal());
+    //                        System.out.println("nametest = "+name);
+    //                        System.out.println("nametest index= "+index);
+    //                        System.out.println("nametest week get= "+mGoalList.get(i).getWeekTotal());
 
 
                         }
@@ -319,19 +319,19 @@ public class ChildProgressFragment extends Fragment {
 
 
 
-                System.out.println("Day Processed, current Big Goal List Size = "+mBigGoalsDetail.size());
+    //            System.out.println("Day Processed, current Big Goal List Size = "+mBigGoalsDetail.size());
                 if(mBigGoalsDetail.size()!=0) {
-                    System.out.println("size of each goal list entry");
+    //                System.out.println("size of each goal list entry");
                     for(int i=0; i< mBigGoalsDetail.size(); i++) {
-                        System.out.println("i="+i+" :"+mBigGoalsDetail.get(i).size());
+    //                    System.out.println("i="+i+" :"+mBigGoalsDetail.get(i).size());
                     }
                 }
 
                 //TODO this is just reporting for testin gplease delete
                     for(int i=0; i< mBigGoalsDetail.size(); i++){
                         for(int j=0; j< mBigGoalsDetail.get(i).size(); j++){
-                            System.out.println("week "+i+" goal name: "+mBigGoalsDetail.get(i).get(j).getGoalName());
-                            System.out.println("week "+i+" goal total: " +mBigGoalsDetail.get(i).get(j).getWeekTotal());
+    //                        System.out.println("week "+i+" goal name: "+mBigGoalsDetail.get(i).get(j).getGoalName());
+    //                        System.out.println("week "+i+" goal total: " +mBigGoalsDetail.get(i).get(j).getWeekTotal());
                         }
                     }
 
@@ -340,7 +340,7 @@ public class ChildProgressFragment extends Fragment {
                  mCal.add(Calendar.DATE, -1);
                  //TODO wouldn't loop again if below true, so check here and do any final things, or maybe loop to include one more day above?
                  if(fmt.format(mCal.getTime()).equals(fmt.format(dateZero))){
-                     System.out.println("thats last day yo");
+    //                 System.out.println("thats last day yo");
                      break;
                      //do something on today to show this week so far, this is last iteration
                  }
@@ -350,7 +350,7 @@ public class ChildProgressFragment extends Fragment {
             for(int i=0; i<mBigGoalsDetail.size()-1;i++){
                 if(!mBigGoalsDetail.get(i+1).equals(mBigGoalsDetail.get(i))){
                     if(mBigGoalsDetail.get(i).size() == mBigGoalsDetail.get(i+1).size()){
-                        System.out.println("Goals Size Same");
+    //                    System.out.println("Goals Size Same");
                         boolean checkSame = true;
                        for(int j=0; j<mBigGoalsDetail.get(i).size();j++){
                         /*   System.out.println("goal 1 name:"+mBigGoalsDetail.get(i).get(j).getGoalName());

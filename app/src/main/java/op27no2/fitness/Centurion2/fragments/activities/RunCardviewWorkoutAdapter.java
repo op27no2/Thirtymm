@@ -21,6 +21,7 @@ import op27no2.fitness.Centurion2.Database.Repository;
 import op27no2.fitness.Centurion2.R;
 import op27no2.fitness.Centurion2.fragments.lifting.DialogLifts;
 import op27no2.fitness.Centurion2.fragments.lifting.MyDialogInterface;
+import op27no2.fitness.Centurion2.fragments.run.RunType;
 import op27no2.fitness.Centurion2.fragments.run.RunWorkout;
 
 /**
@@ -96,13 +97,15 @@ public class RunCardviewWorkoutAdapter extends RecyclerView.Adapter<RunCardviewW
         // - replace the contents of the view with that element
 
        // TextView mText = holder.mView.findViewById(R.id.text_lift);
-        TextView mText0 = holder.mView.findViewById(R.id.title);
-        TextView mText1 = holder.mView.findViewById(R.id.distance_value);
-        TextView mText2 = holder.mView.findViewById(R.id.duration_value);
-        TextView mText3 = holder.mView.findViewById(R.id.pace_value);
-        TextView mText4 = holder.mView.findViewById(R.id.date);
-        TextView mText5 = holder.mView.findViewById(R.id.cals_value);
-        TextView mText6 = holder.mView.findViewById(R.id.description);
+        TextView mTextTitle = holder.mView.findViewById(R.id.title);
+        TextView mTextDescription = holder.mView.findViewById(R.id.description);
+        TextView mTextDate = holder.mView.findViewById(R.id.date);
+        TextView mTextDistance = holder.mView.findViewById(R.id.distance_value);
+        TextView mTextDistanceUnits = holder.mView.findViewById(R.id.distance_units);
+        TextView mTextDuration = holder.mView.findViewById(R.id.duration_value);
+        TextView mTextPace = holder.mView.findViewById(R.id.pace_value);
+        TextView mTextPaceUnits = holder.mView.findViewById(R.id.pace_units);
+        TextView mTextCals = holder.mView.findViewById(R.id.cals_value);
         ImageView mImage = holder.mView.findViewById(R.id.mapView);
 
         Integer duration = mWorkouts.get(holder.getAdapterPosition()).getDuration();
@@ -110,29 +113,123 @@ public class RunCardviewWorkoutAdapter extends RecyclerView.Adapter<RunCardviewW
         System.out.println("duration: "+duration);
         System.out.println("distance: "+distance);
 
-        long pace = (long) (duration / (distance*0.000621371192f));
+        mTextTitle.setText(mWorkouts.get(holder.getAdapterPosition()).getTitle());
+        mTextDescription.setText(mWorkouts.get(holder.getAdapterPosition()).getDescription());
+        mTextDate.setText(mWorkouts.get(holder.getAdapterPosition()).getWorkoutDate());
+        mTextDuration.setText(getDuration(duration));
 
-        mText1.setText(getMiles(distance));
-        mText2.setText(getDuration(duration));
-        mText3.setText(getDuration(pace)+" /mi");
-        mText4.setText(mWorkouts.get(holder.getAdapterPosition()).getWorkoutDate());
-        mText5.setText(Integer.toString(mWorkouts.get(holder.getAdapterPosition()).getCalories()));
+        RunType mActivityType = mWorkouts.get(holder.getAdapterPosition()).getWorkoutType();
+        if(mWorkouts.get(holder.getAdapterPosition()).getWorkoutType() != null) {
+            switch (mActivityType.getDistanceUnits()) {
+                case 0:
+                    //Miles
+                    mTextDistance.setText(getMiles(distance));
+                    mTextDistanceUnits.setText(" miles");
+                    break;
+                case 1:
+                    //Kilometers
+                    double Kilometers = distance / 1000d;
+                    System.out.println("after calc "+distance);
+                    System.out.println("after calc K "+Kilometers);
+                    mTextDistance.setText(String.format("%.3f", Kilometers));
+                    mTextDistanceUnits.setText(" km");
+                    break;
+            }
+        }
+
+        if(mActivityType != null){
+        long pace = 0;
+        float miles = distance * 0.000621371192f;
+        float kilometers = distance / 1000f;
+        float five = distance / 500f;
+        float one = distance/100f;
+
+        //will downfactor calculations in pounds to kg
+        double factorUnit = prefs.getInt("units",0) == 0 ? 1 : (1/2.2);
+        double factorCal = mActivityType.getCalBurnValue();
+        int weight = prefs.getInt("weight",180);
+
+        int calValue = 0;
+        switch (mActivityType.getCalBurnUnit()) {
+            case 0:
+                //Per Minute
+                calValue = (int) Math.floor((duration/1000f/60f)*weight*factorUnit*factorCal);
+                break;
+            case 1:
+                //Per Mile
+                System.out.println("miles: "+miles+" weight: "+weight+" funit: "+factorUnit+" fcal: "+factorCal);
+                calValue = (int) Math.floor(miles*weight*factorUnit*factorCal);
+                break;
+            case 2:
+                //Per Kilometer
+                System.out.println("kilo: "+kilometers+" weight: "+weight+" funit: "+factorUnit+" fcal: "+factorCal);
+                calValue = (int) Math.floor(kilometers*weight*factorUnit*factorCal);
+                break;
+            case 3:
+                //Per Hour
+                calValue = (int) Math.floor((duration/1000f/60f/60f)*weight*factorUnit*factorCal);
+                break;
+        }
+
+        switch (mActivityType.getPaceUnits()) {
+            case 0:
+                //minutes per mile
+                if (miles != 0) {
+                    pace = (long) (duration / (miles));
+                }
+                mTextPace.setText(getDuration(pace));
+                mTextPaceUnits.setText("/mi");
+                break;
+            case 1:
+                //per kilometer
+                if (kilometers != 0) {
+                    pace = (long) (duration / (kilometers));
+                }
+                mTextPace.setText(getDuration(pace));
+                mTextPaceUnits.setText("/km");
+                break;
+            case 2:
+                //per 500m
+
+                if (five != 0) {
+                    pace = (long) (duration / (five));
+                }
+                mTextPace.setText(getDuration(pace));
+                mTextPaceUnits.setText("/500m");
+                break;
+            case 3:
+                //per 100m
+                if (one != 0) {
+                    pace = (long) (duration / (one));
+                }
+                mTextPace.setText(getDuration(pace));
+                mTextPaceUnits.setText("/100m");
+                break;
+            case 4:
+                //miles per hour
+                float mpace = 0;
+                if (miles != 0) {
+                    mpace = (float) ((miles) / ((float) duration / 3600000f));
+                }
+                mTextPace.setText(String.format("%.2f", mpace));
+                mTextPaceUnits.setText("mph");
+                break;
+            }
+        }
+
+        mTextCals.setText(Integer.toString(mWorkouts.get(holder.getAdapterPosition()).getCalories()));
+
         if(mWorkouts.get(holder.getAdapterPosition()).getImage() != null && mWorkouts.get(holder.getAdapterPosition()).getSaveMap() == true){
             Glide.with(mContext).load(mWorkouts.get(holder.getAdapterPosition()).getImage()).centerCrop().into(mImage);
         }else{
             mImage.setVisibility(View.GONE);
         }
-        System.out.println("bitmaps: " +position+" " + mWorkouts.get(holder.getAdapterPosition()).getImage());
-        mText0.setText(mWorkouts.get(holder.getAdapterPosition()).getTitle());
-        mText6.setText(mWorkouts.get(holder.getAdapterPosition()).getDescription());
 
         CardView mCard = holder.mView.findViewById(R.id.card_view);
         mCard.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                System.out.println("lift long click");
-
-
+                System.out.println(" long click");
 
                 return false;
             }
@@ -195,40 +292,40 @@ public class RunCardviewWorkoutAdapter extends RecyclerView.Adapter<RunCardviewW
         int minutes = (int)  Math.floor(minutesDisplay);
         int seconds = (int)  Math.floor(secondsDisplay);
 
-/*        if(hoursDisplay>0) {
-            if (secondsDisplay < 10) {
-                return ((hoursDisplay + ":" + minutesDisplay + ":0" + secondsDisplay));
-            } else {
-                return ((hoursDisplay + ":" + minutesDisplay + ":" + secondsDisplay));
-            }
-        }else{
-            if (secondsDisplay < 10) {
-                return ((minutesDisplay + ":0" + secondsDisplay));
-            } else {
-                return ((minutesDisplay + ":" + secondsDisplay));
-            }
-        }*/
-
         String mhours = "";
         String mminutes = "";
         String mseconds = "";
         //   }
-        if(hours>0){
-            mhours = Integer.toString(hours)+":";
-        }
-        if(minutes<10) {
-            mminutes = "0"+Integer.toString(minutes);
-        }
-        else if (minutes>0){
-            mminutes = Integer.toString(minutes);
-        }
-        if(seconds<10) {
-            mseconds = "0"+Integer.toString(seconds);
+        if(hours>0) {
+            mhours = Integer.toString(hours) + ":";
+
+            if (minutes < 10) {
+                mminutes = "0" + Integer.toString(minutes);
+            } else if (minutes > 0) {
+                mminutes = Integer.toString(minutes);
+            }
+            if (seconds < 10) {
+                mseconds = "0" + Integer.toString(seconds);
+            } else {
+                mseconds = (Integer.toString(seconds));
+            }
+            return mhours + mminutes + ":" + mseconds;
         }else{
-            mseconds = (Integer.toString(seconds));
+
+            mminutes = Integer.toString(minutes);
+            if (seconds < 10) {
+                mseconds = "0" + Integer.toString(seconds);
+            } else {
+                mseconds = (Integer.toString(seconds));
+            }
+            return mhours + mminutes + ":" + mseconds;
         }
-        return mhours+mminutes+":"+mseconds;
+
+
+
+
     }
+
 
 
 

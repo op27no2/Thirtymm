@@ -56,7 +56,7 @@ public class LiftCardviewWorkoutAdapter extends RecyclerView.Adapter<LiftCardvie
     private NamedWorkoutAdapter mNamedWorkoutAdapter;
     private RecyclerView mRecyclerView2;
     private ArrayList<NamedWorkout> mNamedWorkouts = new ArrayList<NamedWorkout>();
-    private NamedWorkoutInterface mDialogInterface;
+    private NamedWorkoutInterface namedWorkoutInterface;
     private FlexboxLayoutManager mLayoutManager2;
 
     private Context mContext;
@@ -108,7 +108,7 @@ public class LiftCardviewWorkoutAdapter extends RecyclerView.Adapter<LiftCardvie
         //interface to change weight
         passThisInterface = this;
         //interface for named workouts
-        mDialogInterface = this;
+        namedWorkoutInterface = this;
 
         prefs = parent.getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = parent.getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
@@ -331,7 +331,6 @@ public class LiftCardviewWorkoutAdapter extends RecyclerView.Adapter<LiftCardvie
                             notifyItemRangeChanged(position, getItemCount());
                             mLiftingWorkout.removeLift(position);
                             mRepository.updateWorkout(mLiftingWorkout);
-
                             dialog.dismiss();
                         }
                     });
@@ -397,7 +396,7 @@ public class LiftCardviewWorkoutAdapter extends RecyclerView.Adapter<LiftCardvie
             mRecyclerView2.setLayoutManager(mLayoutManager2);
 
 
-            mNamedWorkoutAdapter = new NamedWorkoutAdapter(mDialogInterface, mLiftingWorkout, mNamedWorkouts, mRepository);
+            mNamedWorkoutAdapter = new NamedWorkoutAdapter(namedWorkoutInterface, mLiftingWorkout, mNamedWorkouts, mRepository);
             mRecyclerView2.setAdapter(mNamedWorkoutAdapter);
             mRecyclerView2.setItemAnimator(new DefaultItemAnimator());
 
