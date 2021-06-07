@@ -118,12 +118,11 @@ public class ProgressAdapter extends RecyclerView.Adapter<ProgressAdapter.ViewHo
             //  grid.setNumColumns(goalWeekData.size());
             gridTitle.setNumColumns(goalWeekData.get(pos).size());
             gridTitle.setAdapter(gridAdapter2);
-
+        }else{
+            gridTitle.setVisibility(View.GONE);
         }
 
         mText.setText(calendarWeekData.get(pos));
-
-
 
 
 

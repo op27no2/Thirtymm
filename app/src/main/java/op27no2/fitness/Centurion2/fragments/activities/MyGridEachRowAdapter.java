@@ -18,13 +18,13 @@ import op27no2.fitness.Centurion2.R;
 
 public class MyGridEachRowAdapter extends BaseAdapter {
     private Context mContext;
-    private ArrayList<GoalsDetail> mValues = new ArrayList<GoalsDetail>();
+    private ArrayList<GoalsDetail> mGoalDetails = new ArrayList<GoalsDetail>();
     private Resources resources;
     private Boolean titleRow;
 
     public MyGridEachRowAdapter(Context context, ArrayList<GoalsDetail> mGoalDetail, Resources res, Boolean isTitleRow) {
         this.mContext = context;
-        this.mValues = mGoalDetail;
+        this.mGoalDetails = mGoalDetail;
         this.resources = res;
         this.titleRow = isTitleRow;
     }
@@ -34,7 +34,7 @@ public class MyGridEachRowAdapter extends BaseAdapter {
             return 6;
         }
     /*    public int getCount() {
-            return mValues.size()*addTitleRow;
+            return mGoalDetails.size()*addTitleRow;
         }*/
 
         @Override
@@ -62,39 +62,39 @@ public class MyGridEachRowAdapter extends BaseAdapter {
 
 
             //GOAL IS TO BE BELOW VALUE
-            if(mValues.get(position).getGoalType() == 0) {
+            if(mGoalDetails.get(position).getGoalType() == 0) {
                 if(titleRow) {
-                    textView.setText(mValues.get(position).getGoalName() + " < " + mValues.get(position).getGoalLimitHigh());
+                    textView.setText(mGoalDetails.get(position).getGoalName() + " < " + mGoalDetails.get(position).getGoalLimitHigh());
                     gridCell.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.darkgrey, null));
                 }else {
-                    if(mValues.get(position).getWeekTotal() !=null && mValues.get(position).getGoalLimitHigh() != null) {
-                        textView.setText((df.format((mValues.get(position).getWeekTotal())) + "/" + df.format((mValues.get(position).getGoalLimitHigh()))));
+                    if(mGoalDetails.get(position).getWeekTotal() !=null && mGoalDetails.get(position).getGoalLimitHigh() != null) {
+                        textView.setText((df.format((mGoalDetails.get(position).getWeekTotal())) + "/" + df.format((mGoalDetails.get(position).getGoalLimitHigh()))));
 
                         //Check Success
-                        if (checkSuccess(mValues.get(position)) >= 1) {
+                        if (checkSuccess(mGoalDetails.get(position)) >= 1) {
                             gridCell.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.green, null));
                         } else {
                             gridCell.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.colorPrimaryDark, null));
                         }
                     }else{
                         System.out.println("null week total or goal "+position);
-                        System.out.println("null week total or w "+mValues.get(position).getWeekTotal());
-                        System.out.println("null week total or g "+mValues.get(position).getGoalLimitHigh());
+                        System.out.println("null week total or w "+ mGoalDetails.get(position).getWeekTotal());
+                        System.out.println("null week total or g "+ mGoalDetails.get(position).getGoalLimitHigh());
                     }
                 }
             }
 
             //GOAL IS TO BE BETWEEN TWO VALUES
-            if(mValues.get(position).getGoalType() == 1) {
+            if(mGoalDetails.get(position).getGoalType() == 1) {
                 if(titleRow) {
-                    textView.setText(mValues.get(position).getGoalLimitLow()+" < "+mValues.get(position).getGoalName() + " < " + mValues.get(position).getGoalLimitHigh());
+                    textView.setText(mGoalDetails.get(position).getGoalLimitLow()+" < "+ mGoalDetails.get(position).getGoalName() + " < " + mGoalDetails.get(position).getGoalLimitHigh());
                     gridCell.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.darkgrey, null));
                 }else {
-                    if (mValues.get(position).getWeekTotal() != null && mValues.get(position).getGoalLimitLow() != null &&mValues.get(position).getGoalLimitHigh() != null){
+                    if (mGoalDetails.get(position).getWeekTotal() != null && mGoalDetails.get(position).getGoalLimitLow() != null && mGoalDetails.get(position).getGoalLimitHigh() != null){
 
-                            textView.setText(df.format(mValues.get(position).getGoalLimitLow()) + "/" + df.format(mValues.get(position).getWeekTotal()) + "/" + Double.toString(mValues.get(position).getGoalLimitHigh()));
+                            textView.setText(df.format(mGoalDetails.get(position).getGoalLimitLow()) + "/" + df.format(mGoalDetails.get(position).getWeekTotal()) + "/" + Double.toString(mGoalDetails.get(position).getGoalLimitHigh()));
                         //Check Success
-                        if (checkSuccess(mValues.get(position)) >= 1) {
+                        if (checkSuccess(mGoalDetails.get(position)) >= 1) {
                             gridCell.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.green, null));
                         } else {
                             gridCell.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.colorPrimaryDark, null));
@@ -106,23 +106,23 @@ public class MyGridEachRowAdapter extends BaseAdapter {
             }
 
             //GOAL IS TO BE ABOVE VALUE
-            if(mValues.get(position).getGoalType() == 2) {
+            if(mGoalDetails.get(position).getGoalType() == 2) {
                 if(titleRow) {
-                    textView.setText(mValues.get(position).getGoalName() + " > " + mValues.get(position).getGoalLimitLow());
+                    textView.setText(mGoalDetails.get(position).getGoalName() + " > " + mGoalDetails.get(position).getGoalLimitLow());
                     gridCell.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.darkgrey, null));
                 }else {
-                    if(mValues.get(position).getWeekTotal() !=null && mValues.get(position).getGoalLimitHigh()!= null) {
-                        textView.setText(df.format(mValues.get(position).getWeekTotal()) + "/" + df.format(mValues.get(position).getGoalLimitLow()));
+                    if(mGoalDetails.get(position).getWeekTotal() !=null && mGoalDetails.get(position).getGoalLimitHigh()!= null) {
+                        textView.setText(df.format(mGoalDetails.get(position).getWeekTotal()) + "/" + df.format(mGoalDetails.get(position).getGoalLimitLow()));
                         //Check Success
-                        if (checkSuccess(mValues.get(position)) >= 1) {
+                        if (checkSuccess(mGoalDetails.get(position)) >= 1) {
                             gridCell.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.green, null));
                         } else {
                             gridCell.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.colorPrimaryDark, null));
                         }
                     }else{
                         System.out.println("null week total or goal "+position);
-                        System.out.println("null week total or w "+mValues.get(position).getWeekTotal());
-                        System.out.println("null week total or g "+mValues.get(position).getGoalLimitLow());
+                        System.out.println("null week total or w "+ mGoalDetails.get(position).getWeekTotal());
+                        System.out.println("null week total or g "+ mGoalDetails.get(position).getGoalLimitLow());
                     }
 
                 }

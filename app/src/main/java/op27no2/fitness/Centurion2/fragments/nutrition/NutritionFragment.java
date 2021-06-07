@@ -606,7 +606,8 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                 if(mNutritionDay == null){
                     mNutritionDay = new NutritionDay();
                     System.out.println("nutrition day null create uid: "+mNutritionDay.getUid());
-
+                    mNames.clear();
+                    mValues.clear();
                     mNames.add("Cals");
                     mValues.add(-(prefs.getInt("bmr", 2000)));
                     mNames.add("Protein");
@@ -642,6 +643,8 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
 
                     if(mNames.size() == 0 || mValues.size() == 0){
                         System.out.println("nutrition day found get names/values uid: "+mNutritionDay.getUid());
+                        mNames.clear();
+                        mValues.clear();
                         mNames.add("Cals");
                         mValues.add(-(prefs.getInt("bmr", 2000)));
                         mNames.add("Protein");

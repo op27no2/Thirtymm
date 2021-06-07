@@ -40,7 +40,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
     private ArrayList<Integer> mValues = new ArrayList<Integer>(2);
     private Vibrator rabbit;
     private ArrayList<GoalsDetail> mGoalTopList = new  ArrayList<GoalsDetail>(2);
-
+    private boolean holding = true;
 
 
     @SuppressLint("StaticFieldLeak")
@@ -48,6 +48,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
         final int N = appWidgetIds.length;
         prefs = context.getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = context.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
+
 
         // Perform this loop procedure for each App Widget that belongs to this provider
         for (int i=0; i<N; i++) {
@@ -80,18 +81,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                 }
                 protected Void doInBackground(Void... unused) {
                     mDay = AppDatabase.getAppDatabase(context).ntDAO().findByDate(date);
-           /*         if(mDay == null) {
-                        mDay = new NutritionDay();
-                        System.out.println("day null should create");
-                        mNames.add("Cals");
-                        mValues.add(Integer.parseInt(prefs.getString("bmr", "-2000")));
-                        mNames.add("Protein");
-                        mValues.add(0);
-                        mDay.setNames(mNames);
-                        mDay.setValues(mValues);
-                        mDay.setDate(date);
-                        mRepository.insertNutrition(mDay);
-                    }*/
+
                     if(mDay == null){
                         mDay = new NutritionDay();
                         System.out.println("nutrition day null create uid: "+mDay.getUid());
@@ -102,11 +92,10 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                         mDay.setNames(mNames);
                         mDay.setValues(mValues);
                         mDay.setDate(date);
-                        mRepository.insertNutrition(mDay);
+                       // mRepository.insertNutrition(mDay);
 
-                       /* long id = AppDatabase.getAppDatabase(getActivity()).ntDAO().insert(mNutritionDay);
-                        mDay = AppDatabase.getAppDatabase(getActivity()).ntDAO().findById((int) id);
-                        */
+                       long id = AppDatabase.getAppDatabase(context).ntDAO().insert(mDay);
+                       mDay = AppDatabase.getAppDatabase(context).ntDAO().findById((int) id);
                        // System.out.println("nutrition day after insertion uid: "+mDay.getUid());
 
                     }else{
@@ -180,17 +169,17 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 
         //TODO test this code
     if (intent.getAction().equals("HOME_BUTTON")) {
-        Intent i = new Intent(context, MainActivity.class);
+        //REMOVING HOME BUTTON FOR NOW
+     /*   Intent i = new Intent(context, MainActivity.class);
         i.putExtra("frgToLoad", "Nutrition");
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(i);
-        vib(40);
+        vib(40);*/
 
     }else if(intent.getAction().equals("PLUS_BUTTON") || intent.getAction().equals("MINUS_BUTTON") || intent.getAction().equals("PLUS_BUTTON_SMALL")|| intent.getAction().equals("MINUS_BUTTON_SMALL")){
-
-        vib(30);
         prefs = context.getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = context.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
+        vib(30);
 
         System.out.println("onreceive called");
         AppWidgetManager mgr = AppWidgetManager.getInstance(context);
@@ -211,65 +200,69 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
         String date = df.format(time);
         System.out.println("widget date: "+date);
 
-
         new AsyncTask<Void, Void, Void>() {
                 protected void onPreExecute() {
                     // Pre Code
                 }
                 protected Void doInBackground(Void... unused) {
-                    mDay = AppDatabase.getAppDatabase(context).ntDAO().findByDate(date);
-                    mGoalTopList = new ArrayList<GoalsDetail>(AppDatabase.getAppDatabase(context).glDAO().getAll());
 
-                    Calendar cal = Calendar.getInstance();
+                        mDay = AppDatabase.getAppDatabase(context).ntDAO().findByDate(date);
+                        mGoalTopList = new ArrayList<GoalsDetail>(AppDatabase.getAppDatabase(context).glDAO().getAll());
 
-                 //   if(mDay == null || mDay.getValues() == null || mDay.getValues().size() == 0){
-                    if(mDay == null){
-                        mDay = new NutritionDay();
-                        System.out.println("day null should create");
-                        mNames.add("Cals");
-                        mValues.add(-(prefs.getInt("bmr", 2000)));
-                        mNames.add("Protein");
-                        mValues.add(0);
-                        mDay.setNames(mNames);
-                        mDay.setValues(mValues);
-                        mDay.setDate(date);
-                        mDay.setDateMillis(cal.getTimeInMillis());
-                        mRepository.insertNutrition(mDay);
+                        Calendar cal = Calendar.getInstance();
 
-                        long id = AppDatabase.getAppDatabase(context).ntDAO().insert(mDay);
-                        mDay = AppDatabase.getAppDatabase(context).ntDAO().findById((int) id);
-
-                        System.out.println("creating goals");
-                        mDay.setGoalList(mGoalTopList);
-
-
-                    }else{
-                        mNames = mDay.getNames();
-                        mValues = mDay.getValues();
-
-                        if(mNames.size() == 0 || mValues.size() == 0){
-                            System.out.println("nutrition day found get names/values uid: "+mDay.getUid());
+                        //   if(mDay == null || mDay.getValues() == null || mDay.getValues().size() == 0){
+                        if (mDay == null) {
+                            mDay = new NutritionDay();
+                            System.out.println("day null should create");
+                            mNames.clear();
+                            mValues.clear();
                             mNames.add("Cals");
                             mValues.add(-(prefs.getInt("bmr", 2000)));
                             mNames.add("Protein");
                             mValues.add(0);
                             mDay.setNames(mNames);
                             mDay.setValues(mValues);
-                            System.out.println(mNames.get(0)+" "+mValues.get(1));
-                        }else {
-                            System.out.println("mNames size not zero "+mNames.get(0)+" "+mValues.get(0));
-                        }
-
-                        if(mDay.getGoalList() == null || mDay.getGoalList().size() == 0) {
-                            System.out.println("need to create goals if its today");
+                            mDay.setDate(date);
+                            mDay.setDateMillis(cal.getTimeInMillis());
+                            //mRepository.insertNutrition(mDay);
                             mDay.setGoalList(mGoalTopList);
-                        }
-                        mRepository.updateNutrition(mDay);
-                    }
 
-                    //TODO change to search for index
-                    cals = mValues.get(0);
-                    protein = mValues.get(1);
+                            long id = AppDatabase.getAppDatabase(context).ntDAO().insert(mDay);
+                            mDay = AppDatabase.getAppDatabase(context).ntDAO().findById((int) id);
+
+                            System.out.println("creating goals");
+
+
+                        } else {
+                            mNames = mDay.getNames();
+                            mValues = mDay.getValues();
+
+                            if (mNames.size() == 0 || mValues.size() == 0) {
+                                System.out.println("nutrition day found get names/values uid: " + mDay.getUid());
+                                mNames.clear();
+                                mValues.clear();
+                                mNames.add("Cals");
+                                mValues.add(-(prefs.getInt("bmr", 2000)));
+                                mNames.add("Protein");
+                                mValues.add(0);
+                                mDay.setNames(mNames);
+                                mDay.setValues(mValues);
+                                System.out.println(mNames.get(0) + " " + mValues.get(1));
+                            } else {
+                                System.out.println("mNames size not zero " + mNames.get(0) + " " + mValues.get(0));
+                            }
+
+                            if (mDay.getGoalList() == null || mDay.getGoalList().size() == 0) {
+                                System.out.println("need to create goals if its today");
+                                mDay.setGoalList(mGoalTopList);
+                            }
+                            mRepository.updateNutrition(mDay);
+                        }
+
+                        //TODO change to search for index
+                        cals = mValues.get(0);
+                        protein = mValues.get(1);
 
 
                     return null;
@@ -313,16 +306,25 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                         mDay.setValues(mValues);
                     }
 
-                    mRepository.updateNutrition(mDay);
+
                     finishUI(remoteViews, mgr, watchWidget, appWidgetId);
+
+                    mRepository.updateNutrition(mDay);
+
 
                     }
                 }
             }.execute();
 
-
         }
     }
+
+
+
+
+
+
+
 
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
                                 int appWidgetId) {

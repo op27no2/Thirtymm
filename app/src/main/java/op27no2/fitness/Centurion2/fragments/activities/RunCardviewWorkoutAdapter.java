@@ -220,6 +220,7 @@ public class RunCardviewWorkoutAdapter extends RecyclerView.Adapter<RunCardviewW
         mTextCals.setText(Integer.toString(mWorkouts.get(holder.getAdapterPosition()).getCalories()));
 
         if(mWorkouts.get(holder.getAdapterPosition()).getImage() != null && mWorkouts.get(holder.getAdapterPosition()).getSaveMap() == true){
+            mImage.setVisibility(View.VISIBLE);
             Glide.with(mContext).load(mWorkouts.get(holder.getAdapterPosition()).getImage()).centerCrop().into(mImage);
         }else{
             mImage.setVisibility(View.GONE);

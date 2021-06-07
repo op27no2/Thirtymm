@@ -211,59 +211,8 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
         //not currently used?
         allMuscles = new ArrayList(Arrays.asList((getResources().getStringArray(R.array.full_muscle_list))));
 
-        gender = prefs.getString("gender","Prometheus");
-        if(gender.equals("Prometheus")) {
-            diagramSetup(0);
-        }else{
-            diagramSetup(1);
-        }
-
         mRepository = new Repository(getActivity());
 
-
-
-
-        new AsyncTask<Void, Void, Void>() {
-            protected void onPreExecute() {
-                // Pre Code
-            }
-            protected Void doInBackground(Void... unused) {
-
-                Calendar cal = Calendar.getInstance();
-                Date date = cal.getTime();
-                String formattedDate = df.format(date);
-                LiftingWorkout mLiftingWorkout = AppDatabase.getAppDatabase(getActivity()).lwDAO().findByDate(formattedDate);
-                mLiftMaps = (ArrayList<LiftMap>) AppDatabase.getAppDatabase(getActivity()).lmDAO().getAll();
-                mNutritionDay = AppDatabase.getAppDatabase(getActivity()).ntDAO().findByDate(formattedDate);
-                for(int i=0; i<mNutritionDay.getGoalList().size(); i++){
-                    if(mNutritionDay.getGoalList().get(i).getGoalName().equals("Sets")){
-                        goalSets = (double) mNutritionDay.getGoalList().get(i).getGoalLimitLow();
-                        System.out.println("goal sets found: "+goalSets);
-                    }
-                }
-
-                weeksWorkouts.add(mLiftingWorkout);
-
-                while(cal.get(Calendar.DAY_OF_WEEK) != 2){
-                    cal.add(Calendar.DATE, -1);
-                    Date mDate = cal.getTime();
-                    String mformattedDate = df.format(mDate);
-                    System.out.println("task dates " + mformattedDate);
-                    LiftingWorkout mWorkout = AppDatabase.getAppDatabase(getActivity()).lwDAO().findByDate(mformattedDate);
-                    if(mWorkout != null) {
-                        weeksWorkouts.add(mWorkout);
-                    }
-
-                }
-
-                return null;
-            }
-            protected void onPostExecute(Void unused) {
-
-                // Post Code
-                otherStuff();
-            }
-        }.execute();
 
 
 
@@ -622,6 +571,55 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
     @Override
     public void onResume() {
         System.out.println("volume onReusme");
+        gender = prefs.getString("gender","Prometheus");
+        if(gender.equals("Prometheus")) {
+            diagramSetup(0);
+        }else{
+            diagramSetup(1);
+        }
+
+        new AsyncTask<Void, Void, Void>() {
+            protected void onPreExecute() {
+                // Pre Code
+            }
+            protected Void doInBackground(Void... unused) {
+
+                Calendar cal = Calendar.getInstance();
+                Date date = cal.getTime();
+                String formattedDate = df.format(date);
+                LiftingWorkout mLiftingWorkout = AppDatabase.getAppDatabase(getActivity()).lwDAO().findByDate(formattedDate);
+                mLiftMaps = (ArrayList<LiftMap>) AppDatabase.getAppDatabase(getActivity()).lmDAO().getAll();
+                mNutritionDay = AppDatabase.getAppDatabase(getActivity()).ntDAO().findByDate(formattedDate);
+                for(int i=0; i<mNutritionDay.getGoalList().size(); i++){
+                    if(mNutritionDay.getGoalList().get(i).getGoalName().equals("Sets")){
+                        goalSets = (double) mNutritionDay.getGoalList().get(i).getGoalLimitLow();
+                        System.out.println("goal sets found: "+goalSets);
+                    }
+                }
+
+                weeksWorkouts.add(mLiftingWorkout);
+
+                while(cal.get(Calendar.DAY_OF_WEEK) != 2){
+                    cal.add(Calendar.DATE, -1);
+                    Date mDate = cal.getTime();
+                    String mformattedDate = df.format(mDate);
+                    System.out.println("task dates " + mformattedDate);
+                    LiftingWorkout mWorkout = AppDatabase.getAppDatabase(getActivity()).lwDAO().findByDate(mformattedDate);
+                    if(mWorkout != null) {
+                        weeksWorkouts.add(mWorkout);
+                    }
+
+                }
+
+                return null;
+            }
+            protected void onPostExecute(Void unused) {
+
+                // Post Code
+                otherStuff();
+            }
+        }.execute();
+
         super.onResume();
     }
 

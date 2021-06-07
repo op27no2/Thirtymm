@@ -1588,6 +1588,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                 setDialogText(mActivityTypes.get(position), total);
                 setPaceAndCalText(mActivityTypes.get(position), total);
                 saveType = mActivityTypes.get(position);
+                edt.putInt("default_activity",position);
+                edt.apply();
             }
 
             @Override
@@ -1720,13 +1722,19 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         mEditTime1.addTextChangedListener(new TextWatcher(){
             @Override
             public void afterTextChanged(Editable s) {
-                if(s.length()==1){
-                    mEditTime2.requestFocus();
-                    finalTime = ((Integer.parseInt(mEditTime1.getText().toString())*60*60)+(Integer.parseInt(mEditTime2.getText().toString())*60)+(Integer.parseInt(mEditTime3.getText().toString())))*1000;
-
-                    // setDialogText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
-                    setPaceAndCalText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+                if(mEditTime1.getText().toString().equals("")){
+                    mEditTime1.setText("0");
                 }
+                if(!mEditTime1.getText().toString().equals("") && !mEditTime2.getText().toString().equals("") && !mEditTime3.getText().toString().equals("")) {
+                    if (s.length() == 1) {
+                        mEditTime2.requestFocus();
+                        finalTime = ((Integer.parseInt(mEditTime1.getText().toString()) * 60 * 60) + (Integer.parseInt(mEditTime2.getText().toString()) * 60) + (Integer.parseInt(mEditTime3.getText().toString()))) * 1000;
+
+                        // setDialogText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+                        setPaceAndCalText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+                    }
+                }
+
             }
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -1736,13 +1744,17 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         mEditTime2.addTextChangedListener(new TextWatcher(){
             @Override
             public void afterTextChanged(Editable s) {
-                if(s.length()==2) {
-                    mEditTime3.requestFocus();
+                if(mEditTime2.getText().toString().equals("")){
+                    mEditTime2.setText("00");
                 }
-                    finalTime = ((Integer.parseInt(mEditTime1.getText().toString())*60*60)+(Integer.parseInt(mEditTime2.getText().toString())*60)+(Integer.parseInt(mEditTime3.getText().toString())))*1000;
+                if(!mEditTime1.getText().toString().equals("") && !mEditTime2.getText().toString().equals("") && !mEditTime3.getText().toString().equals("")) {
+                    if (s.length() == 2) {
+                        mEditTime3.requestFocus();
+                    }
+                    finalTime = ((Integer.parseInt(mEditTime1.getText().toString()) * 60 * 60) + (Integer.parseInt(mEditTime2.getText().toString()) * 60) + (Integer.parseInt(mEditTime3.getText().toString()))) * 1000;
                     //  setDialogText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
                     setPaceAndCalText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
-
+                }
             }
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -1754,12 +1766,17 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         mEditTime3.addTextChangedListener(new TextWatcher(){
             @Override
             public void afterTextChanged(Editable s) {
-                if(s.length()==2) {
-                    mEditDistance.requestFocus();
+                if(mEditTime3.getText().toString().equals("")){
+                    mEditTime3.setText("00");
                 }
-                finalTime = ((Integer.parseInt(mEditTime1.getText().toString())*60*60)+(Integer.parseInt(mEditTime2.getText().toString())*60)+(Integer.parseInt(mEditTime3.getText().toString())))*1000;
-                //  setDialogText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
-                setPaceAndCalText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+                if(!mEditTime1.getText().toString().equals("") && !mEditTime2.getText().toString().equals("") && !mEditTime3.getText().toString().equals("")) {
+                    if (s.length() == 2) {
+                        mEditDistance.requestFocus();
+                    }
+                    finalTime = ((Integer.parseInt(mEditTime1.getText().toString()) * 60 * 60) + (Integer.parseInt(mEditTime2.getText().toString()) * 60) + (Integer.parseInt(mEditTime3.getText().toString()))) * 1000;
+                    //  setDialogText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+                    setPaceAndCalText(mActivityTypes.get(mSpinner.getSelectedItemPosition()), total);
+                }
             }
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
