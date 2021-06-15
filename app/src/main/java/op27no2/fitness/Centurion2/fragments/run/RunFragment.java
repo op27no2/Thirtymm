@@ -1,22 +1,30 @@
 package op27no2.fitness.Centurion2.fragments.run;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.appwidget.AppWidgetManager;
+import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -39,6 +47,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -110,9 +119,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
+import op27no2.fitness.Centurion2.Bluetooth.BluetoothHandler;
+import op27no2.fitness.Centurion2.Bluetooth.HeartRateMeasurement;
 import op27no2.fitness.Centurion2.Database.AppDatabase;
 import op27no2.fitness.Centurion2.Database.Repository;
 import op27no2.fitness.Centurion2.MainActivity;
@@ -186,6 +198,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private EditText mEditTitle;
     private TextView mTextviewDistanceUnits;
     private TextView mTextviewPaceUnits;
+    private TextView measurementValue;
+    private ImageView heartButton;
 
     private Integer saveTime;
     private float saveDistance;
@@ -209,7 +223,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private static final String REDIRECT_URI = "http://op27no2.fitness/callback/";
     private Boolean mapReady = false;
 
-
+    private static final int REQUEST_ENABLE_BT = 1;
+    private static final int ACCESS_LOCATION_REQUEST = 2;
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -239,6 +254,16 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
         // saveDate is the edittext field in the save dialog, start it initially as formattedDate. User can change. Formatted date used as todays date elsewhere.
         saveDate = formattedDate;
+
+        measurementValue = view.findViewById(R.id.heartrate);
+        heartButton = view.findViewById(R.id.heart);
+        heartButton.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View view) {
+
+           }
+         });
+
 
         settingsButton = (ImageView) view.findViewById(R.id.settings);
         settingsButton.setOnClickListener(new View.OnClickListener() {
@@ -441,8 +466,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         // loadOverlay = view.findViewById(R.id.load_overlay);
 
         getNutritionDayData();
-
-
 
 
 
@@ -810,6 +833,22 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     @Override
     public void onResume() {
         super.onResume();
+
+
+        getActivity().registerReceiver(locationServiceStateReceiver, new IntentFilter((LocationManager.MODE_CHANGED_ACTION)));
+        getActivity().registerReceiver(heartRateDataReceiver, new IntentFilter( BluetoothHandler.MEASUREMENT_HEARTRATE ));
+        if (BluetoothAdapter.getDefaultAdapter() != null) {
+            if (!isBluetoothEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            } else {
+                checkPermissions();
+            }
+        } else {
+            Timber.e("This device has no Bluetooth hardware");
+        }
+
+
         System.out.println("run fragment onResume");
         if(isMyServiceRunning(TimerService.class)){
             bindTimerService();
@@ -868,6 +907,116 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     public void onExplanationNeeded(List<String> permissionsToExplain) {
         Toast.makeText(getActivity(), "location permission is needed for gps feautres", Toast.LENGTH_LONG).show();
     }
+
+    //START BLUETOOTH FUNCTIONS
+
+    private final BroadcastReceiver locationServiceStateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action != null && action.equals(LocationManager.MODE_CHANGED_ACTION)) {
+                boolean isEnabled = areLocationServicesEnabled();
+                Timber.i("Location service state changed to: %s", isEnabled ? "on" : "off");
+                checkPermissions();
+            }
+        }
+    };
+
+    private final BroadcastReceiver heartRateDataReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            HeartRateMeasurement measurement = (HeartRateMeasurement) intent.getSerializableExtra(BluetoothHandler.MEASUREMENT_HEARTRATE_EXTRA);
+            if (measurement == null) return;
+
+            measurementValue.setText(String.format(Locale.ENGLISH, "%d", measurement.pulse));
+        }
+    };
+    private boolean areLocationServicesEnabled() {
+        LocationManager locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        if (locationManager == null) {
+            Timber.e("could not get location manager");
+            return false;
+        }
+
+        boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+        return isGpsEnabled || isNetworkEnabled;
+    }
+    private void checkPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            String[] missingPermissions = getMissingPermissions(getRequiredPermissions());
+            if (missingPermissions.length > 0) {
+                requestPermissions(missingPermissions, ACCESS_LOCATION_REQUEST);
+            } else {
+                permissionsGranted();
+            }
+        }
+    }
+    private String[] getMissingPermissions(String[] requiredPermissions) {
+        List<String> missingPermissions = new ArrayList<>();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            for (String requiredPermission : requiredPermissions) {
+                if (getApplicationContext().checkSelfPermission(requiredPermission) != PackageManager.PERMISSION_GRANTED) {
+                    missingPermissions.add(requiredPermission);
+                }
+            }
+        }
+        return missingPermissions.toArray(new String[0]);
+    }
+    private void permissionsGranted() {
+        // Check if Location services are on because they are required to make scanning work
+        if (checkLocationServices()) {
+            initBluetoothHandler();
+        }
+    }
+    private String[] getRequiredPermissions() {
+        int targetSdkVersion = getActivity().getApplicationInfo().targetSdkVersion;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && targetSdkVersion >= Build.VERSION_CODES.Q)
+            return new String[] {Manifest.permission.ACCESS_FINE_LOCATION};
+        else return new String[] {Manifest.permission.ACCESS_COARSE_LOCATION};
+    }
+    private boolean checkLocationServices() {
+        if (!areLocationServicesEnabled()) {
+            new AlertDialog.Builder(getActivity())
+                    .setTitle("Location services are not enabled")
+                    .setMessage("Scanning for Bluetooth peripherals requires locations services to be enabled.") // Want to enable?
+                    .setPositiveButton("Enable", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.cancel();
+                            startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                        }
+                    })
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // if this button is clicked, just close
+                            // the dialog box and do nothing
+                            dialog.cancel();
+                        }
+                    })
+                    .create()
+                    .show();
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private void initBluetoothHandler()
+    {
+        System.out.println("Bluetooth Handler has been called");
+        BluetoothHandler.getInstance(getApplicationContext());
+    }
+
+    private boolean isBluetoothEnabled() {
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(bluetoothAdapter == null) return false;
+
+        return bluetoothAdapter.isEnabled();
+    }
+
+    //END BLUETOOTH FUNCTIONS
 
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -1598,8 +1747,28 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             }
 
         });
+        mStravaCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                edt.putBoolean("default_stravacheck", isChecked );
+                edt.apply();
+            }
+        });
+        mStravaCheck.setChecked(prefs.getBoolean("default_stravacheck",true));
 
-      //  mEditPace.setText(getDuration(pace)+" /mi");
+        mMapCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                edt.putBoolean("default_mapcheck", isChecked );
+                edt.apply();
+            }
+        });
+        mMapCheck.setChecked(prefs.getBoolean("default_mapcheck",true));
+
+
+
+
+        //  mEditPace.setText(getDuration(pace)+" /mi");
 
         //TODO edit cals calc, setCals method?
       //  mEditCals.setText(Integer.toString(((int) Math.floor(total[0] *0.000621371192f*prefs.getInt("weight",215)*0.63))));

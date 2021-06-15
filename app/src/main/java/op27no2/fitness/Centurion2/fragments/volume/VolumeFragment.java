@@ -214,10 +214,6 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
         mRepository = new Repository(getActivity());
 
 
-
-
-
-
         return view;
     }
 
@@ -314,6 +310,8 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
                         imageViews.get(i).setColorFilter(argb(125, 0, 255, (255 - (int) Math.floor(2.55 * (vol) * 4))), PorterDuff.Mode.SRC_ATOP);
 
                     }
+                }else{
+                    System.out.println("muscle vol null "+i);
                 }
             }
             for (int i = 0; i < darray2.length; i++) {
@@ -444,6 +442,8 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
     public void diagramSetup(int type) {
         System.out.println("TYPE:" + type);
         //TODO just put this in XML and load asynchronously inflate
+        imageViews.clear();
+        imageViews2.clear();
 
         //set my frame with correct backgroundimage
         ImageView myFrame = (ImageView) view.findViewById(R.id.my_frame1);
@@ -565,12 +565,17 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
 
     @Override
     public void onPause() {
-        System.out.println("volume onPause");
+        System.out.println("volume onPause "+muscleVolumes.get(0));
         super.onPause();
     }
+
     @Override
     public void onResume() {
-        System.out.println("volume onReusme");
+        System.out.println("volume onReusme "+muscleVolumes.get(0));
+        muscleVolumes.clear();
+        weeksWorkouts.clear();
+        mVolume.clear();
+
         gender = prefs.getString("gender","Prometheus");
         if(gender.equals("Prometheus")) {
             diagramSetup(0);
@@ -596,7 +601,6 @@ public class VolumeFragment extends Fragment implements DialogVolumeMapnterface,
                         System.out.println("goal sets found: "+goalSets);
                     }
                 }
-
                 weeksWorkouts.add(mLiftingWorkout);
 
                 while(cal.get(Calendar.DAY_OF_WEEK) != 2){

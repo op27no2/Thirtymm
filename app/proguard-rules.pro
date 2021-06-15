@@ -19,3 +19,11 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-dontwarn rx.internal.util.**
+-dontwarn com.google.protobuf.**
+-keep class fi.polar.remote.representation.protobuf.** {public private protected *;}
+-keep class protocol.** {public private protected *;}
+-keep class data.** {public private protected *;}
+-keep class com.androidcommunications.polar.api.ble.model.** {public private protected *;}
+-keep class com.androidcommunications.polar.enpoints.ble.bluedroid.host.**

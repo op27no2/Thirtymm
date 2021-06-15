@@ -68,6 +68,8 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.maps.UiSettings;
+import com.mapbox.mapboxsdk.snapshotter.MapSnapshot;
 import com.mapbox.mapboxsdk.snapshotter.MapSnapshotter;
 import com.mapbox.mapboxsdk.style.layers.FillExtrusionLayer;
 import com.mapbox.mapboxsdk.style.layers.Layer;
@@ -191,6 +193,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     private Spinner mSpinner;
     private ArrayList<RunType> mActivityTypes = new ArrayList<RunType>();
     private RunType saveType;
+    final float[] total = new float[1];
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -203,7 +206,6 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         View view = inflater.inflate(R.layout.fragment_rundetail, container, false);
         rabbit = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
         timerText = view.findViewById(R.id.counttime);
-        distanceText = view.findViewById(R.id.distance);
         prefs = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
         globalFeatureList = getFeatureList();
@@ -265,7 +267,6 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         mEditTime3 = view.findViewById(R.id.duration_seconds);
         mSpinner = view.findViewById(R.id.type);
 
-
         lockWindowButton = view.findViewById(R.id.lock_window);
         lockWindowButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -273,10 +274,12 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                 if(lockWindowButton.getText().toString().equals("Unlock")){
                     //LOCK THE WINDOW
                     scrollView.setScrolling(false);
+                    mapboxMap.getUiSettings().setAllGesturesEnabled(true);
                     lockWindowButton.setText("Lock");
                 }else{
                     //UNLOCK THE WINDOW
                     scrollView.setScrolling(true);
+                    mapboxMap.getUiSettings().setAllGesturesEnabled(false);
                     lockWindowButton.setText("Unlock");
                 }
             }
@@ -447,13 +450,14 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
 
     @Override
-    public void onMapReady(@NonNull final MapboxMap mapboxMap) {
-        RunDetailFragment.this.mapboxMap = mapboxMap;
+    public void onMapReady(@NonNull final MapboxMap mBoxMap) {
+        RunDetailFragment.this.mapboxMap = mBoxMap;
 
+        mapboxMap.getUiSettings().setAllGesturesEnabled(false);
 
         // mapboxMap.setStyle(new Style.Builder().fromUri("mapbox://styles/op27no2/ck2tujbra2ox21cqzxh4ql48y"),new Style.OnStyleLoaded() {
         //  mapboxMap.setStyle(Style.OUTDOORS, new Style.OnStyleLoaded() {
-        mapboxMap.setStyle(new Style.Builder().fromUri("asset://mystyle.json"), new Style.OnStyleLoaded() {
+        mBoxMap.setStyle(new Style.Builder().fromUri("asset://mystyle.json"), new Style.OnStyleLoaded() {
             @Override
             public void onStyleLoaded(@NonNull Style style) {
                 enableLocationComponent(style);
@@ -462,7 +466,8 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                 //snapshotter
 
 
-
+                UiSettings uiSettings = mapboxMap.getUiSettings();
+                uiSettings.setCompassEnabled(false);
 
                 //listing layers
                 List<Layer> mlayers = style.getLayers();
@@ -482,7 +487,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
             }
         });
 
-        mapboxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {
+        mBoxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {
             @Override
             public boolean onMapClick(@NonNull LatLng point) {
                 trackBearing = false;
@@ -502,7 +507,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
             }
         });
 
-        mapboxMap.addOnMoveListener(new MapboxMap.OnMoveListener() {
+        mBoxMap.addOnMoveListener(new MapboxMap.OnMoveListener() {
             @Override
             public void onMoveBegin(@NonNull MoveGestureDetector detector) {
                 trackBearing = false;
@@ -1442,7 +1447,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                 total[0] = Float.parseFloat(s.toString());
                 System.out.println("total = "+total[0]);
                 saveCals = (((int) Math.floor(total[0]*prefs.getInt("weight",215)*0.63f)));
-                System.out.println("save Cals = "+saveCals);
+                System.out.println("save Cals = "+ave);
                 mEditCals.setText(Integer.toString(saveCals));
             }
         });
@@ -1664,8 +1669,11 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     public void saveRun(Bitmap bMap){
         //TODO MAKE SURE WE ARE GETTING ALL THESE LIKE RUN IS
         saveDate = mText4.getText().toString();
-        saveTime = getIntFromDuration(mEditDuration.getText().toString());
-        saveDistance = (int) Math.floor(Float.parseFloat(mEditDistance.getText().toString()) * 1609.34400);
+       // saveTime = getIntFromDuration(mEditDuration.getText().toString());
+        saveTime = 1000*((Integer.parseInt(mEditTime1.getText().toString())*60*60)+(Integer.parseInt(mEditTime2.getText().toString())*60)+(Integer.parseInt(mEditTime3.getText().toString())));
+        //saveDistance = (int) Math.floor(Float.parseFloat(mEditDistance.getText().toString()) * 1609.34400);
+        saveDistance = total[0];
+
         saveCals = Integer.parseInt(mEditCals.getText().toString());
         saveDescription = mEditDescription.getText().toString();
         saveTitle = mEditTitle.getText().toString();
@@ -1701,6 +1709,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
 
 
+/*
     private void startSnapShot() {
         MapboxMap.SnapshotReadyCallback snapCallback = new MapboxMap.SnapshotReadyCallback() {
             @Override
@@ -1710,7 +1719,40 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         };
         mapboxMap.snapshot(snapCallback);
     }
+*/
 
+    private void startSnapShot() {
+        Style.Builder builder1 = new Style.Builder()
+                .fromUri(mapboxMap.getStyle().getUri())
+                .withSource(new GeoJsonSource("line-source",
+                        FeatureCollection.fromFeatures(new Feature[]{Feature.fromGeometry(
+                                LineString.fromLngLats(routeCoordinates)
+                        )})))
+                .withLayer(new LineLayer("linelayer", "line-source").withProperties(
+                        lineWidth(5f),
+                        lineColor(Color.parseColor("#e55e5e"))
+                ));
+
+        MapSnapshotter.Options snapShotOptions = new MapSnapshotter.Options(500, 500)
+                .withCameraPosition(mapboxMap.getCameraPosition())
+                .withRegion(mapboxMap.getProjection().getVisibleRegion().latLngBounds)
+                .withStyleBuilder(builder1);
+
+        mapSnapshotter = new MapSnapshotter(getActivity(), snapShotOptions);
+
+        mapSnapshotter.start(new MapSnapshotter.SnapshotReadyCallback() {
+            @Override
+            public void onSnapshotReady(MapSnapshot snapshot) {
+                // Display, share, or use bitmap image how you'd like
+                System.out.println("ss ready");
+                Bitmap bitmapImage = snapshot.getBitmap();
+                saveRun(bitmapImage);
+
+            }
+        });
+
+
+    }
 
     public String saveBitmap(Bitmap bitmapImage, String filename){
             ContextWrapper cw = new ContextWrapper(getApplicationContext());
@@ -1821,7 +1863,6 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                     mRepository.insertNutrition(mNutritionDay);
                 } else {
                     System.out.println("found Day get names/values");
-
                 }
 
                 //populate a list with all days up to current that shouldn't change like mNutritionDay and formattedDate, this async is called onResume and on date change
@@ -1925,7 +1966,6 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
             long pace = (long) (duration / (distance * 0.000621371192f));
 
             RunType mActivityType = mRunWorkout.getWorkoutType();
-            float[] total = new float[1];
             total[0] = distance;
 
             setDialogText(mActivityType,total);
