@@ -15,15 +15,14 @@
 
         <TextView
             android:id="@+id/toolbar_title"
-            android:layout_marginLeft="16dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Run Detail"
-            android:textSize="20sp"
-            android:textColor="#FFFFFF"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
-            />
+            android:layout_marginLeft="16dp"
+            android:text="Workout Detail"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp" />
 
         <ImageView
             android:id="@+id/save"
@@ -561,13 +560,8 @@
 
     </androidx.cardview.widget.CardView>
 
-
-
-
-
-
     <androidx.cardview.widget.CardView
-        android:id="@+id/card_view"
+        android:id="@+id/card_view_map"
         android:layout_below="@+id/card_view_stats"
         xmlns:card_view="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
@@ -585,226 +579,6 @@
         android:visibility="gone"
         >
 
-    <!--<FrameLayout
-        android:id="@+id/frame"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-    <com.mapbox.mapboxsdk.maps.MapView
-        android:layout_below="@+id/toolbar"
-        android:id="@+id/mapView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-        <RelativeLayout
-            android:id="@+id/relative"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-        <ImageView
-            android:id="@+id/locate"
-            android:padding="15dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:layout_margin="10dp"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:elevation="5dp"
-            android:layout_gravity="center"
-            android:background="@drawable/circle_white_plain"
-            android:gravity="center"
-            android:clickable="true"
-            android:src="@drawable/ic_gps_fixed"
-            />
-            <ImageView
-                android:id="@+id/edit_map"
-                android:padding="15dp"
-                android:layout_above="@+id/locate"
-                android:layout_alignParentRight="true"
-                android:layout_margin="10dp"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:elevation="5dp"
-                android:layout_gravity="center"
-                android:background="@drawable/circle_white_plain"
-                android:gravity="center"
-                android:clickable="true"
-                android:src="@android:drawable/ic_menu_edit"
-                />
-
-            <ImageView
-                android:id="@+id/view_angle"
-                android:padding="15dp"
-                android:layout_above="@+id/view_rotation"
-                android:layout_alignParentRight="true"
-                android:layout_marginRight="10dp"
-                android:layout_marginLeft="5dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="5dp"
-                android:layout_width="22dp"
-                android:layout_height="280dp"
-                android:background="#FFFFFF"
-                android:elevation="5dp"
-                android:clickable="true"
-                android:src="@android:drawable/ic_menu_rotate"
-                />
-
-
-            <ImageView
-                android:id="@+id/view_zoom"
-                android:padding="15dp"
-                android:layout_above="@+id/view_rotation"
-                android:layout_toLeftOf="@id/view_angle"
-                android:layout_marginRight="5dp"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="5dp"
-                android:layout_width="22dp"
-                android:layout_height="280dp"
-                android:background="#FFFFFF"
-                android:elevation="5dp"
-                android:clickable="true"
-                android:src="@android:drawable/ic_menu_rotate"
-                />
-
-            <ImageView
-                android:id="@+id/zoom_bar"
-                android:padding="15dp"
-                android:layout_above="@+id/view_rotation"
-                android:layout_toLeftOf="@id/view_angle"
-                android:layout_marginRight="5dp"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="5dp"
-                android:layout_width="22dp"
-                android:layout_height="2dp"
-                android:background="@color/colorPrimary"
-                android:elevation="5dp"
-                android:clickable="true"
-                android:src="@android:drawable/ic_menu_rotate"
-                />
-
-
-            <ImageView
-                android:id="@+id/erase_button"
-                android:rotation="270"
-                android:padding="15dp"
-                android:layout_below="@+id/extrude_button"
-                android:layout_alignParentLeft="true"
-                android:layout_margin="10dp"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:elevation="5dp"
-                android:layout_gravity="center"
-                android:background="@drawable/circle_white_plain"
-                android:gravity="center"
-                android:clickable="true"
-                android:src="@android:drawable/ic_menu_close_clear_cancel"
-                />
-
-            <ImageView
-                android:id="@+id/extrude_button"
-                android:rotation="270"
-                android:padding="15dp"
-                android:layout_alignParentLeft="true"
-                android:layout_margin="10dp"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:elevation="5dp"
-                android:layout_gravity="center"
-                android:background="@drawable/circle_white_plain"
-                android:gravity="center"
-                android:clickable="true"
-                android:src="@android:drawable/ic_menu_sort_by_size"
-                />
-
-
-
-            <com.rilixtech.materialfancybutton.MaterialFancyButton
-                android:id="@+id/lock_window"
-                android:layout_alignParentBottom="true"
-                android:layout_toRightOf="@+id/start_run"
-                android:layout_width="100dp"
-                android:layout_height="50dp"
-                android:layout_margin="10dp"
-                android:paddingBottom="5dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:paddingTop="5dp"
-                android:elevation="5dp"
-                fancy:mfb_borderColor="@color/black"
-                fancy:mfb_borderWidth="1dp"
-                fancy:mfb_defaultColor="@color/white"
-                fancy:mfb_focusColor="@color/colorPrimaryDark"
-                fancy:mfb_iconFont="fontawesome.ttf"
-                fancy:mfb_iconPosition="left"
-                fancy:mfb_radius="1dp"
-                fancy:mfb_textSize="18sp"
-                fancy:mfb_text="Unlock"
-                fancy:mfb_textColor="@color/black" />
-
-            <ImageView
-                android:id="@+id/view_rotation"
-                android:padding="15dp"
-                android:layout_toLeftOf="@+id/view_rotation2"
-                android:layout_above="@+id/edit_map"
-                android:layout_marginRight="5dp"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="10dp"
-                android:layout_width="22dp"
-                android:layout_height="40dp"
-                android:background="#FFFFFF"
-                android:elevation="5dp"
-                android:clickable="true"
-                android:src="@android:drawable/ic_menu_rotate"
-                />
-            <ImageView
-                android:id="@+id/view_rotation2"
-                android:padding="15dp"
-                android:layout_alignParentRight="true"
-                android:layout_above="@+id/edit_map"
-                android:layout_marginRight="10dp"
-                android:layout_marginLeft="5dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="10dp"
-                android:layout_width="22dp"
-                android:layout_height="40dp"
-                android:background="#FFFFFF"
-                android:elevation="5dp"
-                android:clickable="true"
-                android:src="@android:drawable/ic_menu_rotate"
-                />
-
-
-            <TextView
-                android:id="@+id/counttime"
-                android:layout_centerHorizontal="true"
-                android:layout_width="wrap_content"
-                android:gravity="center"
-                android:text="0:00"
-                android:textSize="70sp"
-                android:background="@android:color/transparent"
-                android:textColor="@color/colorPrimary"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:id="@+id/distance"
-                android:layout_below="@+id/counttime"
-                android:layout_centerHorizontal="true"
-                android:layout_width="wrap_content"
-                android:gravity="center"
-                android:text=""
-                android:textSize="30sp"
-                android:background="@android:color/transparent"
-                android:textColor="@color/colorPrimary"
-                android:layout_height="wrap_content" />
-
-
-
-
-    </RelativeLayout>
-    </FrameLayout>-->
         <FrameLayout
             android:id="@+id/frame"
             android:layout_below="@+id/toolbar"
@@ -817,13 +591,6 @@
                 android:background="@color/lightgrey"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
-
-            <!--    <ImageView
-                    android:id="@+id/load_overlay"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@color/lightgrey"
-                    />-->
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -1042,7 +809,8 @@
                     android:textColor="@color/colorPrimary"
                     android:layout_height="wrap_content" />
 
-                <TextView
+  <!--             distance overlay on map, not currently used
+                    <TextView
                     android:id="@+id/distance"
                     android:layout_below="@+id/counttime"
                     android:layout_centerHorizontal="true"
@@ -1052,7 +820,7 @@
                     android:textSize="30sp"
                     android:background="@android:color/transparent"
                     android:textColor="@color/colorPrimary"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content" />-->
 
 
             </RelativeLayout>
@@ -1060,6 +828,57 @@
         </FrameLayout>
     </androidx.cardview.widget.CardView>
 
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_view_heartrate"
+        android:layout_below="@+id/card_view_map"
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="2dp"
+        android:layout_marginRight="2dp"
+        card_view:cardBackgroundColor="#FFFFFF"
+        card_view:contentPadding="10dp"
+        card_view:cardCornerRadius="5dp"
+        card_view:cardElevation="2dp"
+        card_view:cardMaxElevation="2dp"
+        card_view:cardUseCompatPadding="true"
+        android:clickable="true"
+        android:foreground="?android:attr/selectableItemBackground"
+        >
+
+        <com.github.mikephil.charting.charts.CombinedChart
+            android:id="@+id/heartrate_line_chart"
+            android:layout_width="match_parent"
+            android:layout_height="200dp" />
+
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_view_heartratepie"
+        android:layout_below="@+id/card_view_heartrate"
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="2dp"
+        android:layout_marginRight="2dp"
+        card_view:cardBackgroundColor="#FFFFFF"
+        card_view:contentPadding="10dp"
+        card_view:cardCornerRadius="5dp"
+        card_view:cardElevation="2dp"
+        card_view:cardMaxElevation="2dp"
+        card_view:cardUseCompatPadding="true"
+        android:clickable="true"
+        android:foreground="?android:attr/selectableItemBackground"
+        >
+
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/heartrate_pie_chart"
+            android:layout_width="match_parent"
+            android:layout_height="200dp" />
+
+
+    </androidx.cardview.widget.CardView>
 
 </RelativeLayout>
 </op27no2.fitness.Centurion2.FancyScrollView>

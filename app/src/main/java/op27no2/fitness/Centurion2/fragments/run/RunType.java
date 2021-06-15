@@ -7,10 +7,13 @@ import androidx.room.PrimaryKey;
 @Entity(tableName = "runtypes")
 public class RunType {
 
-    public RunType(String name, Boolean active) {
+    public RunType(String name, Boolean active, Double calBurnValue, Integer calBurnUnit, Integer paceUnits, Integer distanceUnits) {
         mName = name;
         mActive = active;
-
+        mCalBurnValue = calBurnValue;
+        mCalBurnUnit = calBurnUnit;
+        mPaceUnits = paceUnits;
+        mDistanceUnits = distanceUnits;
     }
 
     @PrimaryKey(autoGenerate = true)
@@ -23,17 +26,17 @@ public class RunType {
     private Boolean mActive = true;
 
     @ColumnInfo(name = "burnvalue")
-    private Double calBurnValue;
+    private Double mCalBurnValue;
 
     @ColumnInfo(name = "burnunit")
-    private Integer calBurnUnit;
+    private Integer mCalBurnUnit;
 
     @ColumnInfo(name = "paceunits")
-    private Integer paceUnits;
+    private Integer mPaceUnits;
     //pace value is calculated
 
     @ColumnInfo(name = "distanceunits")
-    private Integer distanceUnits;
+    private Integer mDistanceUnits;
 
     public void setUid(int id) {
         uid = id;
@@ -57,31 +60,31 @@ public class RunType {
     }
 
     public void setCalBurnValue(Double bv){
-        calBurnValue = bv;
+        mCalBurnValue = bv;
     }
     public Double getCalBurnValue(){
-        return calBurnValue;
+        return mCalBurnValue;
     }
 
     public void setCalBurnUnit(Integer bu){
-        calBurnUnit = bu;
+        mCalBurnUnit = bu;
     }
     public Integer getCalBurnUnit(){
-        return calBurnUnit;
+        return mCalBurnUnit;
     }
 
     public void setPaceUnits(Integer pu){
-        paceUnits = pu;
+        mPaceUnits = pu;
     }
     public Integer getPaceUnits(){
-        return paceUnits;
+        return mPaceUnits;
     }
 
     public void setDistanceUnits(Integer du){
-        distanceUnits = du;
+        mDistanceUnits = du;
     }
     public Integer getDistanceUnits(){
-        return distanceUnits;
+        return mDistanceUnits;
     }
 
     @Override

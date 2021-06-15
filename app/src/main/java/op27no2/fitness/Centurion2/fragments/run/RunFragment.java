@@ -90,6 +90,7 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.maps.UiSettings;
 import com.mapbox.mapboxsdk.snapshotter.MapSnapshot;
 import com.mapbox.mapboxsdk.snapshotter.MapSnapshotter;
 import com.mapbox.mapboxsdk.style.layers.FillExtrusionLayer;
@@ -170,7 +171,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private TextView distanceText;
     private ImageView edit;
     private long startTime;
-    private TimerService timerService;
+    private RunService timerService;
     private Intent timerIntent;
     private SharedPreferences prefs;
     private SharedPreferences.Editor edt;
@@ -255,6 +256,29 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         // saveDate is the edittext field in the save dialog, start it initially as formattedDate. User can change. Formatted date used as todays date elsewhere.
         saveDate = formattedDate;
 
+        //set up activity types on first run, cause spinner needs them
+        if(prefs.getBoolean("setup_run_type1", true) == true) {
+            System.out.println("first setup Run Settings");
+            RunType mtype1 = new RunType("Running", true, 0.62,1,0,0);
+            RunType mtype2 = new RunType("Rowing", true, 0.5, 1, 2, 1);
+            RunType mtype3 = new RunType("Walking", true, 0.3,1,0,0);
+            mRepository.insertRunType(mtype1);
+            mRepository.insertRunType(mtype2);
+            mRepository.insertRunType(mtype3);
+
+            RunType mtype4 = new RunType("Cycling", false, 0.3, 1, 4, 0);
+            RunType mtype5 = new RunType("Kayaking", false, 2.38,3, 3, 0);
+            RunType mtype6 = new RunType("Intervals", false, 0.63, 1,0,0);
+            RunType mtype7 = new RunType("Hiking", false, 0.33,1,0,0);
+            mRepository.insertRunType(mtype4);
+            mRepository.insertRunType(mtype5);
+            mRepository.insertRunType(mtype6);
+            mRepository.insertRunType(mtype7);
+
+            edt.putBoolean("setup_run_type1", false);
+            edt.commit();
+        }
+
         measurementValue = view.findViewById(R.id.heartrate);
         heartButton = view.findViewById(R.id.heart);
         heartButton.setOnClickListener(new View.OnClickListener() {
@@ -290,7 +314,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             public void onNothingSelected(AdapterView<?> parentView) {
 
             }
-
         });
 
         mapView = view.findViewById(R.id.mapView);
@@ -473,43 +496,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     }
 
 
-/*
-    private Handler handler = new Handler();
-    private Runnable runnable = new Runnable() {
-        @Override
-        public void run() {
-            updateTime();
-            handler.postDelayed(this, 100);
-        }
-    };
-*/
-
-/*    public void updateTime() {
-
-        long elapsedTime = System.currentTimeMillis() - startTime;
-        long micro = elapsedTime / 100000;
-        long elapsedSeconds = elapsedTime / 1000;
-        long secondsDisplay = elapsedSeconds % 60;
-        long elapsedMinutes = elapsedSeconds / 60;
-        long minutesDisplay = elapsedMinutes % 60;
-        if (secondsDisplay < 10) {
-            timerText.setText(minutesDisplay + ":0" + secondsDisplay);
-        } else {
-            timerText.setText(minutesDisplay + ":" + secondsDisplay);
-        }
-
-        LocationComponent locationComponent = mapboxMap.getLocationComponent();
-        Location mloc = locationComponent.getLastKnownLocation();
-        routeCoordinates.add(Point.fromLngLat(mloc.getLongitude(), mloc.getLatitude(), mloc.getAltitude()));
-        System.out.println(routeCoordinates.get(routeCoordinates.size() - 1));
-        try {
-            updateLine();
-        } catch (JSONException e) {
-            e.printStackTrace();
-            System.out.println("JSON error: " + e.getMessage());
-        }
-    }*/
-
     public void startRun() {
         //used for bearing updates
         isPaused = false;
@@ -520,7 +506,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         startTime = System.currentTimeMillis();
 
         //start timer service
-        timerIntent = new Intent(getActivity(), TimerService.class);
+        timerIntent = new Intent(getActivity(), RunService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             System.out.println("start foreground service (act)");
             getActivity().startForegroundService(timerIntent);
@@ -624,6 +610,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
     @Override
     public void onMapReady(@NonNull final MapboxMap mapboxMap) {
+        System.out.println("on map ready");
+
         RunFragment.this.mapboxMap = mapboxMap;
       //  loadOverlay.setVisibility(View.GONE);
         mapReady = true;
@@ -636,11 +624,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                 System.out.println("map ready style loaded");
                 enableLocationComponent(style);
                 mStyle = style;
-
-                //snapshotter
-
-
-
+                UiSettings uiSettings = mapboxMap.getUiSettings();
+                uiSettings.setCompassEnabled(false);
 
                 //listing layers
                 List<Layer> mlayers = style.getLayers();
@@ -850,11 +835,12 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
 
         System.out.println("run fragment onResume");
-        if(isMyServiceRunning(TimerService.class)){
+        if(isMyServiceRunning(RunService.class)){
             bindTimerService();
         }
         mapView.onResume();
         if(RunFragment.this.mapboxMap == null) {
+            System.out.println("get map async");
             mapView.getMapAsync(this);
         }
 
@@ -866,8 +852,10 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         super.onPause();
         System.out.println("run fragment paused");
     //    loadOverlay.setVisibility(View.VISIBLE);
+        getActivity().unregisterReceiver(heartRateDataReceiver);
+        getActivity().unregisterReceiver(locationServiceStateReceiver);
 
-        if(isMyServiceRunning(TimerService.class)){
+        if(isMyServiceRunning(RunService.class)){
             unbindTimerService();
         }
         mapView.onPause();
@@ -1024,7 +1012,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
 
-            TimerService.GPSBinder binder = (TimerService.GPSBinder) service;
+            RunService.GPSBinder binder = (RunService.GPSBinder) service;
             timerService = binder.getService();
             edt.putBoolean("bound", true);
             edt.commit();
@@ -1057,7 +1045,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     }
 
     private void bindTimerService() {
-        timerIntent = new Intent(getActivity(), TimerService.class);
+        timerIntent = new Intent(getActivity(), RunService.class);
         getActivity().bindService(timerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 

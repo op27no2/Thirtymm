@@ -37,6 +37,28 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
+import com.github.mikephil.charting.animation.Easing;
+import com.github.mikephil.charting.charts.CombinedChart;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.CombinedData;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.data.PieData;
+import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.formatter.PercentFormatter;
+import com.github.mikephil.charting.utils.ColorTemplate;
+import com.github.mikephil.charting.utils.MPPointF;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -92,6 +114,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import op27no2.fitness.Centurion2.Database.AppDatabase;
 import op27no2.fitness.Centurion2.Database.Repository;
@@ -135,7 +158,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     private TextView distanceText;
     private ImageView edit;
     private long startTime;
-    private TimerService timerService;
+    private RunService timerService;
     private Intent notifyMeIntent;
     private SharedPreferences prefs;
     private SharedPreferences.Editor edt;
@@ -194,7 +217,8 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     private ArrayList<RunType> mActivityTypes = new ArrayList<RunType>();
     private RunType saveType;
     final float[] total = new float[1];
-
+    private CombinedChart heartRateCombinedChart;
+    private PieChart heartRatePieChart;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -266,6 +290,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         mEditTime2 = view.findViewById(R.id.duration_minutes);
         mEditTime3 = view.findViewById(R.id.duration_seconds);
         mSpinner = view.findViewById(R.id.type);
+
 
         lockWindowButton = view.findViewById(R.id.lock_window);
         lockWindowButton.setOnClickListener(new View.OnClickListener() {
@@ -371,19 +396,158 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         zoom1.setOnTouchListener(handleZoom);
 
         scrollView = view.findViewById(R.id.scroll_view);
-        mCardView = view.findViewById(R.id.card_view);
+        mCardView = view.findViewById(R.id.card_view_map);
 
+        //START CHART SETUP
+        //START CHART SETUP
+        heartRateCombinedChart = view.findViewById(R.id.heartrate_line_chart);
+        heartRateCombinedChart.getDescription().setEnabled(false);
+        heartRateCombinedChart.getLegend().setEnabled(false);
+        heartRateCombinedChart.setBackgroundColor(Color.WHITE);
+        heartRateCombinedChart.setDrawGridBackground(false);
+        heartRateCombinedChart.setDrawBarShadow(false);
+        heartRateCombinedChart.setHighlightFullBarEnabled(false);
+        // draw bars behind lines
+        heartRateCombinedChart.setDrawOrder(new CombinedChart.DrawOrder[]{
+                CombinedChart.DrawOrder.BAR, CombinedChart.DrawOrder.LINE
+        });
+   /*     Legend l = heartRateCombinedChart.getLegend();
+        l.setWordWrapEnabled(true);
+        l.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
+        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
+        l.setOrientation(Legend.LegendOrientation.HORIZONTAL);
+        l.setDrawInside(false);*/
+
+        YAxis rightAxis = heartRateCombinedChart.getAxisRight();
+        rightAxis.setDrawGridLines(false);
+        rightAxis.setAxisMinimum(100f); // this replaces setStartAtZero(true)
+        rightAxis.setAxisMaximum(200f); // this replaces setStartAtZero(true)
+
+        YAxis leftAxis = heartRateCombinedChart.getAxisLeft();
+        leftAxis.setDrawGridLines(false);
+        leftAxis.setAxisMinimum(100f); // this replaces setStartAtZero(true)
+        leftAxis.setAxisMaximum(200f); // this replaces setStartAtZero(true)
+
+        XAxis xAxis = heartRateCombinedChart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTH_SIDED);
+        xAxis.setAxisMinimum(0f);
+        xAxis.setGranularity(1f);
+        //TODO what does this do looks deprecated
+    /*    xAxis.setValueFormatter(new IAxisValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                return months[(int) value % months.length];
+
+            }
+        });
+*/
+        CombinedData data = new CombinedData();
+        data.setData(generateLineData());
+        data.setData(generateBarData());
+
+        xAxis.setAxisMaximum(data.getXMax() + 0.25f);
+
+        heartRateCombinedChart.animateY(1000, Easing.EaseInOutQuad);
+        heartRateCombinedChart.setData(data);
+        heartRateCombinedChart.invalidate();
+
+
+        heartRatePieChart = view.findViewById(R.id.heartrate_pie_chart);
+        heartRatePieChart.getDescription().setEnabled(false);
+        heartRatePieChart.setRotationAngle(180);
+        heartRatePieChart.setMaxAngle(180f);
+        heartRatePieChart.animateY(1400, Easing.EaseInOutQuad);
+        heartRatePieChart.setEntryLabelColor(Color.WHITE);
+        heartRatePieChart.setEntryLabelTextSize(12f);
+        heartRatePieChart.setData(generatePieData());
+        heartRatePieChart.setExtraOffsets(0,0,0,-100);
+        heartRatePieChart.invalidate();
+
+
+        //END CHART SETUP
+        //END CHART SETUP
 
         getNutritionDayData();
         getRunWorkoutData();
-
-
-
-
         return view;
     }
 
+    private int getRandom(int min, int max){
+        return ThreadLocalRandom.current().nextInt(min, max + 1);
+    }
 
+    private PieData generatePieData() {
+        PieData d = new PieData();
+        // NOTE: The order of the entries when being added to the entries array determines their position around the center of
+        // the chart.
+        ArrayList<PieEntry> entries = new ArrayList<>();
+        for (int i = 0; i < 4 ; i++) {
+            entries.add(new PieEntry((float) (getRandom(10,1000)),"Zone "+(i+1)));
+        }
+
+        PieDataSet dataSet = new PieDataSet(entries,"HR");
+        dataSet.setDrawIcons(false);
+        dataSet.setSliceSpace(3f);
+        dataSet.setIconsOffset(new MPPointF(0, 40));
+        dataSet.setSelectionShift(5f);
+        dataSet.setColors(Color.argb(200,18, 196, 0), Color.argb(200,252, 251, 87), Color.argb(200, 255, 186, 33), Color.argb(200,255, 0, 0));
+
+        d.setValueFormatter(new PercentFormatter());
+        d.setValueTextSize(11f);
+        d.setValueTextColor(Color.WHITE);
+        d.addDataSet(dataSet);
+        return d;
+    }
+
+    private LineData generateLineData() {
+
+        LineData d = new LineData();
+
+        ArrayList<Entry> entries = new ArrayList<>();
+
+        for (int index = 0; index < 100; index++) {
+            entries.add(new Entry(index + 0.5f,getRandom(150,190)));
+        }
+        LineDataSet set = new LineDataSet(entries, "Line DataSet");
+        set.setColor(Color.rgb(0, 0, 0));
+        set.setDrawCircles(false);
+        set.setLineWidth(1.5f);
+        set.setFillColor(Color.rgb(255, 255, 255));
+        set.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+        set.setDrawValues(false);
+
+        set.setAxisDependency(YAxis.AxisDependency.LEFT);
+        d.addDataSet(set);
+
+        return d;
+    }
+
+    private BarData generateBarData() {
+
+        ArrayList<BarEntry> entries2 = new ArrayList<>();
+
+        for (int index = 0; index < 100; index++) {
+            // stacked
+            entries2.add(new BarEntry(index, new float[]{130, 20, 20, 30}));
+        }
+
+        BarDataSet set1 = new BarDataSet(entries2, "");
+        set1.setStackLabels(new String[]{"Stack 1", "Stack 2"});
+        set1.setColors(Color.argb(77,18, 196, 0), Color.argb(77,252, 251, 87), Color.argb(77,255, 186, 33), Color.argb(77,255, 0, 0));
+        set1.setDrawValues(false);
+        /*set1.setValueTextColor(Color.rgb(61, 165, 255));
+        set1.setValueTextSize(10f);*/
+        set1.setAxisDependency(YAxis.AxisDependency.LEFT);
+
+        float groupSpace = 0.06f;
+        float barSpace = 0.02f; // x2 dataset
+        float barWidth = 1f; // x2 dataset
+
+        BarData d = new BarData(set1);
+        d.setBarWidth(barWidth);
+
+        return d;
+    }
 
 
 
@@ -422,8 +586,8 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
             total = total + distance[0];
         }
-        distanceText.setText(getMiles(total));
-
+        //TODO DECIDE IF WE WANT DISTANCE TEXT HERE
+     //   distanceText.setText(getMiles(total));
 
 
         }

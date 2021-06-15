@@ -6,8 +6,9 @@ public class TrackedPoint {
 private long timestamp;
 private Point point;
 private double distance;
+private int heartrate;
 
-    public TrackedPoint(long time, Point pnt, double totaldistance){
+    public TrackedPoint(long time, Point pnt, double totaldistance, int heartrate){
         timestamp = time;
         point = pnt;
         distance = totaldistance;
@@ -31,6 +32,11 @@ public void setDistance(Double dist){
 public double getDistance(){
         return distance;
     }
-
+public void setHeartRate(int hr){
+    heartrate = hr;
+}
+public double getHeartRate(){
+    return heartrate;
+}
 
 }

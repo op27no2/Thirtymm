@@ -1,13 +1,21 @@
 package op27no2.fitness.Centurion2.fragments.run;
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
@@ -25,10 +33,18 @@ import com.google.android.gms.location.LocationServices;
 import com.mapbox.geojson.Point;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
+import op27no2.fitness.Centurion2.Bluetooth.BluetoothHandler;
+import op27no2.fitness.Centurion2.Bluetooth.HeartRateMeasurement;
 import op27no2.fitness.Centurion2.R;
+import timber.log.Timber;
 
-public class TimerService extends Service  {
+import static androidx.core.app.ActivityCompat.requestPermissions;
+import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
+
+public class RunService extends Service  {
     private SharedPreferences prefs;
     private SharedPreferences.Editor edt;
 
@@ -56,6 +72,9 @@ public class TimerService extends Service  {
     private double minalt = 1000000;
     private boolean paused = false;
     private boolean smoothInput = true;
+    private static final int ACCESS_LOCATION_REQUEST = 2;
+    private int heartrate = 0;
+
 
     public void registerCallBack(TimerInterface myCallback){
         this.myCallback= myCallback;
@@ -78,8 +97,8 @@ public class TimerService extends Service  {
 
     public class GPSBinder extends Binder {
 
-        public TimerService getService(){
-            return TimerService.this;
+        public RunService getService(){
+            return RunService.this;
         }
     }
 
@@ -154,6 +173,7 @@ public class TimerService extends Service  {
                 .build();
         startForeground(ID_SERVICE, notification);
 
+        registerReceiver(heartRateDataReceiver, new IntentFilter( BluetoothHandler.MEASUREMENT_HEARTRATE ));
 
     }
 
@@ -213,14 +233,16 @@ public class TimerService extends Service  {
                     System.out.println("z x mps: "+distance[0]/timeDif);
                     totalDistance = totalDistance+ distance[0];
                     routeCoordinates.add(Point.fromLngLat(lon, lat, alt));
-                    //trackpoints same but with time, switching over in order to upload TCX???
-                    trackPoints.add(new TrackedPoint(System.currentTimeMillis(),Point.fromLngLat(lon, lat, alt), totalDistance));
+
+                    //trackedpoints same as coords but with time, total distance, and HR, switching over in order to upload TCX, redundant at the moment!
+                    //Also different from 'trackpoints' which are the formal structure we upload in TCX helper. This makes that conversion easier
+                    trackPoints.add(new TrackedPoint(System.currentTimeMillis(),Point.fromLngLat(lon, lat, alt), totalDistance, heartrate));
                 }
 
             }else {
                 routeCoordinates.add(Point.fromLngLat(lon, lat, alt));
-                //trackpoints same but with time, switching over in order to upload TCX???
-                trackPoints.add(new TrackedPoint(System.currentTimeMillis(),Point.fromLngLat(lon, lat, alt), totalDistance));
+                //trackedpoints same as coords but with time, total distance, and HR, switching over in order to upload TCX, redundant at the moment!
+                trackPoints.add(new TrackedPoint(System.currentTimeMillis(),Point.fromLngLat(lon, lat, alt), totalDistance, heartrate));
             }
 
             System.out.println("total Distance: "+ totalDistance);
@@ -238,6 +260,7 @@ public class TimerService extends Service  {
     @Override
     public void onDestroy() {
         System.out.println("service onDestroy");
+        this.unregisterReceiver(heartRateDataReceiver);
 
         handler.removeCallbacks((runnable));
         if (mFusedLocationClient != null) {
@@ -247,6 +270,44 @@ public class TimerService extends Service  {
         edt.putBoolean("service_running", false);
         edt.commit();
     }
+
+
+
+
+
+
+
+
+
+
+    //BLUETOOTH ADDITIONS START
+    private final BroadcastReceiver heartRateDataReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            HeartRateMeasurement measurement = (HeartRateMeasurement) intent.getSerializableExtra(BluetoothHandler.MEASUREMENT_HEARTRATE_EXTRA);
+            if (measurement == null) return;
+            heartrate =    measurement.pulse;
+            System.out.println("service HR measurement: "+ String.format(Locale.ENGLISH, "%d", measurement.pulse));
+        }
+    };
+
+/*
+    private void initBluetoothHandler()
+    {
+        System.out.println("Bluetooth Handler has been called");
+        BluetoothHandler.getInstance(getApplicationContext());
+    }
+*/
+
+
+
+
+    //BLUETOOTH ADDITIONS END
+
+
+
+
+
 
 
 

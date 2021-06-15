@@ -86,7 +86,7 @@ public class RunSettings extends Fragment {
         EditText mCalFactorEdit = view.findViewById(R.id.cal_factor);
         Spinner mCalUnits = view.findViewById(R.id.cal_units);
 
-        if(prefs.getBoolean("setup_run_type", true) == true) {
+     /*   if(prefs.getBoolean("setup_run_type", true) == true) {
             System.out.println("first setup Run Settings");
             RunType mtype1 = new RunType("Running", true);
             RunType mtype2 = new RunType("Rowing", true);
@@ -113,9 +113,9 @@ public class RunSettings extends Fragment {
 
             edt.putBoolean("setup_run_type", false);
             edt.commit();
-        }else{
+        }else{*/
             getSettingsData();
-        }
+      //  }
 
         mLayoutManager = new LinearLayoutManager(mContext);
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
