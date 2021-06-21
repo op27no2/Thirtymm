@@ -16,8 +16,9 @@ import op27no2.fitness.Centurion2.fragments.lifting.NamedWorkout;
 import op27no2.fitness.Centurion2.fragments.nutrition.NutritionDay;
 import op27no2.fitness.Centurion2.fragments.run.RunType;
 import op27no2.fitness.Centurion2.fragments.run.RunWorkout;
+import op27no2.fitness.Centurion2.fragments.run.TrackedPoints;
 
-@Database(entities = {LiftingWorkout.class, NutritionDay.class, LiftMap.class, RunWorkout.class, NamedWorkout.class, GoalsDetail.class, RunType.class}, version = 8)
+@Database(entities = {LiftingWorkout.class, NutritionDay.class, LiftMap.class, RunWorkout.class, NamedWorkout.class, GoalsDetail.class, RunType.class, TrackedPoints.class}, version = 10)
 @TypeConverters({Converters.class})
 
 public abstract class AppDatabase extends RoomDatabase {
@@ -31,12 +32,13 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract LiftMapDAO lmDAO();
     public abstract RunTypeDAO rtDAO();
     public abstract GoalListDAO glDAO();
+    public abstract TrackedPointsDAO trackedPointsDAO();
 
     public static AppDatabase getAppDatabase(Context context) {
         if (INSTANCE == null) {
             INSTANCE = Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, "user-database")
                    // .build();
-                    .addMigrations(MIGRATION_1_2).addMigrations(MIGRATION_2_3).addMigrations(MIGRATION_3_4).addMigrations(MIGRATION_4_5).addMigrations(MIGRATION_5_6).addMigrations(MIGRATION_6_7).addMigrations(MIGRATION_7_8).build();
+                    .addMigrations(MIGRATION_1_2).addMigrations(MIGRATION_2_3).addMigrations(MIGRATION_3_4).addMigrations(MIGRATION_4_5).addMigrations(MIGRATION_5_6).addMigrations(MIGRATION_6_7).addMigrations(MIGRATION_7_8).addMigrations(MIGRATION_8_9).addMigrations(MIGRATION_9_10).build();
 
                             // allow queries on the main thread.
                             // Don't do this on a real app! See PersistenceBasicSample for an example.
@@ -105,6 +107,22 @@ public abstract class AppDatabase extends RoomDatabase {
             database.execSQL("INSERT INTO runtypes_temporary(uid, name, active, burnvalue, burnunit, paceunits, distanceunits) SELECT uid, name, active, burnvalue, burnunit, paceunits, distanceunits FROM runtypes");
             database.execSQL("DROP TABLE runtypes");
             database.execSQL("ALTER TABLE runtypes_temporary RENAME TO runtypes");
+        }
+    };
+    static final Migration MIGRATION_8_9 = new Migration(8, 9) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            //BOOLEANS ARE STORED IN ROOMDB as INTEGER !!!!
+            database.execSQL("CREATE TABLE IF NOT EXISTS `tracked_points` (`uid` INTEGER NOT NULL, points TEXT, PRIMARY KEY(`uid`))");
+        }
+    };
+    static final Migration MIGRATION_9_10 = new Migration(9, 10) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            //BOOLEANS ARE STORED IN ROOMDB as INTEGER !!!!
+            database.execSQL("CREATE TABLE IF NOT EXISTS `tracked_points_temporary` (`uid` INTEGER NOT NULL, points TEXT, PRIMARY KEY(`uid`))");
+            database.execSQL("DROP TABLE tracked_points");
+            database.execSQL("ALTER TABLE tracked_points_temporary RENAME TO tracked_points");
         }
     };
 

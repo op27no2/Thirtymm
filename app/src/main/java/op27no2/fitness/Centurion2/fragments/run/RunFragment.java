@@ -36,6 +36,7 @@ import android.os.Vibrator;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -100,6 +101,9 @@ import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.mapboxsdk.utils.ColorUtils;
 import com.rilixtech.materialfancybutton.MaterialFancyButton;
+import com.spotify.android.appremote.api.ConnectionParams;
+import com.spotify.android.appremote.api.Connector;
+import com.spotify.android.appremote.api.SpotifyAppRemote;
 import com.sweetzpot.stravazpot.authenticaton.api.AuthenticationAPI;
 import com.sweetzpot.stravazpot.authenticaton.model.AppCredentials;
 import com.sweetzpot.stravazpot.authenticaton.model.LoginResult;
@@ -138,7 +142,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import timber.log.Timber;
 
-import static com.mapbox.api.directions.v5.DirectionsCriteria.PROFILE_DRIVING;
+import static com.mapbox.api.directions.v5.DirectionsCriteria.PROFILE_WALKING;
 import static com.mapbox.core.constants.Constants.PRECISION_6;
 import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.exponential;
@@ -200,7 +204,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private TextView mTextviewDistanceUnits;
     private TextView mTextviewPaceUnits;
     private TextView measurementValue;
-    private ImageView heartButton;
+    private ImageView intervalButton;
+    private ImageView alertButton;
 
     private Integer saveTime;
     private float saveDistance;
@@ -227,6 +232,9 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private static final int REQUEST_ENABLE_BT = 1;
     private static final int ACCESS_LOCATION_REQUEST = 2;
 
+    private static final String CLIENT_ID = "305f7f00b58542878207dea918c1055b";
+    private static final String REDIRECT_URI2 = "op27no2.fitness.Centurion2://callback";
+    private SpotifyAppRemote mSpotifyAppRemote;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -256,8 +264,14 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         // saveDate is the edittext field in the save dialog, start it initially as formattedDate. User can change. Formatted date used as todays date elsewhere.
         saveDate = formattedDate;
 
+        //SPOTIFY SETUP
+
+
+
+
+
         //set up activity types on first run, cause spinner needs them
-        if(prefs.getBoolean("setup_run_type1", true) == true) {
+        if(prefs.getBoolean("setup_run_type0", true) == true) {
             System.out.println("first setup Run Settings");
             RunType mtype1 = new RunType("Running", true, 0.62,1,0,0);
             RunType mtype2 = new RunType("Rowing", true, 0.5, 1, 2, 1);
@@ -275,19 +289,25 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             mRepository.insertRunType(mtype6);
             mRepository.insertRunType(mtype7);
 
-            edt.putBoolean("setup_run_type1", false);
+            edt.putBoolean("setup_run_type0", false);
             edt.commit();
         }
 
         measurementValue = view.findViewById(R.id.heartrate);
-        heartButton = view.findViewById(R.id.heart);
-        heartButton.setOnClickListener(new View.OnClickListener() {
+        alertButton = view.findViewById(R.id.alerts);
+        alertButton.setOnClickListener(new View.OnClickListener() {
            @Override
            public void onClick(View view) {
 
            }
          });
+        intervalButton = view.findViewById(R.id.intervals);
+        intervalButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
 
+            }
+        });
 
         settingsButton = (ImageView) view.findViewById(R.id.settings);
         settingsButton.setOnClickListener(new View.OnClickListener() {
@@ -323,6 +343,15 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         startButton = view.findViewById(R.id.start_run);
         startButton.setOnClickListener(view1 -> {
             System.out.println("start click");
+            mSpotifyAppRemote.getPlayerApi().setShuffle(true);
+            mSpotifyAppRemote.getPlayerApi().play("spotify:playlist:37i9dQZF1DX5Q27plkaOQ3");
+         //   mSpotifyAppRemote.getPlayerApi().skipNext();
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mSpotifyAppRemote.getPlayerApi().seekTo(51000);
+               }
+            }, 300);
 
             //not started, start and set text to pausable
             if(timerService == null){
@@ -802,6 +831,31 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     public void onStart() {
         super.onStart();
         mapView.onStart();
+        ConnectionParams connectionParams =
+                new ConnectionParams.Builder(CLIENT_ID)
+                        .setRedirectUri(REDIRECT_URI2)
+                        .showAuthView(true)
+                        .build();
+        //connect remote
+        SpotifyAppRemote.connect(getActivity(), connectionParams,
+                new Connector.ConnectionListener() {
+
+                    @Override
+                    public void onConnected(SpotifyAppRemote spotifyAppRemote) {
+                        mSpotifyAppRemote = spotifyAppRemote;
+                        Log.d("MainActivity", "Connected! Yay!");
+
+                        // Now you can start interacting with App Remote
+                        //connected();
+                    }
+
+                    @Override
+                    public void onFailure(Throwable throwable) {
+                        Log.e("MainActivity", throwable.getMessage(), throwable);
+
+                        // Something went wrong when attempting to connect! Handle errors here
+                    }
+        });
 
     }
 
@@ -1158,7 +1212,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             // Setup the request using a client.
             MapboxMapMatching client = MapboxMapMatching.builder()
                     .accessToken(Objects.requireNonNull(Mapbox.getAccessToken()))
-                    .profile(PROFILE_DRIVING)
+                    .profile(PROFILE_WALKING)
                     .coordinates(points)
                     .build();
 
@@ -2235,11 +2289,15 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     public String saveCoordinates(ArrayList<Point> coords, String uid){
             Gson gson = new Gson();
             String json = gson.toJson(coords);
-        System.out.println("SAVE COORDS JSON: " + json);
-
+            System.out.println("SAVE COORDS JSON: " + json);
             edt.putString(uid, json);
             edt.commit();
-            return uid;
+            TrackedPoints savePoints = new TrackedPoints(mPoints);
+           // would need to be in async, long id = AppDatabase.getAppDatabase(getActivity()).trackedPointsDAO().insert(savePoints);
+            long id = mRepository.insertTrackedPoints(savePoints);
+            String mID = Long.toString(id);
+
+            return mID;
 
     }
 

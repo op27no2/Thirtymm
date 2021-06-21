@@ -4,7 +4,7 @@ android {
     compileSdkVersion 29
     buildToolsVersion "29.0.0"
     defaultConfig {
-        applicationId "op27no2.fitness.centurionx"
+        applicationId "op27no2.fitness.centurion2"
         minSdkVersion 26
         targetSdkVersion 29
         versionCode 1
@@ -111,6 +111,10 @@ dependencies {
 
     //MPChart charts for run detail, etc.
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+
+    //Spotify
+    implementation project(':spotify-app-remote-release-0.7.2')
+    implementation "com.google.code.gson:gson:2.8.5"
 
 
 }

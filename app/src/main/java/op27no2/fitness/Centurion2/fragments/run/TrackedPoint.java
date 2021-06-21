@@ -7,11 +7,14 @@ private long timestamp;
 private Point point;
 private double distance;
 private int heartrate;
+private float pressureAltitude;
 
-    public TrackedPoint(long time, Point pnt, double totaldistance, int heartrate){
+    public TrackedPoint(long time, Point pnt, double totaldistance, int heartrate, float pressureAltitude){
         timestamp = time;
         point = pnt;
         distance = totaldistance;
+        this.heartrate = heartrate;
+        this.pressureAltitude = pressureAltitude;
         }
 
 public void setTimestamp(long time){
@@ -38,5 +41,13 @@ public void setHeartRate(int hr){
 public double getHeartRate(){
     return heartrate;
 }
+public void setPressureAlitude(float press){
+    pressureAltitude = press;
+}
+public float getPressureAltitude(){
+        return pressureAltitude;
+}
+
+
 
 }

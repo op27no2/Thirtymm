@@ -119,22 +119,46 @@ public class RunCardviewWorkoutAdapter extends RecyclerView.Adapter<RunCardviewW
         mTextDuration.setText(getDuration(duration));
 
         RunType mActivityType = mWorkouts.get(holder.getAdapterPosition()).getWorkoutType();
-        if(mWorkouts.get(holder.getAdapterPosition()).getWorkoutType() != null) {
-            switch (mActivityType.getDistanceUnits()) {
-                case 0:
-                    //Miles
-                    mTextDistance.setText(getMiles(distance));
-                    mTextDistanceUnits.setText(" miles");
-                    break;
-                case 1:
-                    //Kilometers
-                    double Kilometers = distance / 1000d;
-                    System.out.println("after calc "+distance);
-                    System.out.println("after calc K "+Kilometers);
-                    mTextDistance.setText(String.format("%.3f", Kilometers));
-                    mTextDistanceUnits.setText(" km");
-                    break;
+        //populate old data with defaults if not exists
+        mRepository = new Repository(mContext);
+        if(mActivityType!=null) {
+            if (mActivityType.getDistanceUnits() == null) {
+                mActivityType.setDistanceUnits(0);
             }
+            if (mActivityType.getCalBurnUnit() == null) {
+                mActivityType.setCalBurnUnit(0);
+            }
+            if (mActivityType.getCalBurnValue() == null) {
+                mActivityType.setCalBurnValue(0.63);
+            }
+            if (mActivityType.getPaceUnits() == null) {
+                mActivityType.setPaceUnits(0);
+            }
+            if (mActivityType.getActive() == null) {
+                mActivityType.setActive(true);
+            }
+        }
+        mRepository.updateRunType(mActivityType);
+
+
+
+        if(mWorkouts.get(holder.getAdapterPosition()).getWorkoutType() != null) {
+                switch (mActivityType.getDistanceUnits()) {
+                    case 0:
+                        //Miles
+                        mTextDistance.setText(getMiles(distance));
+                        mTextDistanceUnits.setText(" miles");
+                        break;
+                    case 1:
+                        //Kilometers
+                        double Kilometers = distance / 1000d;
+                        System.out.println("after calc " + distance);
+                        System.out.println("after calc K " + Kilometers);
+                        mTextDistance.setText(String.format("%.3f", Kilometers));
+                        mTextDistanceUnits.setText(" km");
+                        break;
+                }
+
         }
 
         if(mActivityType != null){
@@ -146,7 +170,11 @@ public class RunCardviewWorkoutAdapter extends RecyclerView.Adapter<RunCardviewW
 
         //will downfactor calculations in pounds to kg
         double factorUnit = prefs.getInt("units",0) == 0 ? 1 : (1/2.2);
+
+
         double factorCal = mActivityType.getCalBurnValue();
+
+
         int weight = prefs.getInt("weight",180);
 
         int calValue = 0;

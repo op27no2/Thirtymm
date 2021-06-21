@@ -4,8 +4,12 @@ package op27no2.fitness.Centurion2.Database;
 import android.content.Context;
 
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import op27no2.fitness.Centurion2.fragments.activities.GoalsDetail;
 import op27no2.fitness.Centurion2.fragments.lifting.LiftMap;
@@ -14,6 +18,7 @@ import op27no2.fitness.Centurion2.fragments.lifting.NamedWorkout;
 import op27no2.fitness.Centurion2.fragments.nutrition.NutritionDay;
 import op27no2.fitness.Centurion2.fragments.run.RunType;
 import op27no2.fitness.Centurion2.fragments.run.RunWorkout;
+import op27no2.fitness.Centurion2.fragments.run.TrackedPoints;
 
 public class Repository {
     private LiftWorkoutDAO mLiftDao;
@@ -23,6 +28,7 @@ public class Repository {
     private LiftMapDAO mLiftMapDao;
     private GoalListDAO mGoalListDao;
     private RunTypeDAO mRunTypeDao;
+    private TrackedPointsDAO mTrackedPointsDAO;
     private LiftingWorkout liftWorkout;
 
     public Repository(Context context) {
@@ -34,6 +40,7 @@ public class Repository {
         this.mGoalListDao = dataRoombase.glDAO();
         this.mRunDao = dataRoombase.rwDAO();
         this.mRunTypeDao = dataRoombase.rtDAO();
+        this.mTrackedPointsDAO = dataRoombase.trackedPointsDAO();
     }
 
     LiftingWorkout getTodaysWorkout(String date) {
@@ -183,6 +190,43 @@ public class Repository {
             mRunTypeDao.delete(mRunType);
         });
     }
+
+    public long insertTrackedPoints(TrackedPoints mPoints) {
+     /*   Executor myExecutor = Executors.newSingleThreadExecutor();
+        myExecutor.execute(() -> {
+            mTrackedPointsDAO.insert(mPoints);
+        });*/
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+        Callable<Long> insertCallable = () -> mTrackedPointsDAO.insert(mPoints);
+        long rowId = 0;
+        Future<Long> future = executorService.submit(insertCallable);
+        try {
+            rowId = future.get();
+        } catch (InterruptedException e1) {
+            e1.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        return rowId;
+    }
+
+    public TrackedPoints getTrackedPoints(String id) {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+        Callable<TrackedPoints> insertCallable = () -> mTrackedPointsDAO.findById(Integer.parseInt(id));
+        TrackedPoints mPoints = null;
+        Future<TrackedPoints> future = executorService.submit(insertCallable);
+        try {
+            mPoints = future.get();
+        } catch (InterruptedException e1) {
+            e1.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        return mPoints;
+    }
+
 
 
 

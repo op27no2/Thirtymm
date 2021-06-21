@@ -1,21 +1,19 @@
 package op27no2.fitness.Centurion2.fragments.run;
 
-import android.Manifest;
-import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
-import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
@@ -33,16 +31,11 @@ import com.google.android.gms.location.LocationServices;
 import com.mapbox.geojson.Point;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 import op27no2.fitness.Centurion2.Bluetooth.BluetoothHandler;
 import op27no2.fitness.Centurion2.Bluetooth.HeartRateMeasurement;
 import op27no2.fitness.Centurion2.R;
-import timber.log.Timber;
-
-import static androidx.core.app.ActivityCompat.requestPermissions;
-import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
 
 public class RunService extends Service  {
     private SharedPreferences prefs;
@@ -74,6 +67,9 @@ public class RunService extends Service  {
     private boolean smoothInput = true;
     private static final int ACCESS_LOCATION_REQUEST = 2;
     private int heartrate = 0;
+    private float initialSeaLevelPressure;
+    private float basePressForComparison;
+    private float pressure = 0;
 
 
     public void registerCallBack(TimerInterface myCallback){
@@ -111,7 +107,7 @@ public class RunService extends Service  {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         locationRequest = LocationRequest.create();
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(200);
+        locationRequest.setInterval(1000);
 
         locationCallback = new LocationCallback() {
             @Override
@@ -175,6 +171,24 @@ public class RunService extends Service  {
 
         registerReceiver(heartRateDataReceiver, new IntentFilter( BluetoothHandler.MEASUREMENT_HEARTRATE ));
 
+        SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        Sensor pressureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
+
+        SensorEventListener sensorEventListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent sensorEvent) {
+                float[] values = sensorEvent.values;
+                pressure = values[0];
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int i) {
+
+            }
+        };
+
+        sensorManager.registerListener(sensorEventListener, pressureSensor, SensorManager.SENSOR_DELAY_UI);
+
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -195,7 +209,7 @@ public class RunService extends Service  {
         @Override
         public void run() {
             updateTime();
-            handler.postDelayed(this, 100);
+            handler.postDelayed(this, 1000);
         }
     };
 
@@ -224,25 +238,36 @@ public class RunService extends Service  {
                 System.out.println("x timeDif:" + timeDif);
                 System.out.println("x mps:" + distance[0]/(timeDif));
 
-                //if distance to last tracked point and proposed point in meters divided by previous timestamp > 11, its a jump and ignore, must be <11
+                float pressureAlt = 0;
+                if(System.currentTimeMillis() - startTime < 5000){
+                    initialSeaLevelPressure = getSealevelPressure((float)alt, pressure);
+                    basePressForComparison = SensorManager.getAltitude(initialSeaLevelPressure, pressure);
+                    pressureAlt = (float) alt;
+                }else {
+                    pressureAlt = SensorManager.getAltitude(initialSeaLevelPressure, pressure);
+                }
+
+                //if distance to last tracked point and proposed point in meters divided by previous timestamp > 11, its a jump and ignore, must be <112
                 // will keep checking as distance is accrued, so will eventually log and hopefully GPS is fixed., could maybe check if its near a road too...
 
-                //distance in mps is greater than 0.1, i.e. remove drift when stopped...
-                if(distance[0]/(timeDif)>metersPerSecond && acc<accuracyThreshold) {
+                //distance in mps is greater than 0.1, i.e. remove drift when stopped..., also must be less than 15 mps, as would be a gps jump (30mph, can future edit based on run type)
+                if(distance[0]/(timeDif)>metersPerSecond && distance[0]/(timeDif) < 15 && acc<accuracyThreshold) {
                     System.out.println("z x distance: "+distance[0] +" seconds:"+ timeDif);
                     System.out.println("z x mps: "+distance[0]/timeDif);
                     totalDistance = totalDistance+ distance[0];
                     routeCoordinates.add(Point.fromLngLat(lon, lat, alt));
 
+
                     //trackedpoints same as coords but with time, total distance, and HR, switching over in order to upload TCX, redundant at the moment!
                     //Also different from 'trackpoints' which are the formal structure we upload in TCX helper. This makes that conversion easier
-                    trackPoints.add(new TrackedPoint(System.currentTimeMillis(),Point.fromLngLat(lon, lat, alt), totalDistance, heartrate));
+                    trackPoints.add(new TrackedPoint(System.currentTimeMillis(),Point.fromLngLat(lon, lat, alt), totalDistance, heartrate, pressureAlt));
                 }
+
 
             }else {
                 routeCoordinates.add(Point.fromLngLat(lon, lat, alt));
                 //trackedpoints same as coords but with time, total distance, and HR, switching over in order to upload TCX, redundant at the moment!
-                trackPoints.add(new TrackedPoint(System.currentTimeMillis(),Point.fromLngLat(lon, lat, alt), totalDistance, heartrate));
+                trackPoints.add(new TrackedPoint(System.currentTimeMillis(),Point.fromLngLat(lon, lat, alt), totalDistance, heartrate, (float) alt));
             }
 
             System.out.println("total Distance: "+ totalDistance);
@@ -274,6 +299,21 @@ public class RunService extends Service  {
 
 
 
+/* INFO FOR BAROMETRIC ALTITUDE READINGS
+    The arguments are: GPS altitude (it's good to use average value calculated from array of measurements) and barometric pressure. Method returns pressure at sea level (formula from SensorManager.getAltitude(float p0, float p) in reverse).
+
+            public static float getSealevelPressure (float alt, float p)
+    {
+        float p0 = (float) (p / Math.pow(1 - (alt/44330.0f), 5.255f));
+        return p0;
+    }
+    I'm using the default value: SensorManager.PRESSURE_STANDARD_ATMOSPHERE until GPS collects 10 locks. After that, the above method is called.
+*/
+public static float getSealevelPressure (float alt, float p) {
+        float p0 = (float) (p / Math.pow(1 - (alt/44330.0f), 5.255f));
+        System.out.println("sea level pressure from alt "+alt+" and pressure "+p);
+        return p0;
+}
 
 
 

@@ -39,9 +39,9 @@ import androidx.fragment.app.Fragment;
 
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.CombinedChart;
+import com.github.mikephil.charting.charts.HorizontalBarChart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
@@ -55,16 +55,13 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
-import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.formatter.PercentFormatter;
-import com.github.mikephil.charting.utils.ColorTemplate;
 import com.github.mikephil.charting.utils.MPPointF;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.android.gestures.MoveGestureDetector;
@@ -106,7 +103,6 @@ import org.json.JSONException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -219,6 +215,11 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     final float[] total = new float[1];
     private CombinedChart heartRateCombinedChart;
     private PieChart heartRatePieChart;
+    private PieChart pacePieChart;
+    private HorizontalBarChart splitsChart;
+    private LineChart paceChart;
+    private LineChart elevationChart;
+    private ArrayList<TrackedPoint> routeTrackedPoints;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -411,6 +412,8 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         heartRateCombinedChart.setDrawOrder(new CombinedChart.DrawOrder[]{
                 CombinedChart.DrawOrder.BAR, CombinedChart.DrawOrder.LINE
         });
+
+
    /*     Legend l = heartRateCombinedChart.getLegend();
         l.setWordWrapEnabled(true);
         l.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
@@ -441,27 +444,100 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
             }
         });
 */
-        CombinedData data = new CombinedData();
-        data.setData(generateLineData());
-        data.setData(generateBarData());
 
-        xAxis.setAxisMaximum(data.getXMax() + 0.25f);
-
-        heartRateCombinedChart.animateY(1000, Easing.EaseInOutQuad);
-        heartRateCombinedChart.setData(data);
-        heartRateCombinedChart.invalidate();
 
 
         heartRatePieChart = view.findViewById(R.id.heartrate_pie_chart);
         heartRatePieChart.getDescription().setEnabled(false);
-        heartRatePieChart.setRotationAngle(180);
-        heartRatePieChart.setMaxAngle(180f);
+        //heartRatePieChart.setRotationAngle(180);
+        //heartRatePieChart.setMaxAngle(180f);
         heartRatePieChart.animateY(1400, Easing.EaseInOutQuad);
         heartRatePieChart.setEntryLabelColor(Color.WHITE);
         heartRatePieChart.setEntryLabelTextSize(12f);
         heartRatePieChart.setData(generatePieData());
-        heartRatePieChart.setExtraOffsets(0,0,0,-100);
+        //heartRatePieChart.setExtraOffsets(0,0,0,-100);
         heartRatePieChart.invalidate();
+
+        pacePieChart = view.findViewById(R.id.pace_pie_chart);
+        pacePieChart.getDescription().setEnabled(false);
+        pacePieChart.animateY(1400, Easing.EaseInOutQuad);
+        pacePieChart.setEntryLabelColor(Color.WHITE);
+        pacePieChart.setEntryLabelTextSize(12f);
+        pacePieChart.setData(generatePacePieData());
+        pacePieChart.invalidate();
+
+        splitsChart = view.findViewById(R.id.splits_chart);
+        splitsChart.setDrawBarShadow(false);
+        splitsChart.setDrawValueAboveBar(true);
+        splitsChart.getDescription().setEnabled(false);
+        splitsChart.setPinchZoom(false);
+        splitsChart.setDrawGridBackground(false);
+        splitsChart.animateX(1400, Easing.EaseInOutQuad);
+
+
+        XAxis xl = splitsChart.getXAxis();
+        xl.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xl.setDrawAxisLine(true);
+        xl.setDrawGridLines(false);
+        xl.setGranularity(10f);
+
+        YAxis yl = splitsChart.getAxisLeft();
+        yl.setDrawAxisLine(true);
+        yl.setDrawGridLines(true);
+        yl.setAxisMinimum(0f); // this replaces setStartAtZero(true)
+
+        splitsChart.setFitBars(true);
+        splitsChart.animateY(2500);
+        splitsChart.setData(generateSplitsData());
+        splitsChart.invalidate();
+
+        paceChart = view.findViewById(R.id.pace_chart);
+        paceChart.setBackgroundColor(Color.WHITE);
+        paceChart.setGridBackgroundColor(Color.WHITE);
+        paceChart.setDrawGridBackground(true);
+        paceChart.setDrawBorders(true);
+        paceChart.getDescription().setEnabled(false);
+        paceChart.setPinchZoom(false);
+        paceChart.animateX(3000, Easing.EaseInOutQuad);
+
+
+        Legend l = paceChart.getLegend();
+        l.setEnabled(false);
+
+        XAxis mxAxis = paceChart.getXAxis();
+
+        YAxis mleftAxis = paceChart.getAxisLeft();
+        mleftAxis.setAxisMaximum(6f);
+        mleftAxis.setAxisMinimum(0f);
+        mleftAxis.setDrawAxisLine(false);
+        mleftAxis.setDrawZeroLine(false);
+        mleftAxis.setDrawGridLines(false);
+
+        paceChart.getAxisRight().setEnabled(false);
+
+
+
+
+        elevationChart = view.findViewById(R.id.elevation_chart);
+        elevationChart.setBackgroundColor(Color.WHITE);
+        elevationChart.setGridBackgroundColor(Color.WHITE);
+        elevationChart.setDrawGridBackground(true);
+        elevationChart.setDrawBorders(true);
+        elevationChart.getDescription().setEnabled(false);
+        elevationChart.setPinchZoom(false);
+
+        Legend l2 = elevationChart.getLegend();
+        l2.setEnabled(false);
+
+        XAxis mxAxis2 = elevationChart.getXAxis();
+        YAxis mleftAxis2 = elevationChart.getAxisLeft();
+        mleftAxis2.setDrawAxisLine(false);
+        mleftAxis2.setDrawZeroLine(false);
+        mleftAxis2.setDrawGridLines(false);
+
+        elevationChart.getAxisRight().setEnabled(false);
+
+
 
 
         //END CHART SETUP
@@ -475,38 +551,82 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     private int getRandom(int min, int max){
         return ThreadLocalRandom.current().nextInt(min, max + 1);
     }
+    private BarData generateSplitsData() {
 
-    private PieData generatePieData() {
-        PieData d = new PieData();
-        // NOTE: The order of the entries when being added to the entries array determines their position around the center of
-        // the chart.
-        ArrayList<PieEntry> entries = new ArrayList<>();
-        for (int i = 0; i < 4 ; i++) {
-            entries.add(new PieEntry((float) (getRandom(10,1000)),"Zone "+(i+1)));
+        ArrayList<BarEntry> entries2 = new ArrayList<>();
+
+        for (int index = 0; index < 10; index++) {
+            // stacked
+            entries2.add(new BarEntry(index, getRandom(0,20)));
         }
 
-        PieDataSet dataSet = new PieDataSet(entries,"HR");
-        dataSet.setDrawIcons(false);
-        dataSet.setSliceSpace(3f);
-        dataSet.setIconsOffset(new MPPointF(0, 40));
-        dataSet.setSelectionShift(5f);
-        dataSet.setColors(Color.argb(200,18, 196, 0), Color.argb(200,252, 251, 87), Color.argb(200, 255, 186, 33), Color.argb(200,255, 0, 0));
+        BarDataSet set1 = new BarDataSet(entries2, "");
+        set1.setColors(Color.argb(100,0, 0, 240));
+        set1.setDrawValues(false);
+        /*set1.setValueTextColor(Color.rgb(61, 165, 255));
+        set1.setValueTextSize(10f);*/
+        set1.setAxisDependency(YAxis.AxisDependency.LEFT);
 
-        d.setValueFormatter(new PercentFormatter());
-        d.setValueTextSize(11f);
-        d.setValueTextColor(Color.WHITE);
-        d.addDataSet(dataSet);
+
+        float barSpace = 0.5f; // x2 dataset
+        float barWidth = 0.5f; // x2 dataset
+
+        BarData d = new BarData(set1);
+        d.setBarWidth(barWidth);
+
         return d;
     }
+    private LineData generatePaceData() {
 
-    private LineData generateLineData() {
+
+
+        LineData d = new LineData();
+        ArrayList<Entry> entries = new ArrayList<>();
+        for (int index = 30; index < routeTrackedPoints.size(); index++) {
+            //TODO may want this an average instead of instantaneous
+            long deltaTime =  routeTrackedPoints.get(index).getTimestamp()-routeTrackedPoints.get(index-29).getTimestamp();
+            System.out.println("deltaTime0: "+routeTrackedPoints.get(index).getTimestamp());
+            System.out.println("deltaTimediff: "+deltaTime);
+            float deltaMeters = (float) routeTrackedPoints.get(index).getDistance()-(float)routeTrackedPoints.get(index-29).getDistance();
+            System.out.println("deltaMeters: "+deltaMeters);
+            System.out.println("heart?: "+routeTrackedPoints.get(index).getHeartRate());
+
+            float pace = (deltaMeters/deltaTime)*1000f;
+            System.out.println("pace: "+pace);
+
+
+            entries.add(new Entry(index + 0.5f,pace));
+        }
+        LineDataSet set = new LineDataSet(entries, "Line DataSet");
+        set.setColor(Color.rgb(0, 0, 0));
+        set.setDrawCircles(false);
+        set.setLineWidth(1.5f);
+        set.setDrawFilled(true);
+  /*      if (Utils.getSDKInt() >= 18) {
+            // fill drawable only supported on api level 18 and above
+            Drawable drawable = ContextCompat.getDrawable(getActivity(), R.drawable.fade_blue);
+            set.setFillDrawable(drawable);
+        }
+        else {*/
+            set.setFillColor(Color.argb(200,159, 193, 255));
+     //   }
+        set.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+        set.setDrawValues(false);
+
+        set.setAxisDependency(YAxis.AxisDependency.LEFT);
+        d.addDataSet(set);
+
+        return d;
+    }
+    private LineData generateHeartRateLineData() {
 
         LineData d = new LineData();
 
         ArrayList<Entry> entries = new ArrayList<>();
 
-        for (int index = 0; index < 100; index++) {
-            entries.add(new Entry(index + 0.5f,getRandom(150,190)));
+        for (int index = 0; index < routeTrackedPoints.size(); index++) {
+            entries.add(new Entry(index + 0.5f, (float) routeTrackedPoints.get(index).getHeartRate()));
+            System.out.println("heart data: "+routeTrackedPoints.get(index).getHeartRate());
         }
         LineDataSet set = new LineDataSet(entries, "Line DataSet");
         set.setColor(Color.rgb(0, 0, 0));
@@ -515,6 +635,9 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         set.setFillColor(Color.rgb(255, 255, 255));
         set.setMode(LineDataSet.Mode.CUBIC_BEZIER);
         set.setDrawValues(false);
+
+
+
 
         set.setAxisDependency(YAxis.AxisDependency.LEFT);
         d.addDataSet(set);
@@ -526,7 +649,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
         ArrayList<BarEntry> entries2 = new ArrayList<>();
 
-        for (int index = 0; index < 100; index++) {
+        for (int index = 0; index < routeTrackedPoints.size(); index++) {
             // stacked
             entries2.add(new BarEntry(index, new float[]{130, 20, 20, 30}));
         }
@@ -548,6 +671,116 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
         return d;
     }
+    private PieData generatePieData() {
+        PieData d = new PieData();
+        // NOTE: The order of the entries when being added to the entries array determines their position around the center of
+        // the chart.
+        ArrayList<PieEntry> entries = new ArrayList<>();
+        for (int i = 0; i < 4 ; i++) {
+            entries.add(new PieEntry((float) (getRandom(10,1000)),"Zone "+(i+1)));
+        }
+
+        PieDataSet dataSet = new PieDataSet(entries,"Pace");
+        dataSet.setDrawIcons(false);
+        dataSet.setSliceSpace(3f);
+        dataSet.setIconsOffset(new MPPointF(0, 40));
+        dataSet.setSelectionShift(5f);
+        dataSet.setColors(Color.argb(200,18, 196, 0), Color.argb(200,252, 251, 87), Color.argb(200, 255, 186, 33), Color.argb(200,255, 0, 0));
+
+        d.setValueFormatter(new PercentFormatter());
+        d.setValueTextSize(11f);
+        d.setValueTextColor(Color.WHITE);
+        d.addDataSet(dataSet);
+        return d;
+    }
+    private PieData generatePacePieData() {
+        PieData d = new PieData();
+        // NOTE: The order of the entries when being added to the entries array determines their position around the center of
+        // the chart.
+        ArrayList<PieEntry> entries = new ArrayList<>();
+        for (int i = 0; i < 5 ; i++) {
+            entries.add(new PieEntry((float) (getRandom(10,1000)),"Zone "+(i+1)));
+        }
+
+        PieDataSet dataSet = new PieDataSet(entries,"HR");
+        dataSet.setDrawIcons(false);
+        dataSet.setSliceSpace(3f);
+        dataSet.setIconsOffset(new MPPointF(0, 40));
+        dataSet.setSelectionShift(5f);
+        dataSet.setColors(Color.argb(200,159, 193, 255), Color.argb(200,116, 165, 255), Color.argb(200, 48, 121, 255), Color.argb(200,0, 90, 255));
+
+        d.setValueFormatter(new PercentFormatter());
+        d.setValueTextSize(11f);
+        d.setValueTextColor(Color.WHITE);
+        d.addDataSet(dataSet);
+        return d;
+    }
+
+    private LineData generateElevationData() {
+
+        LineData d = new LineData();
+
+        ArrayList<Entry> entries = new ArrayList<>();
+
+        for (int index = 0; index < routeTrackedPoints.size(); index++) {
+            //if(index<30) {
+                entries.add(new Entry(index + 0.5f, (float) routeTrackedPoints.get(index).getPoint().altitude()));
+            //}
+            //v1
+            /*else{
+                entries.add(new Entry(index + 0.5f, ((float) routeTrackedPoints.get(index).getPoint().altitude()+(float) routeTrackedPoints.get(index-30).getPoint().altitude() )/2 ));
+            }*/
+            //v2
+            /*else{
+                float avg= 0;
+                for(int j=0; j<30; j++){
+                    avg = avg+(float) routeTrackedPoints.get(index-j).getPoint().altitude();
+                }
+                avg = avg/30f;
+                entries.add(new Entry(index + 0.5f, avg));
+            }*/
+        }
+        LineDataSet set = new LineDataSet(entries, "Line DataSet");
+        set.setColor(Color.rgb(0, 0, 0));
+        set.setDrawCircles(false);
+        set.setLineWidth(1.5f);
+        set.setDrawFilled(true);
+
+    /*    if (Utils.getSDKInt() >= 18) {
+            // fill drawable only supported on api level 18 and above
+            Drawable drawable = ContextCompat.getDrawable(getActivity(), R.drawable.fade_gray);
+            set.setFillDrawable(drawable);
+        }
+        else {*/
+            set.setFillColor(Color.argb(77,18, 196, 0));
+        //}
+        set.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+        set.setDrawValues(false);
+        set.setAxisDependency(YAxis.AxisDependency.LEFT);
+
+        ArrayList<Entry> entries2 = new ArrayList<>();
+
+        for (int index2 = 0; index2 < routeTrackedPoints.size(); index2++) {
+            //if(index<30) {
+            entries2.add(new Entry(index2 + 0.5f, (float) routeTrackedPoints.get(index2).getPressureAltitude()));
+        }
+        LineDataSet set2 = new LineDataSet(entries2, "Line DataSet");
+        set2.setColor(Color.rgb(255, 0, 0));
+        set2.setDrawCircles(false);
+        set2.setLineWidth(2.5f);
+        set2.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+        set2.setDrawValues(false);
+        set2.setAxisDependency(YAxis.AxisDependency.LEFT);
+
+
+
+        d.addDataSet(set);
+        d.addDataSet(set2);
+
+        return d;
+    }
+
+
 
 
 
@@ -1951,17 +2184,29 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     }
 
     public ArrayList<Point> getCoordinates(String uid){
-        String json = prefs.getString(uid,"");
-        System.out.println("RETRIEVE COORDS JSON: " + json);
+    //    String json = prefs.getString(uid,"");
+     //   System.out.println("RETRIEVE COORDS JSON: " + json);
+      //  System.out.println("RETRIEVE COORDS JSON: " + json);
 
-        Gson gson = new Gson();
+   /*     Gson gson = new Gson();
         Type type = new TypeToken<ArrayList<Point>>() {}.getType();
         ArrayList<Point> coords = gson.fromJson(json, type);
         if(coords != null) {
             System.out.println("RETRIEVE COORDS SIZE: " + coords.size());
         }else{
             System.out.println("RETRIEVE COORDS NULL: ");
+        }*/
+
+        ArrayList<Point> coords = new ArrayList<Point>();
+        TrackedPoints testPoints = mRepository.getTrackedPoints(uid);
+        for(int i=0;i<testPoints.getTrackedPoints().size();i++){
+            coords.add(testPoints.getTrackedPoints().get(i).getPoint());
         }
+        routeTrackedPoints = testPoints.getTrackedPoints();
+        System.out.println("test retreive time 0: "+ testPoints.getTrackedPoints().get(0).getTimestamp());
+        System.out.println("test retreive Point 0: "+ testPoints.getTrackedPoints().get(0).getPoint());
+        System.out.println("test retreive HR 0: "+ testPoints.getTrackedPoints().get(0).getHeartRate());
+
         return coords;
     }
 
@@ -2126,6 +2371,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         if(mRunWorkout != null) {
             Integer duration = mRunWorkout.getDuration();
             Integer distance = mRunWorkout.getDistance();
+            routeCoordinates = getCoordinates(mRunWorkout.getCoordinates());
 
             long pace = (long) (duration / (distance * 0.000621371192f));
 
@@ -2280,12 +2526,6 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                 }
             });
 
-
-
-            routeCoordinates = getCoordinates(mRunWorkout.getCoordinates());
-            System.out.println("cood uid"+mRunWorkout.getCoordinates());
-            System.out.println("retrieve coords"+routeCoordinates);
-
             if(hasMap) {
                 mapView.getMapAsync(this);
                 mCardView.setVisibility(View.VISIBLE);
@@ -2303,6 +2543,28 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                     }
                 }
             }, 300);
+
+
+            //CHART STUFF
+            CombinedData data = new CombinedData();
+            data.setData(generateHeartRateLineData());
+            data.setData(generateBarData());
+            XAxis xAxis = heartRateCombinedChart.getXAxis();
+            xAxis.setAxisMaximum(data.getXMax() + 0.25f);
+            heartRateCombinedChart.animateY(1000, Easing.EaseInOutQuad);
+            heartRateCombinedChart.setData(data);
+            heartRateCombinedChart.invalidate();
+
+            // add data
+            paceChart.setData(generatePaceData());
+            paceChart.invalidate();
+
+            // add data
+            elevationChart.setData(generateElevationData());
+            YAxis mleftAxis2 = elevationChart.getAxisLeft();
+            mleftAxis2.setAxisMaximum(elevationChart.getData().getYMax()+10f);
+            mleftAxis2.setAxisMinimum(elevationChart.getData().getYMin()-10f);
+            elevationChart.invalidate();
 
 
 
