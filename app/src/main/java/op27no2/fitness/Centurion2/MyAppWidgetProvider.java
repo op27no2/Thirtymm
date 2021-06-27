@@ -78,6 +78,8 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
             new AsyncTask<Void, Void, Void>() {
                 protected void onPreExecute() {
                     // Pre Code
+                    edt.putBoolean("lockout_update", true);
+                    edt.commit();
                 }
                 protected Void doInBackground(Void... unused) {
                     mDay = AppDatabase.getAppDatabase(context).ntDAO().findByDate(date);
@@ -121,6 +123,8 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                     return null;
                 }
                 protected void onPostExecute(Void unused) {
+                edt.putBoolean("lockout_update", false);
+                edt.commit();
                 finishUI(views, appWidgetManager, watchWidget, appWidgetId);
                 }
             }.execute();
@@ -177,44 +181,72 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
         vib(40);*/
 
     }else if(intent.getAction().equals("PLUS_BUTTON") || intent.getAction().equals("MINUS_BUTTON") || intent.getAction().equals("PLUS_BUTTON_SMALL")|| intent.getAction().equals("MINUS_BUTTON_SMALL")){
+
         prefs = context.getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = context.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
         vib(30);
+        if(!prefs.getBoolean("lockout_update", false)) {
 
-        System.out.println("onreceive called");
-        AppWidgetManager mgr = AppWidgetManager.getInstance(context);
-        RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.appwidget);
-        ComponentName watchWidget = new ComponentName(context, MyAppWidgetProvider.class);
-        mRepository = new Repository(context);
+            System.out.println("onreceive called");
+            AppWidgetManager mgr = AppWidgetManager.getInstance(context);
+            RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.appwidget);
+            ComponentName watchWidget = new ComponentName(context, MyAppWidgetProvider.class);
+            mRepository = new Repository(context);
 
-        int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
-                AppWidgetManager.INVALID_APPWIDGET_ID);
-        // int viewIndex = intent.getIntExtra(EXTRA_ITEM, 0);
-
-
-        System.out.println("widget pressed "+appWidgetId);
+            int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
+                    AppWidgetManager.INVALID_APPWIDGET_ID);
+            // int viewIndex = intent.getIntExtra(EXTRA_ITEM, 0);
 
 
-        Long time = Calendar.getInstance().getTimeInMillis();
-        SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, ''yy");
-        String date = df.format(time);
-        System.out.println("widget date: "+date);
+            System.out.println("widget pressed " + appWidgetId);
 
-        new AsyncTask<Void, Void, Void>() {
+
+            Long time = Calendar.getInstance().getTimeInMillis();
+            SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, ''yy");
+            String date = df.format(time);
+            System.out.println("widget date: " + date);
+
+            new AsyncTask<Void, Void, Void>() {
                 protected void onPreExecute() {
                     // Pre Code
                 }
+
                 protected Void doInBackground(Void... unused) {
 
-                        mDay = AppDatabase.getAppDatabase(context).ntDAO().findByDate(date);
-                        mGoalTopList = new ArrayList<GoalsDetail>(AppDatabase.getAppDatabase(context).glDAO().getAll());
+                    mDay = AppDatabase.getAppDatabase(context).ntDAO().findByDate(date);
+                    mGoalTopList = new ArrayList<GoalsDetail>(AppDatabase.getAppDatabase(context).glDAO().getAll());
 
-                        Calendar cal = Calendar.getInstance();
+                    Calendar cal = Calendar.getInstance();
 
-                        //   if(mDay == null || mDay.getValues() == null || mDay.getValues().size() == 0){
-                        if (mDay == null) {
-                            mDay = new NutritionDay();
-                            System.out.println("day null should create");
+                    //   if(mDay == null || mDay.getValues() == null || mDay.getValues().size() == 0){
+                    if (mDay == null) {
+                        mDay = new NutritionDay();
+                        System.out.println("day null should create");
+                        mNames.clear();
+                        mValues.clear();
+                        mNames.add("Cals");
+                        mValues.add(-(prefs.getInt("bmr", 2000)));
+                        mNames.add("Protein");
+                        mValues.add(0);
+                        mDay.setNames(mNames);
+                        mDay.setValues(mValues);
+                        mDay.setDate(date);
+                        mDay.setDateMillis(cal.getTimeInMillis());
+                        //mRepository.insertNutrition(mDay);
+                        mDay.setGoalList(mGoalTopList);
+
+                        long id = AppDatabase.getAppDatabase(context).ntDAO().insert(mDay);
+                        mDay = AppDatabase.getAppDatabase(context).ntDAO().findById((int) id);
+
+                        System.out.println("creating goals");
+
+
+                    } else {
+                        mNames = mDay.getNames();
+                        mValues = mDay.getValues();
+
+                        if (mNames.size() == 0 || mValues.size() == 0) {
+                            System.out.println("nutrition day found get names/values uid: " + mDay.getUid());
                             mNames.clear();
                             mValues.clear();
                             mNames.add("Cals");
@@ -223,100 +255,80 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                             mValues.add(0);
                             mDay.setNames(mNames);
                             mDay.setValues(mValues);
-                            mDay.setDate(date);
-                            mDay.setDateMillis(cal.getTimeInMillis());
-                            //mRepository.insertNutrition(mDay);
-                            mDay.setGoalList(mGoalTopList);
-
-                            long id = AppDatabase.getAppDatabase(context).ntDAO().insert(mDay);
-                            mDay = AppDatabase.getAppDatabase(context).ntDAO().findById((int) id);
-
-                            System.out.println("creating goals");
-
-
+                            System.out.println(mNames.get(0) + " " + mValues.get(1));
                         } else {
-                            mNames = mDay.getNames();
-                            mValues = mDay.getValues();
-
-                            if (mNames.size() == 0 || mValues.size() == 0) {
-                                System.out.println("nutrition day found get names/values uid: " + mDay.getUid());
-                                mNames.clear();
-                                mValues.clear();
-                                mNames.add("Cals");
-                                mValues.add(-(prefs.getInt("bmr", 2000)));
-                                mNames.add("Protein");
-                                mValues.add(0);
-                                mDay.setNames(mNames);
-                                mDay.setValues(mValues);
-                                System.out.println(mNames.get(0) + " " + mValues.get(1));
-                            } else {
-                                System.out.println("mNames size not zero " + mNames.get(0) + " " + mValues.get(0));
-                            }
-
-                            if (mDay.getGoalList() == null || mDay.getGoalList().size() == 0) {
-                                System.out.println("need to create goals if its today");
-                                mDay.setGoalList(mGoalTopList);
-                            }
-                            mRepository.updateNutrition(mDay);
+                            System.out.println("mNames size not zero " + mNames.get(0) + " " + mValues.get(0));
                         }
 
-                        //TODO change to search for index
-                        cals = mValues.get(0);
-                        protein = mValues.get(1);
+                        if (mDay.getGoalList() == null || mDay.getGoalList().size() == 0) {
+                            System.out.println("need to create goals if its today");
+                            mDay.setGoalList(mGoalTopList);
+                        }
+                        mRepository.updateNutrition(mDay);
+                    }
+
+                    //TODO change to search for index
+                    cals = mValues.get(0);
+                    protein = mValues.get(1);
 
 
                     return null;
                 }
+
                 protected void onPostExecute(Void unused) {
-                    if(mDay != null && cals !=null) {
-                    if(prefs.getString(Integer.toString(appWidgetId),"").equals("Calories")) {
-                        System.out.println("cal buttons"+cals);
+                    if (mDay != null && cals != null) {
+                        if (prefs.getString(Integer.toString(appWidgetId), "").equals("Calories")) {
+                            System.out.println("cal buttons" + cals);
 
-                        if (intent.getAction().equals("PLUS_BUTTON")) {
-                            cals = cals + 100;
+                            if (intent.getAction().equals("PLUS_BUTTON")) {
+                                cals = cals + 100;
+                            }
+                            if (intent.getAction().equals("MINUS_BUTTON")) {
+                                cals = cals - 100;
+                            }
+                            if (intent.getAction().equals("PLUS_BUTTON_SMALL")) {
+                                cals = cals + 10;
+                            }
+                            if (intent.getAction().equals("MINUS_BUTTON_SMALL")) {
+                                cals = cals - 10;
+                            }
+                            mValues.set(0, cals);
+                            mDay.setValues(mValues);
                         }
-                        if (intent.getAction().equals("MINUS_BUTTON")) {
-                            cals = cals - 100;
-                        }
-                        if (intent.getAction().equals("PLUS_BUTTON_SMALL")) {
-                            cals = cals + 10;
-                        }
-                        if (intent.getAction().equals("MINUS_BUTTON_SMALL")) {
-                            cals = cals - 10;
-                        }
-                        mValues.set(0, cals);
-                        mDay.setValues(mValues);
-                    }
-                    if(prefs.getString(Integer.toString(appWidgetId),"").equals("Protein")) {
-                        System.out.println("protein buttons"+protein);
+                        if (prefs.getString(Integer.toString(appWidgetId), "").equals("Protein")) {
+                            System.out.println("protein buttons" + protein);
 
-                        if (intent.getAction().equals("PLUS_BUTTON")) {
-                            protein = protein + 10;
+                            if (intent.getAction().equals("PLUS_BUTTON")) {
+                                protein = protein + 10;
+                            }
+                            if (intent.getAction().equals("MINUS_BUTTON")) {
+                                protein = protein - 10;
+                            }
+                            if (intent.getAction().equals("PLUS_BUTTON_SMALL")) {
+                                protein = protein + 1;
+                            }
+                            if (intent.getAction().equals("MINUS_BUTTON_SMALL")) {
+                                protein = protein - 1;
+                            }
+                            mValues.set(1, protein);
+                            mDay.setValues(mValues);
                         }
-                        if (intent.getAction().equals("MINUS_BUTTON")) {
-                            protein = protein - 10;
-                        }
-                        if (intent.getAction().equals("PLUS_BUTTON_SMALL")) {
-                            protein = protein + 1;
-                        }
-                        if (intent.getAction().equals("MINUS_BUTTON_SMALL")) {
-                            protein = protein - 1;
-                        }
-                        mValues.set(1, protein);
-                        mDay.setValues(mValues);
-                    }
 
 
-                    finishUI(remoteViews, mgr, watchWidget, appWidgetId);
+                        finishUI(remoteViews, mgr, watchWidget, appWidgetId);
 
-                    mRepository.updateNutrition(mDay);
+                        mRepository.updateNutrition(mDay);
 
 
                     }
                 }
             }.execute();
 
+        //end if from profs
         }
+        //end else statement
+        }
+    //end onReceive
     }
 
 

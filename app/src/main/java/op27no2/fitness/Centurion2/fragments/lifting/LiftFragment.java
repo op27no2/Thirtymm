@@ -11,6 +11,8 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Vibrator;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -464,12 +466,22 @@ public class LiftFragment extends Fragment implements CalendarDialogInterface, N
     //lift for add, namedworkout for deleting named workout on long click
 
 
+
     @Override
     public void onDialogDismiss(LiftingWorkout mWorkout) {
 
         mLiftingWorkout = mWorkout;
         mRepository.updateWorkout(mLiftingWorkout);
-        mLiftAdapter.notifyDataSetChanged();
+
+        //TODO add get position from adapter, update UI immediately, then call delayed notifydatasetchanged below. Step2, create listener so we don't have to use loopers
+
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mLiftAdapter.notifyDataSetChanged();
+            }
+        }, 300);
+
         mRecyclerView.smoothScrollToPosition(mLiftAdapter.getItemCount() - 1);
 
 

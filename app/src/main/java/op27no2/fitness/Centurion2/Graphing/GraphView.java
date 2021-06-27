@@ -2,6 +2,7 @@ package op27no2.fitness.Centurion2.Graphing;
 
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -418,6 +419,9 @@ abstract public class GraphView extends LinearLayout {
 
 	private GraphViewDataInterface[] _values(int idxSeries) {
 		GraphViewDataInterface[] values = graphSeries.get(idxSeries).values;
+		SharedPreferences.Editor edt = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
+		edt.putInt("datasize", values.length);
+		edt.apply();
 		synchronized (values) {
 			if (viewportStart == 0 && viewportSize == 0) {
 				// all data

@@ -59,6 +59,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.gson.Gson;
@@ -135,6 +136,7 @@ import op27no2.fitness.Centurion2.Database.Repository;
 import op27no2.fitness.Centurion2.MainActivity;
 import op27no2.fitness.Centurion2.MyAppWidgetProvider;
 import op27no2.fitness.Centurion2.R;
+import op27no2.fitness.Centurion2.fragments.lifting.MyDialogInterface;
 import op27no2.fitness.Centurion2.fragments.nutrition.NutritionDay;
 import op27no2.fitness.Centurion2.upload.TcxHelper;
 import retrofit2.Call;
@@ -157,14 +159,14 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth;
 
 
-public class RunFragment extends Fragment implements OnMapReadyCallback, PermissionsListener, TimerInterface {
+public class RunFragment extends Fragment implements OnMapReadyCallback, PermissionsListener, TimerInterface, MyDialogInterface {
     private String mapboxToken = "pk.eyJ1Ijoib3AyN25vMiIsImEiOiJjazJ0cmxvdGswejJ5M2NsN3g0ZzNucTMzIn0.SvSJkId0jesW0T3aM92q0Q";
     private MapView mapView;
     private PermissionsManager permissionsManager;
     private MapboxMap mapboxMap;
     private Vibrator rabbit;
     private ArrayList<Point> routeCoordinates = new ArrayList<Point>();
-    private ArrayList<TrackedPoint> mPoints = new ArrayList<TrackedPoint>();
+    private ArrayList<TrackedPoint> trackedPoints = new ArrayList<TrackedPoint>();
     private double maxalt;
     private double minalt;
     private NutritionDay mNutritionDay;
@@ -224,6 +226,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private ImageView loadOverlay;
 
     private ImageView settingsButton;
+    private boolean locationReady = false;
+    private boolean spotifyReady = false;
 
     private static final int RQ_LOGIN = 1001;
     private static final String REDIRECT_URI = "http://op27no2.fitness/callback/";
@@ -236,10 +240,14 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private static final String REDIRECT_URI2 = "op27no2.fitness.Centurion2://callback";
     private SpotifyAppRemote mSpotifyAppRemote;
 
+  //  private AlertDialogChoose audioDialog;
+    public MyDialogInterface mInterface;
+
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        mInterface = this;
         Mapbox.getInstance(getActivity(), mapboxToken);
         View view = inflater.inflate(R.layout.fragment_run, container, false);
         rabbit = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
@@ -249,7 +257,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         edt = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
         globalFeatureList = getFeatureList();
         mFrame = view.findViewById(R.id.frame);
-        edt.putInt("fragtag",this.getId());
+        edt.putInt("fragtag", this.getId());
         edt.commit();
 
 
@@ -267,23 +275,20 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         //SPOTIFY SETUP
 
 
-
-
-
         //set up activity types on first run, cause spinner needs them
-        if(prefs.getBoolean("setup_run_type0", true) == true) {
+        if (prefs.getBoolean("setup_run_type0", true) == true) {
             System.out.println("first setup Run Settings");
-            RunType mtype1 = new RunType("Running", true, 0.62,1,0,0);
+            RunType mtype1 = new RunType("Running", true, 0.62, 1, 0, 0);
             RunType mtype2 = new RunType("Rowing", true, 0.5, 1, 2, 1);
-            RunType mtype3 = new RunType("Walking", true, 0.3,1,0,0);
+            RunType mtype3 = new RunType("Walking", true, 0.3, 1, 0, 0);
             mRepository.insertRunType(mtype1);
             mRepository.insertRunType(mtype2);
             mRepository.insertRunType(mtype3);
 
             RunType mtype4 = new RunType("Cycling", false, 0.3, 1, 4, 0);
-            RunType mtype5 = new RunType("Kayaking", false, 2.38,3, 3, 0);
-            RunType mtype6 = new RunType("Intervals", false, 0.63, 1,0,0);
-            RunType mtype7 = new RunType("Hiking", false, 0.33,1,0,0);
+            RunType mtype5 = new RunType("Kayaking", false, 2.38, 3, 3, 0);
+            RunType mtype6 = new RunType("Intervals", false, 0.63, 1, 0, 0);
+            RunType mtype7 = new RunType("Hiking", false, 0.33, 1, 0, 0);
             mRepository.insertRunType(mtype4);
             mRepository.insertRunType(mtype5);
             mRepository.insertRunType(mtype6);
@@ -296,11 +301,14 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         measurementValue = view.findViewById(R.id.heartrate);
         alertButton = view.findViewById(R.id.alerts);
         alertButton.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View view) {
+            @Override
+            public void onClick(View view) {
+                System.out.println("alert  click");
+         //       audioDialog = new AlertDialogChoose(view.getContext(), mRepository, mInterface);
+         //       audioDialog.show();
+            }
+        });
 
-           }
-         });
         intervalButton = view.findViewById(R.id.intervals);
         intervalButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -313,21 +321,25 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         settingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ((MainActivity)getActivity()).goToRunSettings();
+                ((MainActivity) getActivity()).goToRunSettings();
             }
         });
 
-        System.out.println("default selection top: "+prefs.getInt("default_activity", 0));
+        System.out.println("default selection top: " + prefs.getInt("default_activity", 0));
 
 
         mSpinnerTop = view.findViewById(R.id.top_type);
         mSpinnerTop.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-                edt.putInt("default_activity",position);
+                edt.putInt("default_activity", position);
                 edt.apply();
-                System.out.println("default selection set: "+prefs.getInt("default_activity", 0));
-                saveType = mActivityTypes.get(position);
+                System.out.println("default selection set: " + prefs.getInt("default_activity", 0));
+
+                //will load based on prefs, activitytypes will not be null by time is loaded
+                if (mActivityTypes != null && mActivityTypes.size() != 0) {
+                    saveType = mActivityTypes.get(position);
+                }
             }
 
             @Override
@@ -343,26 +355,27 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         startButton = view.findViewById(R.id.start_run);
         startButton.setOnClickListener(view1 -> {
             System.out.println("start click");
-            mSpotifyAppRemote.getPlayerApi().setShuffle(true);
-            mSpotifyAppRemote.getPlayerApi().play("spotify:playlist:37i9dQZF1DX5Q27plkaOQ3");
-         //   mSpotifyAppRemote.getPlayerApi().skipNext();
-            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mSpotifyAppRemote.getPlayerApi().seekTo(51000);
-               }
-            }, 300);
-
+            if (spotifyReady) {
+                mSpotifyAppRemote.getPlayerApi().setShuffle(true);
+                mSpotifyAppRemote.getPlayerApi().play("spotify:playlist:37i9dQZF1DX5Q27plkaOQ3");
+                //   mSpotifyAppRemote.getPlayerApi().skipNext();
+                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mSpotifyAppRemote.getPlayerApi().seekTo(51000);
+                    }
+                }, 300);
+            }
             //not started, start and set text to pausable
-            if(timerService == null){
+            if (timerService == null) {
                 startRun();
                 startButton.setText("Pause");
-            }else {
-                if(isPaused){
+            } else {
+                if (isPaused) {
                     timerService.resumeService();
                     startButton.setText("Pause");
                     isPaused = false;
-                }else{
+                } else {
                     timerService.pauseService();
                     startButton.setText("Resume");
                     isPaused = true;
@@ -384,7 +397,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                  stopRun();
+                stopRun();
             }
         });
         ImageView mExtrude = view.findViewById(R.id.extrude_button);
@@ -399,43 +412,42 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         eraseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                    if(timerService != null){
-                        final Dialog dialog = new Dialog(getActivity());
-                        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-                        dialog.setContentView(R.layout.dialog_delete);
-                        DisplayMetrics metrics = getActivity().getResources().getDisplayMetrics();
-                        int width = metrics.widthPixels;
-                        dialog.getWindow().setLayout((8 * width) / 9, LinearLayout.LayoutParams.WRAP_CONTENT);
-                        TextView mText = dialog.findViewById(R.id.confirm_title);
-                        mText.setText("Are you sure you want to clear the run path?");
+                if (timerService != null) {
+                    final Dialog dialog = new Dialog(getActivity());
+                    dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                    dialog.setContentView(R.layout.dialog_delete);
+                    DisplayMetrics metrics = getActivity().getResources().getDisplayMetrics();
+                    int width = metrics.widthPixels;
+                    dialog.getWindow().setLayout((8 * width) / 9, LinearLayout.LayoutParams.WRAP_CONTENT);
+                    TextView mText = dialog.findViewById(R.id.confirm_title);
+                    mText.setText("Are you sure you want to clear the run path?");
 
-                        dialog.findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                routeCoordinates.clear();
-                                mPoints.clear();
-                                clearExtrusion();
-                                try {
-                                    updateLine();
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                                dialog.dismiss();
+                    dialog.findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            routeCoordinates.clear();
+                            trackedPoints.clear();
+                            clearExtrusion();
+                            try {
+                                updateLine();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
-                        });
-                        dialog.findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                dialog.dismiss();
-                            }
-                        });
-                        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                        dialog.show();
+                            dialog.dismiss();
+                        }
+                    });
+                    dialog.findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            dialog.dismiss();
+                        }
+                    });
+                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                    dialog.show();
 
-                }
-                else{
+                } else {
                     routeCoordinates.clear();
-                    mPoints.clear();
+                    trackedPoints.clear();
                     clearExtrusion();
                     try {
                         updateLine();
@@ -468,13 +480,13 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
 
                 double height = zoom1.getMeasuredHeight();
-                System.out.println("height: "+height);
+                System.out.println("height: " + height);
 
                 float bar = (float) zoom1.getY();
-                System.out.println("barr: "+bar);
+                System.out.println("barr: " + bar);
 
-                float add = (float) (height*(1f - ((16f-13f)/7f)));
-                System.out.println("add: "+add);
+                float add = (float) (height * (1f - ((16f - 13f) / 7f)));
+                System.out.println("add: " + add);
 
 
             }
@@ -485,9 +497,9 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             @Override
             public void onClick(View view) {
                 rabbit.vibrate(50);
-                if(!DrawModeActive) {
+                if (!DrawModeActive) {
                     enableMapDrawing();
-                }else {
+                } else {
                     disableMapDrawing();
                 }
                 // lol this route snap feature sucks?
@@ -518,7 +530,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         // loadOverlay = view.findViewById(R.id.load_overlay);
 
         getNutritionDayData();
-
 
 
         return view;
@@ -561,7 +572,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
 
     public void stopRun() {
-        if(timerService != null) {
+        if (timerService != null) {
             if (!isPaused) {
                 isPaused = true;
                 timerService.pauseService();
@@ -576,7 +587,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
     private void updateLine() throws JSONException {
         //     System.out.println("update line called "+routeCoordinates);
-        if(mStyle != null && mStyle.isFullyLoaded()) {
+        if (mStyle != null && mStyle.isFullyLoaded()) {
             if (mStyle.getSource("line-source") == null) {
                 mStyle.addSource(new GeoJsonSource("line-source",
                         FeatureCollection.fromFeatures(new Feature[]{Feature.fromGeometry(
@@ -601,24 +612,22 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             }
 
 
+            float total = 0f;
+            for (int i = 0; i < routeCoordinates.size() - 1; i++) {
+                float[] distance = new float[2];
+                Location.distanceBetween(routeCoordinates.get(i).latitude(), routeCoordinates.get(i).longitude(), routeCoordinates.get(i + 1).latitude(), routeCoordinates.get(i + 1).longitude(), distance);
 
-        float total = 0f;
-        for (int i = 0; i < routeCoordinates.size() - 1; i++) {
-            float[] distance = new float[2];
-            Location.distanceBetween(routeCoordinates.get(i).latitude(), routeCoordinates.get(i).longitude(), routeCoordinates.get(i + 1).latitude(), routeCoordinates.get(i + 1).longitude(), distance);
-
-            total = total + distance[0];
-        }
-        distanceText.setText(getMiles(total));
-
+                total = total + distance[0];
+            }
+            distanceText.setText(getMiles(total));
 
 
         }
     }
 
     //updates bearing and follows target
-    private void updateBearing(){
-        if(trackBearing) {
+    private void updateBearing() {
+        if (trackBearing) {
             int j = routeCoordinates.size() - 1;
             float[] distance2 = new float[2];
             if (j > 10) {
@@ -642,7 +651,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         System.out.println("on map ready");
 
         RunFragment.this.mapboxMap = mapboxMap;
-      //  loadOverlay.setVisibility(View.GONE);
+        //  loadOverlay.setVisibility(View.GONE);
         mapReady = true;
 
         // mapboxMap.setStyle(new Style.Builder().fromUri("mapbox://styles/op27no2/ck2tujbra2ox21cqzxh4ql48y"),new Style.OnStyleLoaded() {
@@ -659,7 +668,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                 //listing layers
                 List<Layer> mlayers = style.getLayers();
                 for (int i = 0; i < mlayers.size(); i++) {
-                 //   System.out.println("layer: " + mlayers.get(i).getId() + ", minzoom: " + mlayers.get(i).getMinZoom() + ", maxzoom: " + mlayers.get(i).getMaxZoom());
+                    //   System.out.println("layer: " + mlayers.get(i).getId() + ", minzoom: " + mlayers.get(i).getMinZoom() + ", maxzoom: " + mlayers.get(i).getMaxZoom());
                     //mlayers.get(i).setProperties(PropertyFactory.fillColor(Color.parseColor("#000000")));
                     String hey = mlayers.get(i).getId();
                     if (hey.equals("road-path-smooth")) {
@@ -668,8 +677,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                     }
                 }
 
-            //adds all frozen trails
-             addTrails();
+                //adds all frozen trails
+                addTrails();
 
             }
         });
@@ -713,7 +722,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         });
 
 
-
     }
 
     @SuppressWarnings({"MissingPermission"})
@@ -746,7 +754,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                     if (mapboxMap.getLocationComponent().getLastKnownLocation() != null) { // Check to ensure coordinates aren't null, probably a better way of doing this...
                         System.out.println("set location");
                         mapboxMap.animateCamera(com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngZoom(new LatLng(mapboxMap.getLocationComponent().getLastKnownLocation().getLatitude(), mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude()), 16));
-                    }                }
+                    }
+                }
             }, 200);
 
 
@@ -757,27 +766,36 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         }
     }
 
-    public void enableLocationComponentAfterResult(){
+    public void enableLocationComponentAfterResult() {
 
         mapboxMap.getStyle(new Style.OnStyleLoaded() {
             @Override
             public void onStyleLoaded(@NonNull Style style) {
                 System.out.println("permission granted recalling enable location component");
 
-                        // Check if permissions are enabled and if not request
-                        if (PermissionsManager.areLocationPermissionsGranted(getActivity())) {
-                            System.out.println("enable location component called");
+                // Check if permissions are enabled and if not request
+                if (PermissionsManager.areLocationPermissionsGranted(getActivity())) {
+                    System.out.println("enable location component called");
 
-                            // Get an instance of the component
-                            LocationComponent locationComponent = mapboxMap.getLocationComponent();
+                    // Get an instance of the component
+                    LocationComponent locationComponent = mapboxMap.getLocationComponent();
 
-                            // Activate with options
-                            locationComponent.activateLocationComponent(
-                                    LocationComponentActivationOptions.builder(getActivity(), style).build());
+                    // Activate with options
+                    locationComponent.activateLocationComponent(
+                            LocationComponentActivationOptions.builder(getActivity(), style).build());
 
-                            // Enable to make component visible
-                            locationComponent.setLocationComponentEnabled(true);
-
+                    // Enable to make component visible
+                    if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        locationComponent.setLocationComponentEnabled(true);
+                        return;
+                    }
                             // Set the component's camera mode
                             locationComponent.setCameraMode(CameraMode.TRACKING, 200, 16.0, null, 40.0, null);
 
@@ -791,7 +809,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                                     if (mapboxMap.getLocationComponent().getLastKnownLocation() != null) { // Check to ensure coordinates aren't null, probably a better way of doing this...
                                         System.out.println("set location");
                                         mapboxMap.animateCamera(com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngZoom(new LatLng(mapboxMap.getLocationComponent().getLastKnownLocation().getLatitude(), mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude()), 16));
-                                    }                }
+                                    }
+                                    }
                             }, 200);
 
 
@@ -816,7 +835,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                 @Override
                 public void onStyleLoaded(@NonNull Style style) {
                     System.out.println("permission granted recalling enable location component");
-
                     enableLocationComponent(style);
                 }
             });
@@ -844,7 +862,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                     public void onConnected(SpotifyAppRemote spotifyAppRemote) {
                         mSpotifyAppRemote = spotifyAppRemote;
                         Log.d("MainActivity", "Connected! Yay!");
-
+                        spotifyReady = true;
                         // Now you can start interacting with App Remote
                         //connected();
                     }
@@ -1115,7 +1133,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         long elapsedMinutes = elapsedSeconds / 60;
         long minutesDisplay = elapsedMinutes % 60;
         int hoursDisplay = (int) Math.floor(elapsedMinutes / 60);
-        
+
         if (secondsDisplay < 10) {
             timerText.setText(minutesDisplay + ":0" + secondsDisplay);
         } else if(hoursDisplay == 0){
@@ -1136,7 +1154,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
         //  distanceText.setText(Float.toString(total));
         routeCoordinates = rCoordinates;
-        mPoints = points;
+        trackedPoints = points;
 
         try {
             updateLine();
@@ -1587,7 +1605,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
                         //adjust altitude data to min
                         //TODO futher adjust based on max too?
-                        double height = (routeCoordinates.get(i).altitude() - minalt) * 50;
+                        double height = (trackedPoints.get(i).getPressureAltitude() - minalt) * 50;
                         JsonObject heightObject = new JsonObject();
                         heightObject.addProperty("e", height);
                         System.out.println("coord values: " + routeCoordinates.get(i).altitude());
@@ -2292,7 +2310,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             System.out.println("SAVE COORDS JSON: " + json);
             edt.putString(uid, json);
             edt.commit();
-            TrackedPoints savePoints = new TrackedPoints(mPoints);
+            TrackedPoints savePoints = new TrackedPoints(trackedPoints);
            // would need to be in async, long id = AppDatabase.getAppDatabase(getActivity()).trackedPointsDAO().insert(savePoints);
             long id = mRepository.insertTrackedPoints(savePoints);
             String mID = Long.toString(id);
@@ -2442,9 +2460,9 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
 
     public void uploadToStrava(){
-        System.out.println("trackedpoints size1 "+mPoints.size());
+        System.out.println("trackedpoints size1 "+ trackedPoints.size());
 
-        if(!prefs.getBoolean("strava8", false)) {
+        if(!prefs.getBoolean("strava9", false)) {
             Uri intentUri = Uri.parse("https://www.strava.com/oauth/mobile/authorize")
                     .buildUpon()
                     .appendQueryParameter("client_id", "43815")
@@ -2466,7 +2484,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
     @SuppressLint("StaticFieldLeak")
     public void finishStrava() {
-        System.out.println("trackedpoints size2 "+mPoints.size());
+        System.out.println("trackedpoints size2 "+ trackedPoints.size());
 
         new AsyncTask<Void, Void, Void>() {
 
@@ -2522,7 +2540,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                         .execute();*/
 
                 TcxHelper mHelper = new TcxHelper();
-                String mPath = mHelper.createTCX("testfile"+System.currentTimeMillis(), mPoints, (int) saveDistance, saveCals, saveTime);
+                String mPath = mHelper.createTCX("testfile"+System.currentTimeMillis(), trackedPoints, (int) saveDistance, saveCals, saveTime);
 
                 UploadAPI uploadAPI = new UploadAPI(sconfig);
                 UploadStatus uploadStatus = uploadAPI.uploadFile(new File(mPath))
@@ -2584,5 +2602,9 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     }
 
 
+    @Override
+    public void onDialogDismiss() {
+
+    }
 }
 

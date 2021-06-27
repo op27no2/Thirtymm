@@ -60,7 +60,7 @@ public class ActivityFragment extends Fragment {
         tabLayout=(TabLayout) view.findViewById(R.id.tabLayout);
         viewPager=(ViewPager) view.findViewById(R.id.viewPager);
 
-        tabLayout.addTab(tabLayout.newTab().setText("Progress"));
+        tabLayout.addTab(tabLayout.newTab().setText("Goal Matrix"));
         tabLayout.addTab(tabLayout.newTab().setText("Activities"));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 

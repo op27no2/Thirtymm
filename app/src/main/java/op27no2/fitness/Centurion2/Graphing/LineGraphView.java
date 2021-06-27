@@ -61,6 +61,8 @@ public class LineGraphView extends GraphView {
 
 	public void drawSeries(Canvas canvas, GraphViewDataInterface[] values, float graphwidth, float graphheight, float border, double minX, double minY, double diffX, double diffY, float horstart, GraphViewSeriesStyle style) {
 		// draw background
+		listsize = prefs.getInt("datasize", 1);
+
 		double lastEndY = 0;
 		double lastEndX = 0;
 		sum = 0;
@@ -243,12 +245,13 @@ public class LineGraphView extends GraphView {
 
 
 
-				// draw data point
-		        Calendar c = Calendar.getInstance(); 
+				// draw data point, fresh Cal each iteration
+		        Calendar iterateCal = Calendar.getInstance();
+				System.out.println("today check? "+iterateCal.get(Calendar.MONTH));
 		   //     dayset = Integer.parseInt(prefs.getString("tapnum2", "1"));
 
 				//find todays weekday, which is last displayed data point. Then subtract backwards as we move back from that data point dataX are the X data points (e.g. 0 to 30?)
-				int weekday = c.get(Calendar.DAY_OF_WEEK) - (listsize - (int) dataX);
+				int weekday = iterateCal.get(Calendar.DAY_OF_WEEK) - (listsize - (int) dataX);
 
 				//if
 				if(values.length < 10){
@@ -266,13 +269,17 @@ public class LineGraphView extends GraphView {
 
 				}
 				
-				int day = c.get(Calendar.DAY_OF_YEAR) ;
-				c.set(Calendar.DAY_OF_YEAR, day - (listsize - (int) dataX)+2);
-				int dayofmonth = c.get(Calendar.DAY_OF_MONTH);
-				int month = c.get(Calendar.MONTH);
-				int year = c.get(Calendar.YEAR);
+				int day = iterateCal.get(Calendar.DAY_OF_YEAR) ;
+				//TODO Change this back to +2 if doesn't help?
 
-		        listsize = prefs.getInt("datasize", 1);
+				//list of 50, displaying 30, today is 283, setting to (283 - (50-0)+1)
+				iterateCal.set(Calendar.DAY_OF_YEAR, day - (listsize - (int) dataX)+1);
+				System.out.println("today check2? "+iterateCal.get(Calendar.MONTH)+" listize:"+listsize+"datax: "+dataX);
+
+				int dayofmonth = iterateCal.get(Calendar.DAY_OF_MONTH);
+				int month = iterateCal.get(Calendar.MONTH)+1;
+				int year = iterateCal.get(Calendar.YEAR);
+
 		        if (weekday < 0){
 		        dayset = -(6-((int) Float.parseFloat(prefs.getString("tapnum2", "3"))-1));
 		        }

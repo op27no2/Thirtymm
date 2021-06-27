@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         intent.putExtra(EXTRA_MESSAGE, message);*/
 
         //TODO bring back intro and create firstlogin logic
-        startActivity(intent);
+     //   startActivity(intent);
 
 
 

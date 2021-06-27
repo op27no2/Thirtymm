@@ -123,18 +123,24 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import timber.log.Timber;
 
+import static android.graphics.Color.parseColor;
 import static com.mapbox.api.directions.v5.DirectionsCriteria.PROFILE_DRIVING;
 import static com.mapbox.core.constants.Constants.PRECISION_6;
 import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.exponential;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.interpolate;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.literal;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.rgb;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.step;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.stop;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.zoom;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionBase;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionHeight;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionOpacity;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineGradient;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth;
 
 
@@ -219,7 +225,10 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     private HorizontalBarChart splitsChart;
     private LineChart paceChart;
     private LineChart elevationChart;
-    private ArrayList<TrackedPoint> routeTrackedPoints;
+    private ArrayList<TrackedPoint> trackedPoints;
+    ArrayList<Integer> splitsData = new ArrayList<Integer>();
+    private int smoothingFactor = 5;
+
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -468,28 +477,28 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
         splitsChart = view.findViewById(R.id.splits_chart);
         splitsChart.setDrawBarShadow(false);
-        splitsChart.setDrawValueAboveBar(true);
+        splitsChart.setDrawValueAboveBar(false);
         splitsChart.getDescription().setEnabled(false);
         splitsChart.setPinchZoom(false);
         splitsChart.setDrawGridBackground(false);
         splitsChart.animateX(1400, Easing.EaseInOutQuad);
 
-
         XAxis xl = splitsChart.getXAxis();
         xl.setPosition(XAxis.XAxisPosition.BOTTOM);
         xl.setDrawAxisLine(true);
         xl.setDrawGridLines(false);
-        xl.setGranularity(10f);
+        xl.setGranularity(1f);
+
 
         YAxis yl = splitsChart.getAxisLeft();
         yl.setDrawAxisLine(true);
+        yl.setDrawLabels(true);
+        yl.setDrawTopYLabelEntry(true);
         yl.setDrawGridLines(true);
         yl.setAxisMinimum(0f); // this replaces setStartAtZero(true)
 
         splitsChart.setFitBars(true);
-        splitsChart.animateY(2500);
-        splitsChart.setData(generateSplitsData());
-        splitsChart.invalidate();
+
 
         paceChart = view.findViewById(R.id.pace_chart);
         paceChart.setBackgroundColor(Color.WHITE);
@@ -553,26 +562,62 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     }
     private BarData generateSplitsData() {
 
-        ArrayList<BarEntry> entries2 = new ArrayList<>();
+            splitsData = new ArrayList<Integer>();
 
-        for (int index = 0; index < 10; index++) {
-            // stacked
-            entries2.add(new BarEntry(index, getRandom(0,20)));
+            int index = 0;
+            int intervalStart=0;
+            long time = 0;
+            double distance = 0;
+            for(int i=0;i<trackedPoints.size();i++){
+                if((trackedPoints.get(i).getDistance()*0.000621371192f) >= (index+1)){
+                    time = (trackedPoints.get(i).getTimestamp() - trackedPoints.get(intervalStart).getTimestamp())/1000;
+                    splitsData.add((int) time);
+                    ++index;
+                    intervalStart = i;
+                }
+                //last iteration, last point
+                if((i == trackedPoints.size()-1) && (i-intervalStart>30)){
+                    time = (trackedPoints.get(i).getTimestamp() - trackedPoints.get(intervalStart).getTimestamp())/1000;
+                    distance = (trackedPoints.get(i).getDistance() - trackedPoints.get(intervalStart).getDistance());
+                    splitsData.add((int) Math.floor((double)time/(distance*0.000621371192f)));
+                }
+
+            }
+
+            //transform splits data into relative bar paces
+            int max = 0;
+            int min = 99999999;
+            for(int j=0;j<splitsData.size();j++){
+                System.out.println("splits data: "+splitsData.get(j));
+                if(splitsData.get(j)>max){
+                    max = splitsData.get(j);
+                }
+                if(splitsData.get(j)<min){
+                    min = splitsData.get(j);
+                }
+            }
+            int lowValue = min - 15;
+            //int highValue = max+30;
+
+        ArrayList<BarEntry> entries2 = new ArrayList<>();
+        for(int k=0;k<splitsData.size();k++){
+            entries2.add(new BarEntry(k, splitsData.get(k)));
         }
 
         BarDataSet set1 = new BarDataSet(entries2, "");
         set1.setColors(Color.argb(100,0, 0, 240));
-        set1.setDrawValues(false);
+        set1.setDrawValues(true);
         /*set1.setValueTextColor(Color.rgb(61, 165, 255));
         set1.setValueTextSize(10f);*/
         set1.setAxisDependency(YAxis.AxisDependency.LEFT);
 
 
-        float barSpace = 0.5f; // x2 dataset
-        float barWidth = 0.5f; // x2 dataset
+        float barSpace = 0.2f; // x2 dataset
+        float barWidth = 0.8f; // x2 dataset
 
         BarData d = new BarData(set1);
         d.setBarWidth(barWidth);
+        splitsChart.getAxisLeft().setAxisMinimum(lowValue);
 
         return d;
     }
@@ -582,14 +627,14 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
         LineData d = new LineData();
         ArrayList<Entry> entries = new ArrayList<>();
-        for (int index = 30; index < routeTrackedPoints.size(); index++) {
+        for (int index = 30; index < trackedPoints.size(); index++) {
             //TODO may want this an average instead of instantaneous
-            long deltaTime =  routeTrackedPoints.get(index).getTimestamp()-routeTrackedPoints.get(index-29).getTimestamp();
-            System.out.println("deltaTime0: "+routeTrackedPoints.get(index).getTimestamp());
+            long deltaTime =  trackedPoints.get(index).getTimestamp()- trackedPoints.get(index-29).getTimestamp();
+            System.out.println("deltaTime0: "+ trackedPoints.get(index).getTimestamp());
             System.out.println("deltaTimediff: "+deltaTime);
-            float deltaMeters = (float) routeTrackedPoints.get(index).getDistance()-(float)routeTrackedPoints.get(index-29).getDistance();
+            float deltaMeters = (float) trackedPoints.get(index).getDistance()-(float) trackedPoints.get(index-29).getDistance();
             System.out.println("deltaMeters: "+deltaMeters);
-            System.out.println("heart?: "+routeTrackedPoints.get(index).getHeartRate());
+            System.out.println("heart?: "+ trackedPoints.get(index).getHeartRate());
 
             float pace = (deltaMeters/deltaTime)*1000f;
             System.out.println("pace: "+pace);
@@ -624,9 +669,9 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
         ArrayList<Entry> entries = new ArrayList<>();
 
-        for (int index = 0; index < routeTrackedPoints.size(); index++) {
-            entries.add(new Entry(index + 0.5f, (float) routeTrackedPoints.get(index).getHeartRate()));
-            System.out.println("heart data: "+routeTrackedPoints.get(index).getHeartRate());
+        for (int index = 0; index < trackedPoints.size(); index++) {
+            entries.add(new Entry(index + 0.5f, (float) trackedPoints.get(index).getHeartRate()));
+            System.out.println("heart data: "+ trackedPoints.get(index).getHeartRate());
         }
         LineDataSet set = new LineDataSet(entries, "Line DataSet");
         set.setColor(Color.rgb(0, 0, 0));
@@ -645,14 +690,15 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         return d;
     }
 
-    private BarData generateBarData() {
+    private BarData generateHeartRateBarData() {
 
         ArrayList<BarEntry> entries2 = new ArrayList<>();
 
-        for (int index = 0; index < routeTrackedPoints.size(); index++) {
+        for (int index = 0; index < trackedPoints.size(); index++) {
             // stacked
             entries2.add(new BarEntry(index, new float[]{130, 20, 20, 30}));
         }
+
 
         BarDataSet set1 = new BarDataSet(entries2, "");
         set1.setStackLabels(new String[]{"Stack 1", "Stack 2"});
@@ -717,14 +763,13 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     }
 
     private LineData generateElevationData() {
-
         LineData d = new LineData();
 
         ArrayList<Entry> entries = new ArrayList<>();
 
-        for (int index = 0; index < routeTrackedPoints.size(); index++) {
+        for (int index = 0; index < trackedPoints.size(); index++) {
             //if(index<30) {
-                entries.add(new Entry(index + 0.5f, (float) routeTrackedPoints.get(index).getPoint().altitude()));
+                entries.add(new Entry(index + 0.5f, (float) trackedPoints.get(index).getPoint().altitude()));
             //}
             //v1
             /*else{
@@ -760,9 +805,17 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
         ArrayList<Entry> entries2 = new ArrayList<>();
 
-        for (int index2 = 0; index2 < routeTrackedPoints.size(); index2++) {
-            //if(index<30) {
-            entries2.add(new Entry(index2 + 0.5f, (float) routeTrackedPoints.get(index2).getPressureAltitude()));
+        for (int index2 = 0; index2 < trackedPoints.size(); index2++) {
+            if(index2<smoothingFactor) {
+                entries2.add(new Entry(index2 + 0.5f, (float) trackedPoints.get(index2).getPressureAltitude()));
+            }else{
+                float avg= 0;
+                for(int j=0; j<smoothingFactor; j++){
+                    avg = avg+trackedPoints.get(index2-j).getPressureAltitude();
+                }
+                avg = avg/smoothingFactor;
+                entries2.add(new Entry(index2 + 0.5f, avg));
+            }
         }
         LineDataSet set2 = new LineDataSet(entries2, "Line DataSet");
         set2.setColor(Color.rgb(255, 0, 0));
@@ -785,7 +838,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
 
     private void updateLine() throws JSONException {
-        //     System.out.println("update line called "+routeCoordinates);
+             System.out.println("update line called "+routeCoordinates.get(0).toString());
         if(mStyle != null && mStyle.isFullyLoaded()) {
             if (mStyle.getSource("line-source") == null) {
                 mStyle.addSource(new GeoJsonSource("line-source",
@@ -861,7 +914,11 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                 mStyle = style;
 
                 //snapshotter
-
+                try {
+                    updateLine();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
                 UiSettings uiSettings = mapboxMap.getUiSettings();
                 uiSettings.setCompassEnabled(false);
@@ -874,7 +931,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                     String hey = mlayers.get(i).getId();
                     if (hey.equals("road-path-smooth")) {
                         System.out.println("what");
-                        mlayers.get(i).setProperties(PropertyFactory.lineColor(Color.parseColor("#000000")));
+                        mlayers.get(i).setProperties(PropertyFactory.lineColor(parseColor("#000000")));
                     }
                 }
 
@@ -1286,7 +1343,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
             );
             style.addLayer(new LineLayer("matched-layer-id", "matched-source-id")
                     .withProperties(
-                            lineColor(ColorUtils.colorToRgbaString(Color.parseColor("#3bb2d0"))),
+                            lineColor(ColorUtils.colorToRgbaString(parseColor("#3bb2d0"))),
                             lineWidth(6f))
             );
         }
@@ -1617,14 +1674,15 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
     private void extrudeRoute(){
 
-        if (routeCoordinates.size() != 0 && routeCoordinates != null) {
+        if (trackedPoints.size() != 0 && trackedPoints != null) {
 
             //get min alt
             minalt = 1000000;
-            for (int i = 0; i < routeCoordinates.size(); i++) {
-                if(routeCoordinates.get(i).altitude() < minalt) {
-                    if(routeCoordinates.get(i).altitude() >0) {
-                        minalt = routeCoordinates.get(i).altitude();
+            for (int i = 0; i < trackedPoints.size(); i++) {
+                float alt = trackedPoints.get(i).getPressureAltitude();
+                if(alt < minalt) {
+                    if(alt >0) {
+                        minalt = alt;
                     }
                 }
             }
@@ -1657,13 +1715,29 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                         //adjust altitude data to min
                         //TODO futher adjust based on max too?
                         //double height = (routeCoordinates.get(i).altitude() - minalt) * 50;
+                        float mAlt=0;
+                        double mPace=0;
+                        if(i<=smoothingFactor){
+                            mAlt = trackedPoints.get(i).getPressureAltitude();
+                        }else{
+                            for(int j=0;j<smoothingFactor;j++) {
+                                mAlt = mAlt+trackedPoints.get(i - j).getPressureAltitude();
+                            }
+                            mAlt=mAlt/smoothingFactor;
+                        }
+
+                        if(i>smoothingFactor){
+                        mPace = ((trackedPoints.get(i).getDistance()-trackedPoints.get(i-smoothingFactor).getDistance())/((trackedPoints.get(i).getTimestamp()-trackedPoints.get(i-smoothingFactor).getTimestamp())/1000));
+                        }
 
                         double factor = ((((22-mapboxMap.getCameraPosition().zoom)*(22-mapboxMap.getCameraPosition().zoom)*(22-mapboxMap.getCameraPosition().zoom)*30)/22)*0.06);
-                        double height = (routeCoordinates.get(i).altitude() - minalt) * factor;
+                        double height = (mAlt - minalt) * factor;
                         JsonObject heightObject = new JsonObject();
-                        heightObject.addProperty("e", height);
+                        heightObject.addProperty("height", height);
+                        heightObject.addProperty("hr", trackedPoints.get(i).getHeartRate());
+                        heightObject.addProperty("pace", mPace);
                         System.out.println("coord values: " + routeCoordinates.get(i).altitude());
-                        System.out.println("height values: " + height);
+                        System.out.println("height values: " + mAlt);
 
 
                         JsonObject outerObject = new JsonObject();
@@ -1706,9 +1780,28 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                 // Add FillExtrusion layer to map using GeoJSON data
                 System.out.println("add extrustions");
                 mStyle.addLayer(new FillExtrusionLayer("course", "extrusion").withProperties(
-                        fillExtrusionColor(Color.RED),
+                        fillExtrusionColor(step((get("hr")), rgb(0,0,0),
+                                stop(0, rgb(18,196,0)),
+                                stop(130, rgb(252,251,87)),
+                                stop(150, rgb(255,186,33)),
+                                stop(170, rgb(255,0,0))
+                        )),
                         fillExtrusionOpacity(0.5f),
-                        fillExtrusionHeight(get("e"))));
+                        fillExtrusionHeight(get("height"))
+                ));
+/*            if (mStyle.getLayer("course2") == null) {
+                mStyle.addLayer(new FillExtrusionLayer("course2", "extrusion").withProperties(
+                        fillExtrusionColor(step((get("hr")), rgb(0,0,0),
+                                stop(0, rgb(18,196,0)),
+                                stop(130, rgb(252,251,87)),
+                                stop(150, rgb(255,186,33)),
+                                stop(170, rgb(255,0,0))
+                        )),
+                        fillExtrusionOpacity(1f),
+                        fillExtrusionBase(get("height")),
+                        fillExtrusionHeight(Expression.sum(literal(10), get("height")))
+                ));
+            }*/
 
 
 
@@ -1719,6 +1812,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
     private void clearExtrusion(){
         mStyle.removeLayer("course");
+        //mStyle.removeLayer("course2");
     }
 
     public void saveFeatureList(List<Feature> mList){
@@ -1781,7 +1875,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                                     stop(8.5f,0.5),
                                     stop(18f, 2),
                                     stop(21f, 6))),
-                            lineColor(Color.parseColor("#c919ff")));
+                            lineColor(parseColor("#c919ff")));
 
                     mStyle.addLayer(mlayer);
                 }
@@ -2127,7 +2221,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                         )})))
                 .withLayer(new LineLayer("linelayer", "line-source").withProperties(
                         lineWidth(5f),
-                        lineColor(Color.parseColor("#e55e5e"))
+                        lineColor(parseColor("#e55e5e"))
                 ));
 
         MapSnapshotter.Options snapShotOptions = new MapSnapshotter.Options(500, 500)
@@ -2202,7 +2296,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         for(int i=0;i<testPoints.getTrackedPoints().size();i++){
             coords.add(testPoints.getTrackedPoints().get(i).getPoint());
         }
-        routeTrackedPoints = testPoints.getTrackedPoints();
+        trackedPoints = testPoints.getTrackedPoints();
         System.out.println("test retreive time 0: "+ testPoints.getTrackedPoints().get(0).getTimestamp());
         System.out.println("test retreive Point 0: "+ testPoints.getTrackedPoints().get(0).getPoint());
         System.out.println("test retreive HR 0: "+ testPoints.getTrackedPoints().get(0).getHeartRate());
@@ -2532,7 +2626,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
             }
 
             //TODO do I still need this, now that getMapAsync is moved to just above isntead of at start of code
-            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+    /*        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -2542,13 +2636,13 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                         System.out.println("line update error");
                     }
                 }
-            }, 300);
+            }, 300);*/
 
 
             //CHART STUFF
             CombinedData data = new CombinedData();
             data.setData(generateHeartRateLineData());
-            data.setData(generateBarData());
+            data.setData(generateHeartRateBarData());
             XAxis xAxis = heartRateCombinedChart.getXAxis();
             xAxis.setAxisMaximum(data.getXMax() + 0.25f);
             heartRateCombinedChart.animateY(1000, Easing.EaseInOutQuad);
@@ -2558,6 +2652,11 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
             // add data
             paceChart.setData(generatePaceData());
             paceChart.invalidate();
+
+            //splits data
+            splitsChart.setData(generateSplitsData());
+            splitsChart.getAxisLeft().setValueFormatter(new MyFormatterYAxisSplitsBar());
+            splitsChart.invalidate();
 
             // add data
             elevationChart.setData(generateElevationData());

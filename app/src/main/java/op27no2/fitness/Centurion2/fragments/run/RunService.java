@@ -58,7 +58,7 @@ public class RunService extends Service  {
     private double lat;
     private double lon;
     private double alt;
-    private float acc;
+    private float acc = 10000;
     private float accuracyThreshold = 50;
     private double metersPerSecond = .1;
     private double maxalt = 0;
@@ -217,12 +217,7 @@ public class RunService extends Service  {
     public void updateTime(){
         System.out.println("lat: "+ lat + " lon:" + lon+" acc"+acc);
         if(!paused) {
-            if (alt > maxalt) {
-                maxalt = alt;
-            }
-            if (alt < minalt) {
-                minalt = alt;
-            }
+
 
             if(routeCoordinates.size()>1){
                 float[] distance = new float[2];
@@ -246,6 +241,12 @@ public class RunService extends Service  {
                 }else {
                     pressureAlt = SensorManager.getAltitude(initialSeaLevelPressure, pressure);
                 }
+                if (pressureAlt > maxalt) {
+                    maxalt = pressureAlt;
+                }
+                if (pressureAlt < minalt) {
+                    minalt = pressureAlt;
+                }
 
                 //if distance to last tracked point and proposed point in meters divided by previous timestamp > 11, its a jump and ignore, must be <112
                 // will keep checking as distance is accrued, so will eventually log and hopefully GPS is fixed., could maybe check if its near a road too...
@@ -265,9 +266,11 @@ public class RunService extends Service  {
 
 
             }else {
-                routeCoordinates.add(Point.fromLngLat(lon, lat, alt));
-                //trackedpoints same as coords but with time, total distance, and HR, switching over in order to upload TCX, redundant at the moment!
-                trackPoints.add(new TrackedPoint(System.currentTimeMillis(),Point.fromLngLat(lon, lat, alt), totalDistance, heartrate, (float) alt));
+                if(acc<accuracyThreshold) {
+                    routeCoordinates.add(Point.fromLngLat(lon, lat, alt));
+                    //trackedpoints same as coords but with time, total distance, and HR, switching over in order to upload TCX, redundant at the moment!
+                    trackPoints.add(new TrackedPoint(System.currentTimeMillis(), Point.fromLngLat(lon, lat, alt), totalDistance, heartrate, (float) alt));
+                }
             }
 
             System.out.println("total Distance: "+ totalDistance);

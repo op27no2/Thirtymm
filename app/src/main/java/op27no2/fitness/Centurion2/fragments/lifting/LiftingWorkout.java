@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 public class LiftingWorkout {
 
+
     @PrimaryKey(autoGenerate = true)
     private int uid;
 

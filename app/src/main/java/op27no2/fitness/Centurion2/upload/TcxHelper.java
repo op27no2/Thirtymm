@@ -3,8 +3,10 @@ package op27no2.fitness.Centurion2.upload;
 import android.content.Context;
 import android.content.ContextWrapper;
 
+import com.sweetzpot.tcxzpot.Lap;
 import com.sweetzpot.tcxzpot.Position;
 import com.sweetzpot.tcxzpot.TCXDate;
+import com.sweetzpot.tcxzpot.Track;
 import com.sweetzpot.tcxzpot.Trackpoint;
 import com.sweetzpot.tcxzpot.serializers.FileSerializer;
 
@@ -70,6 +72,24 @@ public class TcxHelper {
             e.printStackTrace();
             System.out.println("file save failed - initiate serializer");
         }
+
+        ArrayList<Trackpoint> tcxPoints2 = new ArrayList<Trackpoint>();
+        tcxPoints2.add(tcxPoints.get(0));
+
+        ArrayList<Track> mTracks = new ArrayList<Track>();
+        mTracks.add(trackWith(tcxPoints2));
+        mTracks.add(trackWith(tcxPoints));
+
+        ArrayList<Lap> mLaps = new ArrayList<Lap>();
+        Lap lap2 = aLap(startTime)
+                .withTotalTime(totaltime)
+                .withDistance(distance)
+                .withCalories(calories)
+                .withIntensity(ACTIVE)
+                .withTriggerMethod(MANUAL)
+                .withTracks(mTracks).build();
+        mLaps.add(lap2);
+
         trainingCenterDatabase()
                 .withActivities(activities(
                         activity(RUNNING)
@@ -81,15 +101,7 @@ public class TcxHelper {
                                                 .withProductId(1234567)
                                 )
                                 .withNotes(notes("My sample notes"))
-                                .withLaps(
-                                        aLap(startTime)
-                                                .withTotalTime(totaltime)
-                                                .withDistance(distance)
-                                                .withCalories(calories)
-                                                .withIntensity(ACTIVE)
-                                                .withTriggerMethod(MANUAL)
-                                                .withTracks(trackWith(tcxPoints))
-                                )
+                                .withLaps(mLaps)
                 ))
                 .withAuthor(
                         application("BreathZpot")
