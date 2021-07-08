@@ -63,17 +63,17 @@
         android:layout_toLeftOf="@+id/save"
         android:layout_centerVertical="true"
         android:layout_gravity="center"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:src="@drawable/ic_action_file_upload"/>
+        android:layout_width="@dimen/icon_size"
+        android:layout_height="@dimen/icon_size"
+        android:src="@drawable/ic_file_upload"/>
 
     <ImageView
         android:id="@+id/save"
         android:layout_toLeftOf="@+id/settings"
         android:layout_centerVertical="true"
         android:layout_gravity="center"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="@dimen/icon_size"
+        android:layout_height="@dimen/icon_size"
         android:src="@drawable/ic_save"/>
 
     <ImageView
@@ -81,8 +81,8 @@
         android:layout_centerVertical="true"
         android:layout_alignParentRight="true"
         android:layout_gravity="center"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="@dimen/icon_size"
+        android:layout_height="@dimen/icon_size"
         android:src="@drawable/ic_settings"/>
 
 

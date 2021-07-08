@@ -1,5 +1,7 @@
 package op27no2.fitness.Centurion2;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,6 +21,7 @@ import com.mapbox.android.core.permissions.PermissionsListener;
 
 import java.util.List;
 
+import op27no2.fitness.Centurion2.Database.AlarmReceiver;
 import op27no2.fitness.Centurion2.fragments.run.RunFragment;
 
 import static op27no2.fitness.Centurion2.R.id.nav_host_fragment;
@@ -44,7 +47,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         //TODO bring back intro and create firstlogin logic
      //   startActivity(intent);
 
-
+        Intent alarmIntent = new Intent(MainActivity.this, AlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0, alarmIntent, 0);
+        AlarmManager alarmManager =
+                (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            10000,
+            60000, pendingIntent);
 
 
         // Passing each menu ID as a set of Ids because each

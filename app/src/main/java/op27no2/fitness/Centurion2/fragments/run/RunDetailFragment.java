@@ -1,6 +1,7 @@
 package op27no2.fitness.Centurion2.fragments.run;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -11,7 +12,9 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,15 +22,19 @@ import android.os.Looper;
 import android.os.Vibrator;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -97,6 +104,15 @@ import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.mapboxsdk.utils.ColorUtils;
 import com.rilixtech.materialfancybutton.MaterialFancyButton;
+import com.sweetzpot.stravazpot.authenticaton.api.AuthenticationAPI;
+import com.sweetzpot.stravazpot.authenticaton.model.AppCredentials;
+import com.sweetzpot.stravazpot.authenticaton.model.LoginResult;
+import com.sweetzpot.stravazpot.common.api.AuthenticationConfig;
+import com.sweetzpot.stravazpot.common.api.StravaConfig;
+import com.sweetzpot.stravazpot.upload.api.UploadAPI;
+import com.sweetzpot.stravazpot.upload.model.DataType;
+import com.sweetzpot.stravazpot.upload.model.UploadActivityType;
+import com.sweetzpot.stravazpot.upload.model.UploadStatus;
 
 import org.json.JSONException;
 
@@ -118,6 +134,7 @@ import op27no2.fitness.Centurion2.FancyScrollView;
 import op27no2.fitness.Centurion2.MyAppWidgetProvider;
 import op27no2.fitness.Centurion2.R;
 import op27no2.fitness.Centurion2.fragments.nutrition.NutritionDay;
+import op27no2.fitness.Centurion2.upload.TcxHelper;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -130,17 +147,14 @@ import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.exponential;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.interpolate;
-import static com.mapbox.mapboxsdk.style.expressions.Expression.literal;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.linear;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.rgb;
-import static com.mapbox.mapboxsdk.style.expressions.Expression.step;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.stop;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.zoom;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionBase;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionHeight;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionOpacity;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineGradient;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth;
 
 
@@ -154,6 +168,8 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     private double maxalt;
     private double minalt;
     private NutritionDay mNutritionDay;
+    private static final int RQ_LOGIN = 1001;
+    private static final String REDIRECT_URI = "http://op27no2.fitness/callback/";
 
     private Style mStyle;
     private TextView timerText;
@@ -390,6 +406,42 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
             }
         });
 
+        ImageView uploadButton = (ImageView) view.findViewById(R.id.upload);
+        uploadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                rabbit.vibrate(25);
+                final Dialog dialog = new Dialog(getActivity());
+                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                dialog.setContentView(R.layout.dialog_delete);
+
+                DisplayMetrics metrics = getResources().getDisplayMetrics();
+                int width = metrics.widthPixels;
+
+                dialog.getWindow().setLayout((8 * width) / 9, LinearLayout.LayoutParams.WRAP_CONTENT);
+                TextView mText = dialog.findViewById(R.id.confirm_title);
+                Button mButton = dialog.findViewById(R.id.delete);
+                mText.setText("Upload to Strava?");
+                mButton.setText("Confirm");
+
+                dialog.findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        uploadToStrava();
+                        dialog.dismiss();
+                    }
+                });
+                dialog.findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                dialog.show();
+            }
+        });
+
         ImageView saveButton = (ImageView) view.findViewById(R.id.save);
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -463,7 +515,6 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         heartRatePieChart.animateY(1400, Easing.EaseInOutQuad);
         heartRatePieChart.setEntryLabelColor(Color.WHITE);
         heartRatePieChart.setEntryLabelTextSize(12f);
-        heartRatePieChart.setData(generatePieData());
         //heartRatePieChart.setExtraOffsets(0,0,0,-100);
         heartRatePieChart.invalidate();
 
@@ -472,7 +523,6 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         pacePieChart.animateY(1400, Easing.EaseInOutQuad);
         pacePieChart.setEntryLabelColor(Color.WHITE);
         pacePieChart.setEntryLabelTextSize(12f);
-        pacePieChart.setData(generatePacePieData());
         pacePieChart.invalidate();
 
         splitsChart = view.findViewById(R.id.splits_chart);
@@ -721,10 +771,34 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         PieData d = new PieData();
         // NOTE: The order of the entries when being added to the entries array determines their position around the center of
         // the chart.
-        ArrayList<PieEntry> entries = new ArrayList<>();
-        for (int i = 0; i < 4 ; i++) {
-            entries.add(new PieEntry((float) (getRandom(10,1000)),"Zone "+(i+1)));
+        double HR4 = 0;
+        double HR3 = 0;
+        double HR2 = 0;
+        double HR1 = 0;
+
+        for(int i=0;i<trackedPoints.size()-1;i++){
+            int heartRate = (int) trackedPoints.get(i).getHeartRate();
+            double time = trackedPoints.get(i+1).getTimestamp() - trackedPoints.get(i).getTimestamp();
+            if(heartRate >= 170){
+                HR4 = HR4 + time;
+            }else if(150 <= heartRate && heartRate< 170){
+                HR3 = HR3 + time;
+            }else if(130 <= heartRate && heartRate< 150){
+                HR2 = HR2 + time;
+            }else if(heartRate< 130){
+                HR1 = HR1 + time;
+            }
         }
+        HR1 = HR1/1000;
+        HR2 = HR2/1000;
+        HR3 = HR3/1000;
+        HR4 = HR4/1000;
+
+        ArrayList<PieEntry> entries = new ArrayList<>();
+        entries.add(new PieEntry((float) HR1,"Zone "+(1)));
+        entries.add(new PieEntry((float) HR2,"Zone "+(2)));
+        entries.add(new PieEntry((float) HR3,"Zone "+(3)));
+        entries.add(new PieEntry((float) HR4,"Zone "+(4)));
 
         PieDataSet dataSet = new PieDataSet(entries,"Pace");
         dataSet.setDrawIcons(false);
@@ -743,10 +817,33 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         PieData d = new PieData();
         // NOTE: The order of the entries when being added to the entries array determines their position around the center of
         // the chart.
-        ArrayList<PieEntry> entries = new ArrayList<>();
-        for (int i = 0; i < 5 ; i++) {
-            entries.add(new PieEntry((float) (getRandom(10,1000)),"Zone "+(i+1)));
+
+        double PZ4 = 0;
+        double PZ3 = 0;
+        double PZ2 = 0;
+        double PZ1 = 0;
+
+        for(int i=0;i<trackedPoints.size()-1;i++){
+            double time = trackedPoints.get(i+1).getTimestamp() - trackedPoints.get(i).getTimestamp();
+            double distance = trackedPoints.get(i+1).getDistance() - trackedPoints.get(i).getDistance();
+            double pace = 1000*(distance/time);
+            System.out.println("pace values pie"+pace);
+            if(pace >= 3){
+                PZ4 = PZ4 + time;
+            }else if(2.5 <= pace && pace< 3){
+                PZ3 = PZ3 + time;
+            }else if(2 <= pace && pace< 2.5){
+                PZ2 = PZ2 + time;
+            }else if(pace< 2){
+                PZ1 = PZ1 + time;
+            }
         }
+        ArrayList<PieEntry> entries = new ArrayList<>();
+        entries.add(new PieEntry((float) PZ1,"Zone "+(1)));
+        entries.add(new PieEntry((float) PZ2,"Zone "+(2)));
+        entries.add(new PieEntry((float) PZ3,"Zone "+(3)));
+        entries.add(new PieEntry((float) PZ4,"Zone "+(4)));
+
 
         PieDataSet dataSet = new PieDataSet(entries,"HR");
         dataSet.setDrawIcons(false);
@@ -786,10 +883,10 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
             }*/
         }
         LineDataSet set = new LineDataSet(entries, "Line DataSet");
-        set.setColor(Color.rgb(0, 0, 0));
+        set.setColor(Color.rgb(255, 0, 0));
         set.setDrawCircles(false);
-        set.setLineWidth(1.5f);
-        set.setDrawFilled(true);
+        set.setLineWidth(1f);
+        set.setDrawFilled(false);
 
     /*    if (Utils.getSDKInt() >= 18) {
             // fill drawable only supported on api level 18 and above
@@ -818,17 +915,19 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
             }
         }
         LineDataSet set2 = new LineDataSet(entries2, "Line DataSet");
-        set2.setColor(Color.rgb(255, 0, 0));
+        set2.setColor(Color.rgb(0, 0, 0));
         set2.setDrawCircles(false);
         set2.setLineWidth(2.5f);
         set2.setMode(LineDataSet.Mode.CUBIC_BEZIER);
-        set2.setDrawValues(false);
+        set2.setDrawValues(true);
+        set2.setDrawFilled(true);
         set2.setAxisDependency(YAxis.AxisDependency.LEFT);
+        set2.setFillColor(Color.argb(77,18, 196, 0));
 
 
 
-        d.addDataSet(set);
         d.addDataSet(set2);
+        d.addDataSet(set);
 
         return d;
     }
@@ -1780,6 +1879,17 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                 // Add FillExtrusion layer to map using GeoJSON data
                 System.out.println("add extrustions");
                 mStyle.addLayer(new FillExtrusionLayer("course", "extrusion").withProperties(
+                        fillExtrusionColor(interpolate(
+                                linear(), get("hr"),
+                                stop(0, rgb(18,196,0)),
+                                stop(130, rgb(252,251,87)),
+                                stop(150, rgb(255,186,33)),
+                                stop(170, rgb(255,0,0)),
+                                stop(195, rgb(50,0,0))
+                        )),
+                        fillExtrusionOpacity(0.5f),
+                        fillExtrusionHeight(get("height"))
+         /*
                         fillExtrusionColor(step((get("hr")), rgb(0,0,0),
                                 stop(0, rgb(18,196,0)),
                                 stop(130, rgb(252,251,87)),
@@ -1787,8 +1897,10 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                                 stop(170, rgb(255,0,0))
                         )),
                         fillExtrusionOpacity(0.5f),
-                        fillExtrusionHeight(get("height"))
+                        fillExtrusionHeight(get("height"))*/
                 ));
+
+
 /*            if (mStyle.getLayer("course2") == null) {
                 mStyle.addLayer(new FillExtrusionLayer("course2", "extrusion").withProperties(
                         fillExtrusionColor(step((get("hr")), rgb(0,0,0),
@@ -2665,6 +2777,8 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
             mleftAxis2.setAxisMinimum(elevationChart.getData().getYMin()-10f);
             elevationChart.invalidate();
 
+            heartRatePieChart.setData(generatePieData());
+            pacePieChart.setData(generatePacePieData());
 
 
         }else{
@@ -2685,7 +2799,105 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
     }
 
 
+    public void uploadToStrava(){
+        System.out.println("trackedpoints size1 "+ trackedPoints.size());
 
+        if(!prefs.getBoolean("strava9", false)) {
+            Uri intentUri = Uri.parse("https://www.strava.com/oauth/mobile/authorize")
+                    .buildUpon()
+                    .appendQueryParameter("client_id", "43815")
+                    .appendQueryParameter("redirect_uri", REDIRECT_URI)
+                    .appendQueryParameter("response_type", "code")
+                    .appendQueryParameter("approval_prompt", "auto")
+                    .appendQueryParameter("scope", "activity:write,read")
+                    .build();
+            edt.putString("upload_fragment", "Run");
+            edt.commit();
+            Intent intent = new Intent(Intent.ACTION_VIEW, intentUri);
+            intent.putExtra("key", 999);
+            startActivityForResult(intent, RQ_LOGIN);
+        }else{
+            finishStrava();
+        }
+    }
+
+
+    @SuppressLint("StaticFieldLeak")
+    public void finishStrava() {
+        System.out.println("trackedpoints size2 "+ trackedPoints.size());
+
+        new AsyncTask<Void, Void, Void>() {
+            protected void onPreExecute() {
+            }
+            protected Void doInBackground(Void... unused) {
+                //nutritionDay and formatted day change with selected day up top, used to edit values
+                AuthenticationConfig config = AuthenticationConfig.create()
+                        .debug()
+                        .build();
+                AuthenticationAPI api = new AuthenticationAPI(config);
+                String mToken = null;
+                String mToken2 = null;
+
+                if(prefs.getBoolean("first_refresh", true) == true) {
+                    LoginResult result = api.getTokenForApp(AppCredentials.with(43815, "87571a766af016d9949d28929316f894bbc57938"))
+                            .withCode(prefs.getString("code", "")) //original response token placed here as well.
+                            .execute();
+                    mToken = result.getAccessToken();
+                    mToken2 = result.getRefreshToken();
+                    edt.putBoolean("first_refresh",false );
+                    edt.putString("refresh_token",mToken2 );
+                    edt.apply();
+                }else {
+                    AuthenticationConfig config2 = AuthenticationConfig.create()
+                            .debug()
+                            .build();
+                    AuthenticationAPI api2 = new AuthenticationAPI(config);
+                    LoginResult loginResult = api2.refreshTokenForApp(AppCredentials.with(43815, "87571a766af016d9949d28929316f894bbc57938"))
+                            .withRefreshToken(prefs.getString("refresh_token", ""))
+                            .refreshToken();
+                    mToken = loginResult.getAccessToken();
+                    mToken2 = loginResult.getRefreshToken();
+                    edt.putString("refresh_token", mToken2);
+                    edt.apply();
+                }
+
+                StravaConfig sconfig = StravaConfig.withToken(mToken)
+                        .debug()
+                        .build();
+
+                TcxHelper mHelper = new TcxHelper();
+                String mPath = mHelper.createTCX("testfile"+System.currentTimeMillis(), trackedPoints, (int) saveDistance, saveCals, saveTime);
+
+                UploadAPI uploadAPI = new UploadAPI(sconfig);
+                UploadStatus uploadStatus = uploadAPI.uploadFile(new File(mPath))
+                        .withDataType(DataType.TCX)
+                        .withActivityType(UploadActivityType.RUN)
+                        .withName(saveTitle)
+                        .withDescription(saveDescription)
+                        .isPrivate(false)
+                        .hasTrainer(false)
+                        .isCommute(false)
+                        .withExternalID("test4")
+                        .execute();
+
+                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getActivity(), "Strava Upload Status: "+    uploadStatus.getStatus(), Toast.LENGTH_LONG).show();
+                    }
+                }, 15000);
+
+                return null;
+            }
+
+            protected void onPostExecute(Void unused) {
+            }
+
+        }.execute();
+
+
+
+    }
 
 }
 

@@ -29,24 +29,24 @@
             android:id="@+id/alerts"
             android:layout_centerVertical="true"
             android:layout_toLeftOf="@+id/intervals"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="@dimen/icon_size"
+            android:layout_height="@dimen/icon_size"
             android:src="@drawable/ic_alerts"/>
 
         <ImageView
             android:id="@+id/intervals"
             android:layout_centerVertical="true"
             android:layout_toLeftOf="@+id/freeze"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="@dimen/icon_size"
+            android:layout_height="@dimen/icon_size"
             android:src="@drawable/ic_intervals"/>
 
         <ImageView
             android:id="@+id/freeze"
             android:layout_centerVertical="true"
             android:layout_toLeftOf="@+id/settings"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="@dimen/icon_size"
+            android:layout_height="@dimen/icon_size"
             android:src="@drawable/ic_freeze"/>
 
 
@@ -55,8 +55,8 @@
             android:layout_centerVertical="true"
             android:layout_alignParentRight="true"
             android:layout_gravity="center"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="@dimen/icon_size"
+            android:layout_height="@dimen/icon_size"
             android:src="@drawable/ic_settings"/>
 
     </RelativeLayout>

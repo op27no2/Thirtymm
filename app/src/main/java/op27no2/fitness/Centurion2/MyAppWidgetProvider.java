@@ -171,6 +171,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
         super.onReceive(context, intent);
         rabbit = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
 
+
         //TODO test this code
     if (intent.getAction().equals("HOME_BUTTON")) {
         //REMOVING HOME BUTTON FOR NOW

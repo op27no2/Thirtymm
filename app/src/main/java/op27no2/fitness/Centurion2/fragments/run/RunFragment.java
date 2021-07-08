@@ -2479,7 +2479,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         }else{
             finishStrava();
         }
-
     }
 
     @SuppressLint("StaticFieldLeak")
@@ -2554,7 +2553,12 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                         .withExternalID("test4")
                         .execute();
 
-
+                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getActivity(), "Strava Upload Status: "+    uploadStatus.getStatus(), Toast.LENGTH_LONG).show();
+                    }
+                }, 15000);
 
 
                 return null;
@@ -2562,12 +2566,11 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
             protected void onPostExecute(Void unused) {
                 // Post Code
+
             }
         }.execute();
-
-
-
     }
+
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);

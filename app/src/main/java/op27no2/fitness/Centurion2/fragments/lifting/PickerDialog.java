@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.Window;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -36,7 +35,7 @@ public class PickerDialog extends Dialog  {
         private int selected = 0;
 
         //passed from lift fragment adapter, keep track to  to correct row
-        private int position;
+        private int liftIndex;
 
         private ArrayList<Integer> mData = new ArrayList<Integer>();
 
@@ -49,7 +48,7 @@ public class PickerDialog extends Dialog  {
         mRepository = repositoy;
         mInterface = dialogInterface;
         mContext = context;
-        position = mposition;
+        liftIndex = mposition;
     }
 
 
@@ -62,12 +61,12 @@ public class PickerDialog extends Dialog  {
 
             titleText = (TextView) findViewById(R.id.my_title);
 
-
             DisplayMetrics metrics = mContext.getResources().getDisplayMetrics();
             int width = metrics.widthPixels;
-            getWindow().setLayout((10 * width) / 11, LinearLayout.LayoutParams.WRAP_CONTENT);
+            int height = metrics.heightPixels;
+            getWindow().setLayout((10 * width) / 11, (5 * height) / 8);
 
-            for(int i=0 ; i<70; i++){
+            for(int i=0 ; i<200; i++){
                 mData.add(i*5);
             }
 
@@ -85,8 +84,8 @@ public class PickerDialog extends Dialog  {
                             selected = position;
                             mAdapter.setSelected(selected);
                             mAdapter.notifyDataSetChanged();
-                            onBackPressed();
-
+                            mInterface.onPickerDialogDismiss(mData.get(selected), liftIndex);
+                            dismiss();
                         }
                         @Override
                         public void onItemLongClick(View view, int position) {
@@ -103,12 +102,11 @@ public class PickerDialog extends Dialog  {
 
     @Override
     protected void onStop(){
-        mInterface.onPickerDialogDismiss(mData.get(selected), position);
+       // mInterface.onPickerDialogDismiss(mData.get(selected), position);
     }
 
     @Override
     public void onBackPressed(){
-        mInterface.onPickerDialogDismiss(mData.get(selected), position);
         dismiss();
     }
 

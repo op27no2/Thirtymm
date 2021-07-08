@@ -13,6 +13,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.BLUETOOTH"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <uses-feature android:name="android.hardware.location.gps" />
 
@@ -73,6 +74,14 @@
         <meta-data android:name="android.appwidget.provider"
             android:resource="@xml/widget_provider" />
     </receiver>
+
+    <receiver android:name="op27no2.fitness.Centurion2.Database.AlarmReceiver">
+        <intent-filter>
+            <action android:name="android.intent.action.BOOT_COMPLETED"/>
+        </intent-filter>
+    </receiver>
+
+
 
 </application>
 

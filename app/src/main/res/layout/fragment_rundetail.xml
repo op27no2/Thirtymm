@@ -23,15 +23,22 @@
             android:text="Workout Detail"
             android:textColor="#FFFFFF"
             android:textSize="20sp" />
+        <ImageView
+            android:id="@+id/upload"
+            android:layout_toLeftOf="@+id/save"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center"
+            android:layout_width="@dimen/icon_size"
+            android:layout_height="@dimen/icon_size"
+            android:src="@drawable/ic_file_upload"/>
 
         <ImageView
             android:id="@+id/save"
-            android:padding="20dp"
             android:layout_centerVertical="true"
             android:layout_alignParentRight="true"
             android:layout_gravity="center"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:layout_width="@dimen/icon_size"
+            android:layout_height="@dimen/icon_size"
             android:src="@drawable/ic_save"/>
 
     </RelativeLayout>
