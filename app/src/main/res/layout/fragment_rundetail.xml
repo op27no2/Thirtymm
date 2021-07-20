@@ -805,7 +805,7 @@
                     />
 
 
-                <TextView
+<!--                <TextView
                     android:id="@+id/counttime"
                     android:layout_centerHorizontal="true"
                     android:layout_width="wrap_content"
@@ -814,12 +814,10 @@
                     android:textSize="70sp"
                     android:background="@android:color/transparent"
                     android:textColor="@color/colorPrimary"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content" />-->
 
-  <!--             distance overlay on map, not currently used
                     <TextView
-                    android:id="@+id/distance"
-                    android:layout_below="@+id/counttime"
+                    android:id="@+id/map_distance"
                     android:layout_centerHorizontal="true"
                     android:layout_width="wrap_content"
                     android:gravity="center"
@@ -827,7 +825,7 @@
                     android:textSize="30sp"
                     android:background="@android:color/transparent"
                     android:textColor="@color/colorPrimary"
-                    android:layout_height="wrap_content" />-->
+                    android:layout_height="wrap_content" />
 
 
             </RelativeLayout>

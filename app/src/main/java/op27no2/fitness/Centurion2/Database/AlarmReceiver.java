@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 
+import java.util.List;
+
 import op27no2.fitness.Centurion2.fragments.lifting.LiftingWorkout;
 
 public class AlarmReceiver extends BroadcastReceiver {
@@ -16,7 +18,8 @@ public class AlarmReceiver extends BroadcastReceiver {
         new AsyncTask<Void, Void, Void>() {
             protected void onPreExecute() {}
             protected Void doInBackground(Void... unused) {
-                LiftingWorkout mLiftingWorkout = AppDatabase.getAppDatabase(context).lwDAO().findById(0);
+                List<LiftingWorkout> mLiftingWorkout = AppDatabase.getAppDatabase(context).lwDAO().getAll();
+
                 return null;}
             protected void onPostExecute(Void unused) {}
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);

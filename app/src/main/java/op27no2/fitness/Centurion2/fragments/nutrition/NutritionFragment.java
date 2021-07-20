@@ -352,7 +352,6 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
             }
         });
 
-
         flag1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -360,7 +359,7 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                 valueHold.add(0);
                 valueHold.add(0);
                 valueHold.add(0);
-                if(mNutritionDay.getFlags() != null && mNutritionDay.getFlags().size()!=0) {
+                if(mNutritionDay.getFlags() != null && mNutritionDay.getFlags().size()!=0 ) {
                     valueHold = mNutritionDay.getFlags();
                 }
                 if(flag1True){
@@ -380,11 +379,11 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
         flag2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ArrayList<Integer> valueHold = new ArrayList<Integer>();
+                ArrayList<Integer> valueHold = new ArrayList<Integer>(3);
                 valueHold.add(0);
                 valueHold.add(0);
                 valueHold.add(0);
-                if(mNutritionDay.getFlags() != null) {
+                if(mNutritionDay.getFlags() != null && mNutritionDay.getFlags().size()!=0 ) {
                     valueHold = mNutritionDay.getFlags();
                 }
                 if(flag2True){
@@ -404,11 +403,11 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
             @Override
             public void onClick(View view) {
                 //TODO can probably just use the class variables instead of fetching things here
-                ArrayList<Integer> valueHold = new ArrayList<Integer>();
+                ArrayList<Integer> valueHold = new ArrayList<Integer>(3);
                 valueHold.add(0);
                 valueHold.add(0);
                 valueHold.add(0);
-                if(mNutritionDay.getFlags() != null) {
+                if(mNutritionDay.getFlags() != null && mNutritionDay.getFlags().size()!=0 ) {
                     valueHold = mNutritionDay.getFlags();
                 }
                 if(flag3True){
@@ -616,7 +615,8 @@ public class NutritionFragment extends Fragment implements CalendarDialogInterfa
                     mNutritionDay.setNames(mNames);
                     mNutritionDay.setValues(mValues);
                     mNutritionDay.setDate(formattedDate);
-                    mNutritionDay.setDateMillis(cal.getTimeInMillis());
+                    Calendar mcal = Calendar.getInstance();
+                    mNutritionDay.setDateMillis(mcal.getTimeInMillis());
                     System.out.println("min set time millis: "+cal.getTimeInMillis());
 
 

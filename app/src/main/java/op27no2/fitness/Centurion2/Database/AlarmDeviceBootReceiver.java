@@ -18,8 +18,8 @@ public class AlarmDeviceBootReceiver extends BroadcastReceiver {
             AlarmManager alarmManager =
                     (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                    10000,
-                    AlarmManager.INTERVAL_HALF_HOUR, pendingIntent);
+                    5000,
+                    5000, pendingIntent);
             Toast.makeText(context, "Alarm Set", Toast.LENGTH_SHORT).show();
 
         }

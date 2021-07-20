@@ -94,7 +94,10 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                         mDay.setNames(mNames);
                         mDay.setValues(mValues);
                         mDay.setDate(date);
-                       // mRepository.insertNutrition(mDay);
+                        Calendar mcal = Calendar.getInstance();
+                        mDay.setDateMillis(mcal.getTimeInMillis());
+
+                        // mRepository.insertNutrition(mDay);
 
                        long id = AppDatabase.getAppDatabase(context).ntDAO().insert(mDay);
                        mDay = AppDatabase.getAppDatabase(context).ntDAO().findById((int) id);
@@ -217,7 +220,6 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                     mDay = AppDatabase.getAppDatabase(context).ntDAO().findByDate(date);
                     mGoalTopList = new ArrayList<GoalsDetail>(AppDatabase.getAppDatabase(context).glDAO().getAll());
 
-                    Calendar cal = Calendar.getInstance();
 
                     //   if(mDay == null || mDay.getValues() == null || mDay.getValues().size() == 0){
                     if (mDay == null) {
@@ -232,8 +234,8 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                         mDay.setNames(mNames);
                         mDay.setValues(mValues);
                         mDay.setDate(date);
-                        mDay.setDateMillis(cal.getTimeInMillis());
-                        //mRepository.insertNutrition(mDay);
+                        Calendar mcal = Calendar.getInstance();
+                        mDay.setDateMillis(mcal.getTimeInMillis());                        //mRepository.insertNutrition(mDay);
                         mDay.setGoalList(mGoalTopList);
 
                         long id = AppDatabase.getAppDatabase(context).ntDAO().insert(mDay);

@@ -45,15 +45,18 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         intent.putExtra(EXTRA_MESSAGE, message);*/
 
         //TODO bring back intro and create firstlogin logic
-     //   startActivity(intent);
+        if(prefs.getBoolean("firstrunscreen", true)==true) {
+            startActivity(intent);
+            edt.putBoolean("firstrunscreen",false).apply();
+        }
 
         Intent alarmIntent = new Intent(MainActivity.this, AlarmReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0, alarmIntent, 0);
         AlarmManager alarmManager =
                 (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
         alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            10000,
-            60000, pendingIntent);
+            5000,
+            5000, pendingIntent);
 
 
         // Passing each menu ID as a set of Ids because each

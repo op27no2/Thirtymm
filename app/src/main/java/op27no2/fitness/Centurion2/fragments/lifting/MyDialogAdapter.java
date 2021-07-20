@@ -117,7 +117,7 @@ public class MyDialogAdapter extends RecyclerView.Adapter<MyDialogAdapter.ViewHo
                 int width = metrics.widthPixels;
                 dialog.getWindow().setLayout((8 * width) / 9, LinearLayout.LayoutParams.WRAP_CONTENT);
                 TextView mText = dialog.findViewById(R.id.confirm_title);
-                mText.setText("Are you sure you want to clear the run path?");
+                mText.setText("Delete Lift Type?");
 
                 dialog.findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
                     @Override

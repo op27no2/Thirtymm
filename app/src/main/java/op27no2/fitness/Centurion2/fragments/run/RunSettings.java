@@ -559,6 +559,8 @@ public class RunSettings extends Fragment {
     public void finishUI(){
         mAdapter.notifyDataSetChanged();
         mAdapter2.notifyDataSetChanged();
+
+
     }
 
 

@@ -63,6 +63,7 @@
 
     <FrameLayout
         android:id="@+id/frame"
+        android:clickable="true"
         android:layout_below="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -70,6 +71,7 @@
     <com.mapbox.mapboxsdk.maps.MapView
         android:layout_below="@+id/toolbar"
         android:id="@+id/mapView"
+        android:clickable="true"
         android:background="@color/lightgrey"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
@@ -85,28 +87,31 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-        <ImageView
-            android:id="@+id/locate"
-            android:padding="15dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="10dp"
-            android:layout_marginBottom="10dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginTop="5dp"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:elevation="5dp"
-            android:layout_gravity="center"
-            android:background="@drawable/circle_white_plain"
-            android:gravity="center"
-            android:clickable="true"
-            android:src="@drawable/ic_gps_fixed"
-            />
+
+            <ImageView
+                android:id="@+id/edit_sketch"
+                android:rotation="270"
+                android:padding="15dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="10dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="5dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:elevation="5dp"
+                android:layout_gravity="center"
+                android:background="@drawable/circle_white_plain"
+                android:gravity="center"
+                android:clickable="true"
+                android:src="@android:drawable/ic_menu_edit"
+                />
+
             <ImageView
                 android:id="@+id/edit_map"
                 android:padding="15dp"
-                android:layout_toLeftOf="@+id/locate"
+                android:layout_toLeftOf="@+id/edit_sketch"
                 android:layout_alignParentBottom="true"
                 android:layout_marginRight="5dp"
                 android:layout_marginBottom="10dp"
@@ -191,6 +196,21 @@
                 />
 
 
+            <ImageView
+                android:id="@+id/extrude_button"
+                android:rotation="270"
+                android:padding="15dp"
+                android:layout_alignParentLeft="true"
+                android:layout_margin="10dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:elevation="5dp"
+                android:layout_gravity="center"
+                android:background="@drawable/circle_white_plain"
+                android:gravity="center"
+                android:clickable="true"
+                android:src="@android:drawable/ic_menu_sort_by_size"
+                />
 
             <ImageView
                 android:id="@+id/erase_button"
@@ -210,9 +230,9 @@
                 />
 
             <ImageView
-                android:id="@+id/extrude_button"
-                android:rotation="270"
+                android:id="@+id/locate"
                 android:padding="15dp"
+                android:layout_below="@+id/erase_button"
                 android:layout_alignParentLeft="true"
                 android:layout_margin="10dp"
                 android:layout_width="50dp"
@@ -222,7 +242,7 @@
                 android:background="@drawable/circle_white_plain"
                 android:gravity="center"
                 android:clickable="true"
-                android:src="@android:drawable/ic_menu_sort_by_size"
+                android:src="@drawable/ic_gps_fixed"
                 />
 
             <com.rilixtech.materialfancybutton.MaterialFancyButton
@@ -273,7 +293,7 @@
             <ImageView
                 android:id="@+id/view_rotation"
                 android:padding="15dp"
-                android:layout_toLeftOf="@+id/locate"
+                android:layout_toLeftOf="@+id/view_rotation2"
                 android:layout_above="@+id/edit_map"
                 android:layout_marginRight="5dp"
                 android:layout_marginBottom="5dp"
@@ -341,6 +361,17 @@
                 android:textSize="30sp"
                 android:background="@android:color/transparent"
                 android:textColor="@color/colorPrimary"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/sketch_distance"
+                android:layout_below="@+id/distance"
+                android:layout_centerHorizontal="true"
+                android:layout_width="wrap_content"
+                android:gravity="center"
+                android:text=""
+                android:textSize="30sp"
+                android:background="@android:color/transparent"
+                android:textColor="@color/blue"
                 android:layout_height="wrap_content" />
 
 

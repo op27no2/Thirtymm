@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.TimeZone;
 
 import op27no2.fitness.Centurion2.fragments.run.TrackedPoint;
 
@@ -22,7 +23,6 @@ import static com.sweetzpot.tcxzpot.Activities.activities;
 import static com.sweetzpot.tcxzpot.Intensity.ACTIVE;
 import static com.sweetzpot.tcxzpot.Notes.notes;
 import static com.sweetzpot.tcxzpot.Sport.RUNNING;
-import static com.sweetzpot.tcxzpot.TCXDate.tcxDate;
 import static com.sweetzpot.tcxzpot.Track.trackWith;
 import static com.sweetzpot.tcxzpot.TriggerMethod.MANUAL;
 import static com.sweetzpot.tcxzpot.builders.ActivityBuilder.activity;
@@ -46,7 +46,9 @@ public class TcxHelper {
         ArrayList<Trackpoint> tcxPoints = new ArrayList<Trackpoint>();
         for(int i=0; i<mPoints.size(); i++){
             TrackedPoint point = mPoints.get(i);
-            cal.setTimeInMillis(point.getTimestamp());
+            //TODO FIX THIS GET TIMEZONE?
+            int offset = TimeZone.getDefault().getRawOffset();
+            cal.setTimeInMillis(point.getTimestamp()-offset);
             TCXDate mDate = new TCXDate(cal.getTime());
             if(i==0){
                 startTime = mDate;
@@ -56,8 +58,6 @@ public class TcxHelper {
             Trackpoint mTrackPoint = new Trackpoint(mDate,mPosition,point.getPoint().altitude(), point.getDistance(),null,null,null,null);
             tcxPoints.add(mTrackPoint);
         }
-
-
 
         FileSerializer serializer = null;
         ContextWrapper cw = new ContextWrapper(getApplicationContext());
@@ -93,9 +93,10 @@ public class TcxHelper {
         trainingCenterDatabase()
                 .withActivities(activities(
                         activity(RUNNING)
-                                .withID(tcxDate(12, cal.getTime().getMonth(), cal.getTime().getYear(), cal.getTime().getHours(), 45, 0))
+                             //   .withID(tcxDate(12, cal.getTime().getMonth(), cal.getTime().getYear(), cal.getTime().getHours(), 45, 0))
+                                .withID(startTime)
                                 .withCreator(
-                                        device("Test sensor")
+                                        device("Lift Run Eat")
                                                 .withVersion(version().major(1).minor(0))
                                                 .withUnitId(1)
                                                 .withProductId(1234567)
@@ -104,7 +105,7 @@ public class TcxHelper {
                                 .withLaps(mLaps)
                 ))
                 .withAuthor(
-                        application("BreathZpot")
+                        application("Lift Run Eat")
                                 .withBuild(aBuild()
                                         .withVersion(version().major(2).minor(3)))
                                 .withLanguageID("en")

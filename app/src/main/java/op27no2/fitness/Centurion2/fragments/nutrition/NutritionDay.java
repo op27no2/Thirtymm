@@ -37,7 +37,7 @@ public class NutritionDay {
     private ArrayList<String> mNames = new ArrayList<String>();
 
     @ColumnInfo(name = "values")
-    private ArrayList<Integer> mValues = new ArrayList<Integer>();
+    private ArrayList<Integer> mValues = new ArrayList<Integer>(3);
 
     @ColumnInfo(name = "flags")
     private ArrayList<Integer> mFlags = new ArrayList<Integer>();

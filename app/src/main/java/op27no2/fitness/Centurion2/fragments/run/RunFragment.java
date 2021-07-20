@@ -60,9 +60,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -105,11 +105,16 @@ import com.rilixtech.materialfancybutton.MaterialFancyButton;
 import com.spotify.android.appremote.api.ConnectionParams;
 import com.spotify.android.appremote.api.Connector;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
+import com.sweetzpot.stravazpot.activity.api.ActivityAPI;
+import com.sweetzpot.stravazpot.activity.model.Activity;
+import com.sweetzpot.stravazpot.activity.model.ActivityType;
 import com.sweetzpot.stravazpot.authenticaton.api.AuthenticationAPI;
 import com.sweetzpot.stravazpot.authenticaton.model.AppCredentials;
 import com.sweetzpot.stravazpot.authenticaton.model.LoginResult;
 import com.sweetzpot.stravazpot.common.api.AuthenticationConfig;
 import com.sweetzpot.stravazpot.common.api.StravaConfig;
+import com.sweetzpot.stravazpot.common.model.Distance;
+import com.sweetzpot.stravazpot.common.model.Time;
 import com.sweetzpot.stravazpot.upload.api.UploadAPI;
 import com.sweetzpot.stravazpot.upload.model.DataType;
 import com.sweetzpot.stravazpot.upload.model.UploadActivityType;
@@ -166,6 +171,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private MapboxMap mapboxMap;
     private Vibrator rabbit;
     private ArrayList<Point> routeCoordinates = new ArrayList<Point>();
+    private ArrayList<Point> sketchCoordinates = new ArrayList<Point>();
     private ArrayList<TrackedPoint> trackedPoints = new ArrayList<TrackedPoint>();
     private double maxalt;
     private double minalt;
@@ -175,6 +181,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private Style mStyle;
     private TextView timerText;
     private TextView distanceText;
+    private TextView sketchDistanceText;
     private ImageView edit;
     private long startTime;
     private RunService timerService;
@@ -183,6 +190,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private SharedPreferences.Editor edt;
     private int locationRequestCode = 1000;
     private boolean DrawModeActive = false;
+    private int DrawMode = 0;
     private boolean trackBearing = true;
     private int cameraY = 90;
     private MaterialFancyButton startButton;
@@ -208,6 +216,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private TextView measurementValue;
     private ImageView intervalButton;
     private ImageView alertButton;
+    private ImageView editSketch;
+
 
     private Integer saveTime;
     private float saveDistance;
@@ -253,6 +263,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         rabbit = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
         timerText = view.findViewById(R.id.counttime);
         distanceText = view.findViewById(R.id.distance);
+        sketchDistanceText = view.findViewById(R.id.sketch_distance);
         prefs = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         edt = getActivity().getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
         globalFeatureList = getFeatureList();
@@ -412,54 +423,62 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
         eraseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (timerService != null) {
-                    final Dialog dialog = new Dialog(getActivity());
-                    dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-                    dialog.setContentView(R.layout.dialog_delete);
-                    DisplayMetrics metrics = getActivity().getResources().getDisplayMetrics();
-                    int width = metrics.widthPixels;
-                    dialog.getWindow().setLayout((8 * width) / 9, LinearLayout.LayoutParams.WRAP_CONTENT);
-                    TextView mText = dialog.findViewById(R.id.confirm_title);
-                    mText.setText("Are you sure you want to clear the run path?");
+                if(DrawMode == 1) {
+                    if (timerService != null) {
+                        final Dialog dialog = new Dialog(getActivity());
+                        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                        dialog.setContentView(R.layout.dialog_delete);
+                        DisplayMetrics metrics = getActivity().getResources().getDisplayMetrics();
+                        int width = metrics.widthPixels;
+                        dialog.getWindow().setLayout((8 * width) / 9, LinearLayout.LayoutParams.WRAP_CONTENT);
+                        TextView mText = dialog.findViewById(R.id.confirm_title);
+                        mText.setText("Are you sure you want to clear the run path?");
 
-                    dialog.findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            routeCoordinates.clear();
-                            trackedPoints.clear();
-                            clearExtrusion();
-                            try {
-                                updateLine();
-                            } catch (JSONException e) {
-                                e.printStackTrace();
+                        dialog.findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                routeCoordinates.clear();
+                                trackedPoints.clear();
+                                clearExtrusion();
+                                try {
+                                    updateLine();
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                                dialog.dismiss();
                             }
-                            dialog.dismiss();
-                        }
-                    });
-                    dialog.findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            dialog.dismiss();
-                        }
-                    });
-                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                    dialog.show();
+                        });
+                        dialog.findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                dialog.dismiss();
+                            }
+                        });
+                        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                        dialog.show();
 
-                } else {
-                    routeCoordinates.clear();
-                    trackedPoints.clear();
-                    clearExtrusion();
+                    } else {
+                        routeCoordinates.clear();
+                        trackedPoints.clear();
+                        clearExtrusion();
+                        try {
+                            updateLine();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }else if(DrawMode ==2){
+                    sketchCoordinates.clear();
                     try {
-                        updateLine();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                        updateSketchLine();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                     }
                 }
 
 
             }
         });
-
 
         ImageView mLocate = view.findViewById(R.id.locate);
         mLocate.setOnClickListener(new View.OnClickListener() {
@@ -491,21 +510,73 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
             }
         });
+        editSketch = view.findViewById(R.id.edit_sketch);
+        editSketch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                rabbit.vibrate(50);
+                switch(DrawMode){
+                    case 0:
+                        //i.e.was zero setting to 1
+                        DrawMode = 2;
+                        mapView.setOnTouchListener(customOnTouchListener);
+                        edit.setBackgroundResource(R.drawable.circle_white_plain);
+                        editSketch.setBackgroundResource(R.drawable.circle_blue_plain);
+                        break;
+                    case 1:
+                        DrawMode = 2;
+                        mapView.setOnTouchListener(customOnTouchListener);
+                        edit.setBackgroundResource(R.drawable.circle_white_plain);
+                        editSketch.setBackgroundResource(R.drawable.circle_blue_plain);
+                        break;
+                    case 2:
+                        DrawMode = 0;
+                        mapView.setOnTouchListener(null);
+                        edit.setBackgroundResource(R.drawable.circle_white_plain);
+                        editSketch.setBackgroundResource(R.drawable.circle_white_plain);
+                        break;
+                    default:
+                        DrawMode = 0;
+                        mapView.setOnTouchListener(null);
+                        edit.setBackgroundResource(R.drawable.circle_white_plain);
+                        editSketch.setBackgroundResource(R.drawable.circle_white_plain);
+                        break;
+                }
+            }
+        });
+
 
         edit = view.findViewById(R.id.edit_map);
         edit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 rabbit.vibrate(50);
-                if (!DrawModeActive) {
-                    enableMapDrawing();
-                } else {
-                    disableMapDrawing();
+                switch(DrawMode){
+                    case 0:
+                        DrawMode = 1;
+                        mapView.setOnTouchListener(customOnTouchListener);
+                        edit.setBackgroundResource(R.drawable.circle_red_plain);
+                        editSketch.setBackgroundResource(R.drawable.circle_white_plain);
+                        break;
+                    case 1:
+                        DrawMode = 0;
+                        mapView.setOnTouchListener(null);
+                        edit.setBackgroundResource(R.drawable.circle_white_plain);
+                        editSketch.setBackgroundResource(R.drawable.circle_white_plain);
+                        break;
+                    case 2:
+                        DrawMode = 1;
+                        mapView.setOnTouchListener(customOnTouchListener);
+                        edit.setBackgroundResource(R.drawable.circle_red_plain);
+                        editSketch.setBackgroundResource(R.drawable.circle_white_plain);
+                        break;
+                    default:
+                        DrawMode = 0;
+                        mapView.setOnTouchListener(null);
+                        edit.setBackgroundResource(R.drawable.circle_white_plain);
+                        editSketch.setBackgroundResource(R.drawable.circle_white_plain);
+                        break;
                 }
-                // lol this route snap feature sucks?
-                /*if(routeCoordinates !=null) {
-                    requestMapMatched(routeCoordinates);
-                }*/
             }
         });
 
@@ -601,7 +672,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                     ));
                 }
             }
-
             // The layer properties for our line. This is where we make the line dotted, set the
             // color, etc.
             if (mStyle.getLayer("linelayer") == null) {
@@ -610,7 +680,6 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                         lineColor(Color.parseColor("#e55e5e"))
                 ));
             }
-
 
             float total = 0f;
             for (int i = 0; i < routeCoordinates.size() - 1; i++) {
@@ -621,6 +690,47 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             }
             distanceText.setText(getMiles(total));
 
+        }
+    }
+
+    private void updateSketchLine() throws JSONException {
+        //     System.out.println("update line called "+routeCoordinates);
+        if (mStyle != null && mStyle.isFullyLoaded()) {
+            if (mStyle.getSource("line-source-sketch") == null) {
+                mStyle.addSource(new GeoJsonSource("line-source-sketch",
+                        FeatureCollection.fromFeatures(new Feature[]{Feature.fromGeometry(
+                                LineString.fromLngLats(sketchCoordinates)
+                        )})));
+            } else {
+                GeoJsonSource line = mStyle.getSourceAs("line-source-sketch");
+                if (line != null) {
+                    line.setGeoJson(FeatureCollection.fromFeature(
+                            Feature.fromGeometry(LineString.fromLngLats(sketchCoordinates))
+                    ));
+                }
+            }
+
+            // The layer properties for our line. This is where we make the line dotted, set the
+            // color, etc.
+            if (mStyle.getLayer("linelayersketch") == null) {
+                mStyle.addLayer(new LineLayer("linelayersketch", "line-source-sketch").withProperties(
+                        lineWidth(5f),
+                        lineColor(ContextCompat.getColor(getActivity(), R.color.blue))
+                ));
+            }
+
+            float total = 0f;
+            for (int i = 0; i < sketchCoordinates.size() - 1; i++) {
+                float[] distance = new float[2];
+                Location.distanceBetween(sketchCoordinates.get(i).latitude(), sketchCoordinates.get(i).longitude(), sketchCoordinates.get(i + 1).latitude(), sketchCoordinates.get(i + 1).longitude(), distance);
+
+                total = total + distance[0];
+            }
+            sketchDistanceText.setText(getMiles(total));
+            if(total == 0){
+                sketchDistanceText.setVisibility(View.GONE);
+            }else{
+                sketchDistanceText.setVisibility(View.VISIBLE); }
 
         }
     }
@@ -633,7 +743,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             if (j > 10) {
                 System.out.println("update bearing called");
                 Location.distanceBetween(routeCoordinates.get(j - 10).latitude(), routeCoordinates.get(j - 10).longitude(), routeCoordinates.get(j).latitude(), routeCoordinates.get(j).longitude(), distance2);
-                if (!DrawModeActive && distance2[0] > 1) {
+                if (DrawMode != 1 && DrawMode!=2 && distance2[0] > 1) {
                     double bearing = getDirection(routeCoordinates.get(j - 1).latitude(), routeCoordinates.get(j - 1).longitude(), routeCoordinates.get(j).latitude(), routeCoordinates.get(j).longitude());
                     CameraPosition position = new CameraPosition.Builder()
                             .bearing(bearing)
@@ -687,12 +797,17 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
             @Override
             public boolean onMapClick(@NonNull LatLng point) {
                 trackBearing = false;
-                if (DrawModeActive) {
+                if (DrawMode == 1) {
                     routeCoordinates.add(Point.fromLngLat(point.getLongitude(), point.getLatitude()));
-                    System.out.println("map clicked: " + point.getLongitude() + " " + point.getLatitude() + " " + point.getAltitude());
-
                     try {
                         updateLine();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }else if (DrawMode ==2){
+                    sketchCoordinates.add(Point.fromLngLat(point.getLongitude(), point.getLatitude()));
+                    try {
+                        updateSketchLine();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -1174,25 +1289,35 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     private View.OnTouchListener customOnTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
-            trackBearing = false;
 
-            LatLng latLngTouchCoordinate = mapboxMap.getProjection().fromScreenLocation(
-                    new PointF(motionEvent.getX(), motionEvent.getY()));
+                trackBearing = false;
+                LatLng latLngTouchCoordinate = mapboxMap.getProjection().fromScreenLocation(
+                        new PointF(motionEvent.getX(), motionEvent.getY()));
 
-            Point screenTouchPoint = Point.fromLngLat(latLngTouchCoordinate.getLongitude(),
-                    latLngTouchCoordinate.getLatitude());
+                Point screenTouchPoint = Point.fromLngLat(latLngTouchCoordinate.getLongitude(),
+                        latLngTouchCoordinate.getLatitude());
 
-            // Draw the line on the map as the finger is dragged along the map
-            routeCoordinates.add(screenTouchPoint);
-            try {
-                updateLine();
-            } catch (JSONException e) {
-                e.printStackTrace();
-                System.out.println("JSON error: " + e.getMessage());
-            }
-            //enableMapMovement();
+                // Draw the line on the map as the finger is dragged along the map
+                if (DrawMode == 1) {
+                    routeCoordinates.add(screenTouchPoint);
+                    try {
+                        updateLine();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        System.out.println("JSON error: " + e.getMessage());
+                    }
+                } else if (DrawMode == 2) {
+                    sketchCoordinates.add(screenTouchPoint);
+                    try {
+                        updateSketchLine();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        System.out.println("JSON error: " + e.getMessage());
+                    }
+                }
+                //enableMapMovement();
+                return true;
 
-            return true;
         }
     };
 
@@ -1203,6 +1328,7 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
     /**
      * Enable drawing on the map by setting the custom touch listener on the {@link MapView}
      */
+
     private void enableMapDrawing() {
         mapView.setOnTouchListener(customOnTouchListener);
         edit.setBackgroundResource(R.drawable.circle_red_plain);
@@ -2034,8 +2160,14 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
 
                     distanceText.setText("0");
+                    sketchCoordinates.clear();
+                    try {
+                        updateSketchLine();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
 
-                    //get fields from EditTexts
+                //get fields from EditTexts
 
                     //
                     //saveDistance = (int) Math.floor(Float.parseFloat(mEditDistance.getText().toString()) * 1609.34400);
@@ -2084,7 +2216,20 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                 }
                 timerService = null;
                 timerText.setText("0:00");
-                distanceText.setText("0");
+                routeCoordinates.clear();
+                sketchCoordinates.clear();
+                trackedPoints.clear();
+                try {
+                    updateLine();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    updateSketchLine();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
                 dialog.dismiss();
             }
         });
@@ -2216,6 +2361,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
         ArrayList<Integer> mvals = mNutritionDay.getValues();
         cals = cals - saveCals;
+        Toast.makeText(getActivity(), "Cals Updated:-"+saveCals +" = "+cals , Toast.LENGTH_LONG).show();
+
         mvals.set(0, cals);
         mNutritionDay.setValues(mvals);
         mRepository.updateNutrition(mNutritionDay);
@@ -2305,18 +2452,23 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
 
     //TODO STORE COORDS ELSEWHERE THIS IS KILLING THE GODDAMN APP BY SLOWING SHAREDPREFERENCES
     public String saveCoordinates(ArrayList<Point> coords, String uid){
-            Gson gson = new Gson();
+        /*    Gson gson = new Gson();
             String json = gson.toJson(coords);
             System.out.println("SAVE COORDS JSON: " + json);
             edt.putString(uid, json);
             edt.commit();
+            */
+
             TrackedPoints savePoints = new TrackedPoints(trackedPoints);
+            for(int i=0;i<routeCoordinates.size();i++){
+                if(savePoints.getTrackedPoints().get(i) !=null){
+                    savePoints.getTrackedPoints().get(i).setPoint(routeCoordinates.get(i));
+                }
+            }
            // would need to be in async, long id = AppDatabase.getAppDatabase(getActivity()).trackedPointsDAO().insert(savePoints);
             long id = mRepository.insertTrackedPoints(savePoints);
             String mID = Long.toString(id);
-
             return mID;
-
     }
 
     private void moveToBounds(){
@@ -2378,6 +2530,8 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                     mNutritionDay.setNames(mNames);
                     mNutritionDay.setValues(mValues);
                     mNutritionDay.setDate(formattedDate);
+                    Calendar mcal = Calendar.getInstance();
+                    mNutritionDay.setDateMillis(mcal.getTimeInMillis());
                     mRepository.insertNutrition(mNutritionDay);
                 } else {
                     System.out.println("found Day get names/values");
@@ -2499,16 +2653,16 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                 String mToken = null;
                 String mToken2 = null;
 
-                if(prefs.getBoolean("first_refresh", true) == true) {
+                if (prefs.getBoolean("first_refresh", true) == true) {
                     LoginResult result = api.getTokenForApp(AppCredentials.with(43815, "87571a766af016d9949d28929316f894bbc57938"))
                             .withCode(prefs.getString("code", "")) //original response token placed here as well.
                             .execute();
                     mToken = result.getAccessToken();
                     mToken2 = result.getRefreshToken();
-                    edt.putBoolean("first_refresh",false );
-                    edt.putString("refresh_token",mToken2 );
+                    edt.putBoolean("first_refresh", false);
+                    edt.putString("refresh_token", mToken2);
                     edt.apply();
-                }else {
+                } else {
                     AuthenticationConfig config2 = AuthenticationConfig.create()
                             .debug()
                             .build();
@@ -2526,20 +2680,34 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                         .debug()
                         .build();
 
-               /* ActivityAPI activityAPI = new ActivityAPI(sconfig);
-                Activity activity = activityAPI.createActivity("test upload")
-                        .ofType(ActivityType.RUN)
-                        .startingOn(Calendar.getInstance().getTime())
-                        .withElapsedTime(Time.seconds(333))
-                        .withDescription("test description")
-                        .withDistance(Distance.meters((int) 33333))
-                        .isPrivate(true)
-                        .withTrainer(true)
-                        .withCommute(false)
-                        .execute();*/
+                if (ActivityType.fromString(saveType.getName()) != null && trackedPoints.size()==0){
+                    ActivityAPI activityAPI = new ActivityAPI(sconfig);
+                    Activity activity = activityAPI.createActivity(saveTitle)
+                            .ofType(ActivityType.fromString(saveType.getName()))
+                            .startingOn(Calendar.getInstance().getTime())
+                            .withElapsedTime(Time.seconds(saveTime/1000))
+                            .withDescription(saveDescription)
+                            .withDistance(Distance.meters(saveDistance))
+                            .isPrivate(false)
+                            .withTrainer(false)
+                            .withCommute(false)
+                            .execute();
+                } else if(trackedPoints.size()==0) {
+                    ActivityAPI activityAPI = new ActivityAPI(sconfig);
+                    Activity activity = activityAPI.createActivity(saveTitle)
+                            .ofType(ActivityType.WORKOUT)
+                            .startingOn(Calendar.getInstance().getTime())
+                            .withElapsedTime(Time.seconds(saveTime/1000))
+                            .withDescription(saveDescription)
+                            .withDistance(Distance.meters(saveDistance))
+                            .isPrivate(false)
+                            .withTrainer(false)
+                            .withCommute(false)
+                            .execute();
 
+                }else{
                 TcxHelper mHelper = new TcxHelper();
-                String mPath = mHelper.createTCX("testfile"+System.currentTimeMillis(), trackedPoints, (int) saveDistance, saveCals, saveTime);
+                String mPath = mHelper.createTCX("testfile" + System.currentTimeMillis(), trackedPoints, (int) saveDistance, saveCals, saveTime);
 
                 UploadAPI uploadAPI = new UploadAPI(sconfig);
                 UploadStatus uploadStatus = uploadAPI.uploadFile(new File(mPath))
@@ -2553,12 +2721,17 @@ public class RunFragment extends Fragment implements OnMapReadyCallback, Permiss
                         .withExternalID("test4")
                         .execute();
 
-                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(getActivity(), "Strava Upload Status: "+    uploadStatus.getStatus(), Toast.LENGTH_LONG).show();
-                    }
-                }, 15000);
+                    new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getActivity(), "Strava Upload Status: "+    uploadStatus.getStatus(), Toast.LENGTH_LONG).show();
+                        }
+                    }, 15000);
+
+                }
+
+
+
 
 
                 return null;

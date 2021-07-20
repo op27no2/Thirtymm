@@ -363,7 +363,7 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
     @Override
     public void onValueDialogDismiss(float value, int position) {
         System.out.println("dialog position: "+position+" value: "+value);
-        String unit = prefs.getInt("units",0) == 0 ? "lbs" : "kg";
+        String unit = prefs.getInt("units",0) == 0 ? "lb" : "kg";
         switch(position){
             case 0:
                 int myValue = (int) -(Math.abs(value));
@@ -408,7 +408,7 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
                 edt.apply();
                 break;
             case 4:
-                buttonWeight.setText("Weight:\n"+Integer.toString((int) value)+unit);
+                buttonWeight.setText("Weight:\n"+Integer.toString((int) value)+unit+"s");
                 mGoalList.get(getGoalIndex("Protein")).setGoalType(2);
                 mGoalList.get(getGoalIndex("Protein")).setGoalLimitLow((int) Math.floor((value*prefs.getFloat("protein",0.6f)*7)));
                 mRepository.updateGoalSettingList(mGoalList);
@@ -439,13 +439,13 @@ public class FirstRunActivity extends AppCompatActivity implements ValueDialogIn
         buttonVolume.setText("Volume Goal:\n(Sets/Muscle/Week):\n"+Integer.toString(prefs.getInt("volume",15)));
         buttonWeight.setText("Weight:\n"+Integer.toString(prefs.getInt("weight",180))+" lbs");
         buttonProtein.setText("Protein:\n"+Float.toString(prefs.getFloat("protein",0.6f))+"g per lb");*/
-        String unit = prefs.getInt("units",0) == 0 ? "lbs" : "kg";
+        String unit = prefs.getInt("units",0) == 0 ? "lb" : "kg";
 
         buttonDeficit.setText("Deficit Goal\n"+mGoalList.get(getGoalIndex("Cals")).getGoalLimitHigh()/7+" Calories per Day\n (= "+mGoalList.get(getGoalIndex("Cals")).getGoalLimitHigh()+" per Week)");
         buttonMaintenance.setText("Maintenance Goal:\n"+"Base Cals +/- "+mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow()/7 +" per Day\n"+ "(= +/-" +mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow() +" per Week");
         buttonSurplus.setText("Surplus Goal:\n"+mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow()/7+"+ Calories per Day\n (= "+mGoalList.get(getGoalIndex("Cals")).getGoalLimitLow()+ "per Week)");
         buttonVolume.setText("Volume Goal:\n(Sets per Muscle per Week):\n"+mGoalList.get(getGoalIndex("Sets")).getGoalLimitLow());
-        buttonWeight.setText("Weight:\n"+Integer.toString(prefs.getInt("weight",180))+" "+unit);
+        buttonWeight.setText("Weight:\n"+Integer.toString(prefs.getInt("weight",180))+" "+unit+"s");
         buttonProtein.setText("Protein:\n"+Float.toString(prefs.getFloat("protein",0.6f))+"g per "+unit);
 
     }

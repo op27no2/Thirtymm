@@ -104,11 +104,16 @@ import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.mapboxsdk.utils.ColorUtils;
 import com.rilixtech.materialfancybutton.MaterialFancyButton;
+import com.sweetzpot.stravazpot.activity.api.ActivityAPI;
+import com.sweetzpot.stravazpot.activity.model.Activity;
+import com.sweetzpot.stravazpot.activity.model.ActivityType;
 import com.sweetzpot.stravazpot.authenticaton.api.AuthenticationAPI;
 import com.sweetzpot.stravazpot.authenticaton.model.AppCredentials;
 import com.sweetzpot.stravazpot.authenticaton.model.LoginResult;
 import com.sweetzpot.stravazpot.common.api.AuthenticationConfig;
 import com.sweetzpot.stravazpot.common.api.StravaConfig;
+import com.sweetzpot.stravazpot.common.model.Distance;
+import com.sweetzpot.stravazpot.common.model.Time;
 import com.sweetzpot.stravazpot.upload.api.UploadAPI;
 import com.sweetzpot.stravazpot.upload.model.DataType;
 import com.sweetzpot.stravazpot.upload.model.UploadActivityType;
@@ -173,7 +178,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
     private Style mStyle;
     private TextView timerText;
-    private TextView distanceText;
+    private TextView mapDistanceText;
     private ImageView edit;
     private long startTime;
     private RunService timerService;
@@ -273,7 +278,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         Long time = Calendar.getInstance().getTimeInMillis();
         System.out.println("Current time => " + time);
         SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, ''yy");
-        formattedDate = df.format(c);
+      //  formattedDate = df.format(c);
 
         // saveDate is the edittext field in the save dialog, start it initially as formattedDate. User can change. Formatted date used as todays date elsewhere.
         saveDate = formattedDate;
@@ -301,7 +306,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         zoomOut.setOnTouchListener(handleZoomOut);
 
 
-        // TextView mText = holder.mView.findViewById(R.id.text_lift);
+        mapDistanceText = view.findViewById(R.id.map_distance);
         mText4 = view.findViewById(R.id.date);
         mEditDuration = view.findViewById(R.id.duration_value);
         mEditDistance = view.findViewById(R.id.distance_value);
@@ -602,7 +607,6 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         //END CHART SETUP
         //END CHART SETUP
 
-        getNutritionDayData();
         getRunWorkoutData();
         return view;
     }
@@ -937,7 +941,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
 
     private void updateLine() throws JSONException {
-             System.out.println("update line called "+routeCoordinates.get(0).toString());
+
         if(mStyle != null && mStyle.isFullyLoaded()) {
             if (mStyle.getSource("line-source") == null) {
                 mStyle.addSource(new GeoJsonSource("line-source",
@@ -972,7 +976,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
             total = total + distance[0];
         }
         //TODO DECIDE IF WE WANT DISTANCE TEXT HERE
-     //   distanceText.setText(getMiles(total));
+        mapDistanceText.setText(getMiles(total));
 
 
         }
@@ -2163,7 +2167,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
 
     private void setDialogText(RunType activity, float[] total){
-        mEditTitle.setText("Daily "+activity.getName());
+
         switch(activity.getDistanceUnits()){
             case 0:
                 //Miles
@@ -2289,20 +2293,28 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         mRunWorkout.setTitle(saveTitle);
         mRunWorkout.setWorkoutType(saveType);
 
-
         int cals = mNutritionDay.getValues().get(0);
         ArrayList<Integer> mvals = mNutritionDay.getValues();
         cals = cals - (saveCals-initialCals);
+
+        if((saveCals-initialCals)>0) {
+            Toast.makeText(getActivity(), formattedDate + " Calories Updated: +" + (saveCals - initialCals), Toast.LENGTH_LONG).show();
+        }
+        if((saveCals-initialCals)<0) {
+            Toast.makeText(getActivity(), formattedDate + " Calories Updated: -" + (saveCals - initialCals), Toast.LENGTH_LONG).show();
+        }
+        initialCals = saveCals;
         mvals.set(0, cals);
         mNutritionDay.setValues(mvals);
         mRepository.updateNutrition(mNutritionDay);
 
-
-        String bmp = saveBitmap(bMap,UUID.randomUUID().toString());
-        System.out.println("bmp string: "+bmp);
-        String coords = saveCoordinates(routeCoordinates,UUID.randomUUID().toString());
-        mRunWorkout.setImage(bmp);
-        mRunWorkout.setCoordinates(coords);
+        if(hasMap) {
+            String bmp = saveBitmap(bMap, UUID.randomUUID().toString());
+            System.out.println("bmp string: " + bmp);
+            String coords = saveCoordinates(routeCoordinates, UUID.randomUUID().toString());
+            mRunWorkout.setImage(bmp);
+            mRunWorkout.setCoordinates(coords);
+        }
 
         mRepository.updateRunWorkout(mRunWorkout);
         Toast.makeText(getActivity(), "Workout Updated", Toast.LENGTH_LONG).show();
@@ -2325,34 +2337,39 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 */
 
     private void startSnapShot() {
-        Style.Builder builder1 = new Style.Builder()
-                .fromUri(mapboxMap.getStyle().getUri())
-                .withSource(new GeoJsonSource("line-source",
-                        FeatureCollection.fromFeatures(new Feature[]{Feature.fromGeometry(
-                                LineString.fromLngLats(routeCoordinates)
-                        )})))
-                .withLayer(new LineLayer("linelayer", "line-source").withProperties(
-                        lineWidth(5f),
-                        lineColor(parseColor("#e55e5e"))
-                ));
+        if(hasMap) {
+            Style.Builder builder1 = new Style.Builder()
+                    .fromUri(mapboxMap.getStyle().getUri())
+                    .withSource(new GeoJsonSource("line-source",
+                            FeatureCollection.fromFeatures(new Feature[]{Feature.fromGeometry(
+                                    LineString.fromLngLats(routeCoordinates)
+                            )})))
+                    .withLayer(new LineLayer("linelayer", "line-source").withProperties(
+                            lineWidth(5f),
+                            lineColor(parseColor("#e55e5e"))
+                    ));
 
-        MapSnapshotter.Options snapShotOptions = new MapSnapshotter.Options(500, 500)
-                .withCameraPosition(mapboxMap.getCameraPosition())
-                .withRegion(mapboxMap.getProjection().getVisibleRegion().latLngBounds)
-                .withStyleBuilder(builder1);
+            MapSnapshotter.Options snapShotOptions = new MapSnapshotter.Options(500, 500)
+                    .withCameraPosition(mapboxMap.getCameraPosition())
+                    .withRegion(mapboxMap.getProjection().getVisibleRegion().latLngBounds)
+                    .withStyleBuilder(builder1);
 
-        mapSnapshotter = new MapSnapshotter(getActivity(), snapShotOptions);
+            mapSnapshotter = new MapSnapshotter(getActivity(), snapShotOptions);
 
-        mapSnapshotter.start(new MapSnapshotter.SnapshotReadyCallback() {
-            @Override
-            public void onSnapshotReady(MapSnapshot snapshot) {
-                // Display, share, or use bitmap image how you'd like
-                System.out.println("ss ready");
-                Bitmap bitmapImage = snapshot.getBitmap();
-                saveRun(bitmapImage);
+            mapSnapshotter.start(new MapSnapshotter.SnapshotReadyCallback() {
+                @Override
+                public void onSnapshotReady(MapSnapshot snapshot) {
+                    // Display, share, or use bitmap image how you'd like
+                    System.out.println("ss ready");
+                    Bitmap bitmapImage = snapshot.getBitmap();
+                    saveRun(bitmapImage);
+                }
+            });
+        }else{
+            //does not have Map associated
+            saveRun(null);
+        }
 
-            }
-        });
 
 
     }
@@ -2382,11 +2399,21 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         }
 
     public String saveCoordinates(ArrayList<Point> coords, String uid){
-            Gson gson = new Gson();
+            /*Gson gson = new Gson();
             String json = gson.toJson(coords);
             edt.putString(uid, json);
-            edt.commit();
-            return uid;
+            edt.commit();*/
+        TrackedPoints savePoints = new TrackedPoints(trackedPoints);
+        for(int i=0;i<routeCoordinates.size();i++){
+            if(savePoints.getTrackedPoints().size() > i){
+                savePoints.getTrackedPoints().get(i).setPoint(routeCoordinates.get(i));
+            }else{
+                savePoints.getTrackedPoints().add(new TrackedPoint(0,routeCoordinates.get(i),0,0,0));
+            }
+        }
+        long id = mRepository.insertTrackedPoints(savePoints);
+        String mID = Long.toString(id);
+        return mID;
     }
 
     public ArrayList<Point> getCoordinates(String uid){
@@ -2402,16 +2429,17 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
         }else{
             System.out.println("RETRIEVE COORDS NULL: ");
         }*/
-
+        TrackedPoints testPoints = null;
         ArrayList<Point> coords = new ArrayList<Point>();
-        TrackedPoints testPoints = mRepository.getTrackedPoints(uid);
-        for(int i=0;i<testPoints.getTrackedPoints().size();i++){
-            coords.add(testPoints.getTrackedPoints().get(i).getPoint());
+        if(uid!=null) {
+            testPoints = mRepository.getTrackedPoints(uid);
         }
-        trackedPoints = testPoints.getTrackedPoints();
-        System.out.println("test retreive time 0: "+ testPoints.getTrackedPoints().get(0).getTimestamp());
-        System.out.println("test retreive Point 0: "+ testPoints.getTrackedPoints().get(0).getPoint());
-        System.out.println("test retreive HR 0: "+ testPoints.getTrackedPoints().get(0).getHeartRate());
+        if(testPoints !=null) {
+            for (int i = 0; i < testPoints.getTrackedPoints().size(); i++) {
+                coords.add(testPoints.getTrackedPoints().get(i).getPoint());
+            }
+            trackedPoints = testPoints.getTrackedPoints();
+        }
 
         return coords;
     }
@@ -2475,6 +2503,9 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                     mNutritionDay.setNames(mNames);
                     mNutritionDay.setValues(mValues);
                     mNutritionDay.setDate(formattedDate);
+                    Calendar mcal = Calendar.getInstance();
+                    mNutritionDay.setDateMillis(mcal.getTimeInMillis());
+
                     mRepository.insertNutrition(mNutritionDay);
                 } else {
                     System.out.println("found Day get names/values");
@@ -2490,6 +2521,8 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
             protected void onPostExecute(Void unused) {
                 // Post Code
+                finishUI(mRunWorkout);
+
             }
         }.execute();
     }
@@ -2506,6 +2539,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
             protected Void doInBackground(Void... unused) {
                 //nutritionDay and formatted day change with selected day up top, used to edit values
                 mRunWorkout = AppDatabase.getAppDatabase(getActivity()).rwDAO().findById(runWorkoutID);
+                formattedDate = mRunWorkout.getWorkoutDate();
                 mActivityTypes = new ArrayList<RunType>(AppDatabase.getAppDatabase(getActivity()).rtDAO().getAllActive());
                 hasMap = mRunWorkout.getSaveMap();
 
@@ -2517,7 +2551,8 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
             protected void onPostExecute(Void unused) {
                 // Post Code
-                finishUI(mRunWorkout);
+                getNutritionDayData();
+
 
             }
         }.execute();
@@ -2675,22 +2710,23 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                     new ArrayAdapter<RunType>(getApplicationContext(),  android.R.layout.simple_spinner_dropdown_item, mActivityTypes);
             adapter.setDropDownViewResource( android.R.layout.simple_spinner_dropdown_item);
             mSpinner.setAdapter(adapter);
-            mSpinner.setSelection(prefs.getInt("default_activity",mActivityTypes.size()-1));
-            saveType = mActivityTypes.get(mSpinner.getSelectedItemPosition());
+            RunType mType = mRunWorkout.getWorkoutType();
 
+            saveType = mActivityTypes.get(mSpinner.getSelectedItemPosition());
             setDialogText(mActivityTypes.get(prefs.getInt("default_activity",0)), total);
             setPaceAndCalText(mActivityTypes.get(prefs.getInt("default_activity",0)),total);
 
-            //Still set calls after pace and caltext code, as user-set cals should take precedence, but setPaceandCal gets called on edit so will change if they change distance etc
-            mEditCals.setText(Integer.toString(mRunWorkout.getCalories()));
 
-
+            final int[] check = {0};
             mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-                    setDialogText(mActivityTypes.get(position), total);
-                    setPaceAndCalText(mActivityTypes.get(position), total);
-                    saveType = mActivityTypes.get(position);
+                    if(++check[0] > 1) {
+                        setDialogText(mActivityTypes.get(position), total);
+                        setPaceAndCalText(mActivityTypes.get(position), total);
+                        System.out.println("is this called spinner");
+                        saveType = mActivityTypes.get(position);
+                    }
                 }
 
                 @Override
@@ -2699,6 +2735,16 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                 }
 
             });
+            boolean flag = true;
+            for(int i=0; i<mActivityTypes.size(); i++){
+                if(mActivityTypes.get(i).getName().equals(mType.getName())){
+                    mSpinner.setSelection(i);
+                    flag = false;
+                }
+            }
+            if(flag){
+                mSpinner.setSelection(0);
+            }
 
             mEditDistance.addTextChangedListener(new TextWatcher() {
                 @Override
@@ -2737,6 +2783,10 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                 mCardView.setVisibility(View.VISIBLE);
             }
 
+            //Still set calls after pace and caltext code, as user-set cals should take precedence, but setPaceandCal gets called on edit so will change if they change distance etc
+            System.out.println("is this called timing test");
+            mEditCals.setText(Integer.toString(mRunWorkout.getCalories()));
+
             //TODO do I still need this, now that getMapAsync is moved to just above isntead of at start of code
     /*        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                 @Override
@@ -2750,36 +2800,36 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                 }
             }, 300);*/
 
+            if(trackedPoints != null) {
+                //CHART STUFF
+                CombinedData data = new CombinedData();
+                data.setData(generateHeartRateLineData());
+                data.setData(generateHeartRateBarData());
+                XAxis xAxis = heartRateCombinedChart.getXAxis();
+                xAxis.setAxisMaximum(data.getXMax() + 0.25f);
+                heartRateCombinedChart.animateY(1000, Easing.EaseInOutQuad);
+                heartRateCombinedChart.setData(data);
+                heartRateCombinedChart.invalidate();
 
-            //CHART STUFF
-            CombinedData data = new CombinedData();
-            data.setData(generateHeartRateLineData());
-            data.setData(generateHeartRateBarData());
-            XAxis xAxis = heartRateCombinedChart.getXAxis();
-            xAxis.setAxisMaximum(data.getXMax() + 0.25f);
-            heartRateCombinedChart.animateY(1000, Easing.EaseInOutQuad);
-            heartRateCombinedChart.setData(data);
-            heartRateCombinedChart.invalidate();
+                // add data
+                paceChart.setData(generatePaceData());
+                paceChart.invalidate();
 
-            // add data
-            paceChart.setData(generatePaceData());
-            paceChart.invalidate();
+                //splits data
+                splitsChart.setData(generateSplitsData());
+                splitsChart.getAxisLeft().setValueFormatter(new MyFormatterYAxisSplitsBar());
+                splitsChart.invalidate();
 
-            //splits data
-            splitsChart.setData(generateSplitsData());
-            splitsChart.getAxisLeft().setValueFormatter(new MyFormatterYAxisSplitsBar());
-            splitsChart.invalidate();
+                // add data
+                elevationChart.setData(generateElevationData());
+                YAxis mleftAxis2 = elevationChart.getAxisLeft();
+                mleftAxis2.setAxisMaximum(elevationChart.getData().getYMax() + 10f);
+                mleftAxis2.setAxisMinimum(elevationChart.getData().getYMin() - 10f);
+                elevationChart.invalidate();
 
-            // add data
-            elevationChart.setData(generateElevationData());
-            YAxis mleftAxis2 = elevationChart.getAxisLeft();
-            mleftAxis2.setAxisMaximum(elevationChart.getData().getYMax()+10f);
-            mleftAxis2.setAxisMinimum(elevationChart.getData().getYMin()-10f);
-            elevationChart.invalidate();
-
-            heartRatePieChart.setData(generatePieData());
-            pacePieChart.setData(generatePacePieData());
-
+                heartRatePieChart.setData(generatePieData());
+                pacePieChart.setData(generatePacePieData());
+            }
 
         }else{
             System.out.println("run workout null");
@@ -2800,7 +2850,7 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
 
     public void uploadToStrava(){
-        System.out.println("trackedpoints size1 "+ trackedPoints.size());
+
 
         if(!prefs.getBoolean("strava9", false)) {
             Uri intentUri = Uri.parse("https://www.strava.com/oauth/mobile/authorize")
@@ -2824,7 +2874,6 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
 
     @SuppressLint("StaticFieldLeak")
     public void finishStrava() {
-        System.out.println("trackedpoints size2 "+ trackedPoints.size());
 
         new AsyncTask<Void, Void, Void>() {
             protected void onPreExecute() {
@@ -2865,27 +2914,60 @@ public class RunDetailFragment extends Fragment implements OnMapReadyCallback, P
                         .debug()
                         .build();
 
-                TcxHelper mHelper = new TcxHelper();
-                String mPath = mHelper.createTCX("testfile"+System.currentTimeMillis(), trackedPoints, (int) saveDistance, saveCals, saveTime);
+                saveTime = 1000*((Integer.parseInt(mEditTime1.getText().toString())*60*60)+(Integer.parseInt(mEditTime2.getText().toString())*60)+(Integer.parseInt(mEditTime3.getText().toString())));
+                saveDistance = total[0];
+                saveCals = Integer.parseInt(mEditCals.getText().toString());
+                saveDescription = mEditDescription.getText().toString();
+                saveTitle = mEditTitle.getText().toString();
 
-                UploadAPI uploadAPI = new UploadAPI(sconfig);
-                UploadStatus uploadStatus = uploadAPI.uploadFile(new File(mPath))
-                        .withDataType(DataType.TCX)
-                        .withActivityType(UploadActivityType.RUN)
-                        .withName(saveTitle)
-                        .withDescription(saveDescription)
-                        .isPrivate(false)
-                        .hasTrainer(false)
-                        .isCommute(false)
-                        .withExternalID("test4")
-                        .execute();
+                if (ActivityType.fromString(saveType.getName()) != null && (trackedPoints == null || trackedPoints.size()==0)){
+                    ActivityAPI activityAPI = new ActivityAPI(sconfig);
+                    Activity activity = activityAPI.createActivity(saveTitle)
+                            .ofType(ActivityType.fromString(saveType.getName()))
+                            .startingOn(Calendar.getInstance().getTime())
+                            .withElapsedTime(Time.seconds(saveTime/1000))
+                            .withDescription(saveDescription)
+                            .withDistance(Distance.meters(saveDistance))
+                            .isPrivate(false)
+                            .withTrainer(false)
+                            .withCommute(false)
+                            .execute();
+                } else if(trackedPoints == null || trackedPoints.size()==0) {
+                    ActivityAPI activityAPI = new ActivityAPI(sconfig);
+                    Activity activity = activityAPI.createActivity(saveTitle)
+                            .ofType(ActivityType.WORKOUT)
+                            .startingOn(Calendar.getInstance().getTime())
+                            .withElapsedTime(Time.seconds(saveTime/1000))
+                            .withDescription(saveDescription)
+                            .withDistance(Distance.meters(saveDistance))
+                            .isPrivate(false)
+                            .withTrainer(false)
+                            .withCommute(false)
+                            .execute();
 
-                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(getActivity(), "Strava Upload Status: "+    uploadStatus.getStatus(), Toast.LENGTH_LONG).show();
-                    }
-                }, 15000);
+                }else{
+                    TcxHelper mHelper = new TcxHelper();
+                    String mPath = mHelper.createTCX("testfile" + System.currentTimeMillis(), trackedPoints, (int) saveDistance, saveCals, saveTime);
+
+                    UploadAPI uploadAPI = new UploadAPI(sconfig);
+                    UploadStatus uploadStatus = uploadAPI.uploadFile(new File(mPath))
+                            .withDataType(DataType.TCX)
+                            .withActivityType(UploadActivityType.RUN)
+                            .withName(saveTitle)
+                            .withDescription(saveDescription)
+                            .isPrivate(false)
+                            .hasTrainer(false)
+                            .isCommute(false)
+                            .withExternalID("test4")
+                            .execute();
+
+                    new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getActivity(), "Strava Upload Status: " + uploadStatus.getStatus(), Toast.LENGTH_LONG).show();
+                        }
+                    }, 15000);
+                }
 
                 return null;
             }

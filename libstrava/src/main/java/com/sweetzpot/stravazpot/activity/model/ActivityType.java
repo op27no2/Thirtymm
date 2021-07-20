@@ -38,6 +38,15 @@ public enum ActivityType {
         this.rawValue = rawValue;
     }
 
+    public static ActivityType fromString(String text) {
+        for (ActivityType at : ActivityType.values()) {
+            if (at.rawValue.equalsIgnoreCase(text)) {
+                return at;
+            }
+        }
+        return null;
+    }
+
     @Override
     public String toString() {
         return rawValue;
